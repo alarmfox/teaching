@@ -1,0 +1,321 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+
+
+
+	
+	
+<!-- Mirrored from www.ssignon.unina.it/openam/UI/Login by HTTrack Website Copier/3.x [XR&CO'2014], Tue, 24 Mar 2026 16:38:20 GMT -->
+<!-- Added by HTTrack --><meta http-equiv="content-type" content="text/html;charset=UTF-8" /><!-- /Added by HTTrack -->
+<head>
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1">
+<title>OpenAM (Login) 1</title>
+
+
+<link href="https://www.ssignon.unina.it/openam/fed_css/styles.css" rel="stylesheet"type="text/css" />
+
+<!--[if IE 9]> <link href="/openam/css/ie9.css" rel="stylesheet" type="text/css"> <![endif]-->
+<!--[if lte IE 7]> <link href="/openam/css/ie7.css" rel="stylesheet" type="text/css"> <![endif]-->
+<script language="JavaScript" src="https://www.ssignon.unina.it/openam/js/browserVersion.js"></script>
+<script language="JavaScript" src="https://www.ssignon.unina.it/openam/js/auth.js" type="text/javascript"></script>
+
+
+	<script language="JavaScript" type="text/javascript">
+	    writeCSS('/openam');
+		
+		var defaultBtn = 'Submit';
+		var elmCount = 0;
+
+		/** submit form with default command button */
+		function defaultSubmit() {
+			LoginSubmit(defaultBtn);
+		}
+
+		/**
+		 * submit form with given button value
+		 *
+		 * @param value of button
+		 */
+		function LoginSubmit(value) {
+			aggSubmit();
+			var hiddenFrm = document.forms['Login'];
+
+			if (hiddenFrm != null) {
+				hiddenFrm.elements['IDButton'].value = value;
+				if (this.submitted) {
+					alert("The request is currently being processed");
+				}
+				else {
+					this.submitted = true;
+					hiddenFrm.submit();
+				}
+			}
+		}
+		
+	</script>
+
+<script type="text/javascript"><!--// Empty script so IE5.0 Windows will draw table and button borders--></script>
+<script type="text/javascript" src="https://gateway.spid.unina.it/bit4id-spid.js"></script>
+
+<!-- <script type="text/javascript">
+
+    var observer = new WebKitMutationObserver(function(mutations) {
+        mutations.forEach(function(mutation) {
+            for (var i = 0; i < mutation.addedNodes.length; i++) {
+		if(mutation.addedNodes[i].tagName == "A" && mutation.addedNodes[i]?.parentElement?.parentElement?.id == "access-buttons" && mutation.addedNodes[i].getAttribute("data-idp") == "cieid") {
+                    mutation.addedNodes[i].onclick = function() {
+                        window.location.href = "/oidc/rp/login?provider=" + 
+                            encodeURIComponent("https://oidc.idserver.servizicie.interno.gov.it");
+                    }
+                }
+            }
+        });
+    });
+    observer.observe(document, {
+        childList: true,
+        subtree: true,
+        attributes: false,
+        characterData: false,
+    });
+
+</script> -->
+
+	</head>
+	<body class="LogBdy" onload="placeCursorOnFirstElm();">
+
+		<main>
+
+      <div class="logo-header">
+        <img src="https://www.ssignon.unina.it/openam/images/logo2013.png"alt=""/>
+      </div>
+
+                      <div class="utility-link">
+                        <a href="https://www.idm.unina.it/UninaPswMngt/" target="new">Attiva&nbsp;/&nbsp;Resetta&nbsp;Password</a>
+                        <a href="http://softwaresso.unina.it/iounina/comuni/generaPUK.pdf" target="new">Resetta PUK</a>
+                        <a href="http://www.unina.it/aiuto/area-riservata" target="new">Help</a>
+                      </div>
+
+<style>
+.utility-link > a {
+    color: white;
+    transition: all .3s;
+    margin-bottom: 1em;
+    width: 33%;
+    text-align: center;
+}
+
+.utility-link {
+    display: flex;
+    width: 100%;
+    align-items: center;
+    margin-top: 3em;
+}
+
+
+    @media (max-width: 1264px){
+        .utility-link {
+            flex-direction: column;
+        }
+
+	.utility-link > a {
+		width: 100%;
+	}
+    }
+</style>
+
+
+      <section id="login">
+        <h1>ACCESSO</h1>
+        <p>Accedi alla tua area riservata di ateneo</p>
+
+
+
+                <!--
+                
+                  <h1>
+                    Il sistema utilizza il sistema di autenticazione LDAP (scelta multipla)
+                  </h1>
+                
+                -->
+              <div class="form-container">
+                
+
+                    
+                      <script language="javascript" type="text/javascript">
+                                              <!--
+                                              elmCount++;
+                                              -->
+                                          </script>
+
+
+                      <!-- textBox -->
+
+                      <!-- password -->
+
+
+                      <!-- end of choice -->
+                      <!-- end of tiledCallbacks -->
+                    
+                      <script language="javascript" type="text/javascript">
+                                              <!--
+                                              elmCount++;
+                                              -->
+                                          </script>
+
+
+                      
+                        <!-- text box display -->
+
+
+                          <form name="frm1" action="https://www.ssignon.unina.it/openam/UI/blank" onSubmit="defaultSubmit(); return false;" method="post">
+
+                            <div class="form-field">
+                              <!-- <i class="fa fa-user"></i> -->
+                              
+                              <input class="TxtFld" type="text"
+                                name="IDToken1"
+                                id="IDToken1"
+                                value="" placeholder="Utente"/>
+                                <!-- <span class="LblLev2Txt">
+                                  <label
+                                    for="IDToken1">  Utente: 
+
+                                  </label>
+                                </span> -->
+                            </div>
+
+                          </form>
+
+                        <!-- end of textBox -->
+                      <!-- textBox -->
+
+                      <!-- password -->
+
+
+                      <!-- end of choice -->
+                      <!-- end of tiledCallbacks -->
+                    
+                      <script language="javascript" type="text/javascript">
+                                              <!--
+                                              elmCount++;
+                                              -->
+                                          </script>
+
+
+                      <!-- textBox -->
+
+                      
+                        <!-- password display -->
+
+                          <form name="frm2" action="https://www.ssignon.unina.it/openam/UI/blank" onSubmit="defaultSubmit(); return false;" method="post">
+                            <div class="form-field">
+                              <!-- <i class="fa fa-key"></i> -->
+                              
+                              <input class="TxtFld" type="password"
+                                  name="IDToken2"
+                                  id="IDToken2" value="" placeholder="Password"/>
+
+                                <!-- <span class="LblLev2Txt"> <label
+                                  for="IDToken2">  Password: 
+                                </label></span> -->
+                            </div>
+
+                          </form>
+                        <!-- end of password -->
+                      <!-- password -->
+
+
+                      <!-- end of choice -->
+                      <!-- end of tiledCallbacks -->
+                    
+
+
+                    
+
+
+                    
+
+
+                    
+
+                    
+                      <!-- Submit button -->
+
+                      <div class="form-field" id="access-buttons">
+                        <!-- end of hasButton -->
+
+                        
+
+                                <script language="javascript">
+                                markupButton(
+                                  'Log In',
+                                        "javascript:LoginSubmit('Log In')");
+                                </script>
+                                <div class="bit4id-spid-appid" style="display:none">openam</div>
+                                <div class="bit4id-spid bit4id-spid-button-medium"></div>
+                                <div class="bit4id-cie bit4id-spid-button-medium"></div>
+
+                        <!-- end of hasNoButton -->
+
+                      </div>
+                      <!-- end of ContentButtonLogin -->
+                    
+              </div>
+      </section>
+
+      <footer style="display:none !important">
+
+          <a href="https://www.idm.unina.it/UninaPswMngt/" target=new>Attiva&nbsp/&nbspResetta&nbspPassword</a>
+	  <a href="http://softwaresso.unina.it/iounina/comuni/generaPUK.pdf" target=new>Resetta PUK</a>
+          <a href="http://www.unina.it/aiuto/area-riservata" target=new>Help</a>
+
+      </footer>
+
+    </main>
+
+<form   method="post"  name="Login"  action="https://www.ssignon.unina.it/openam/UI/Login">
+
+		<script language="javascript" type="text/javascript">
+                                        <!--
+                                        if (elmCount != null) {
+        for (var i = 0; i < elmCount; i++) {
+            document.write(
+                "<input name=\"IDToken" + i + "\" type=\"hidden\">");
+        }
+        document.write("<input name=\"IDButton"  + "\" type=\"hidden\">");
+    }
+                                        -->
+                                    </script>
+		<input type="hidden" name="goto" value="" />
+		<input type="hidden" name="gotoOnFail" value="" />
+		<input type="hidden" name="SunQueryParamsString"
+			value="" />
+		<input type="hidden" name="encoded" value="false" />
+
+	<input type="hidden" name="gx_charset" value="UTF-8"/></form>
+
+
+<script type="text/javascript">
+  window.SPID4Id({
+    'submitCallback': function ($, proceed) {
+      $.get("/openam/UI/Login?module=SPID", function() {
+      })
+      .done(function() {
+      proceed();
+      })
+      .fail(function() {
+      $(".bit4id-status").text("Errore: Non riesco a contattare il modulo di autenticazione /openam/UI/Login?module=SPID");
+      })
+    }
+  });
+</script>
+	</body>
+
+
+<!-- Mirrored from www.ssignon.unina.it/openam/UI/Login by HTTrack Website Copier/3.x [XR&CO'2014], Tue, 24 Mar 2026 16:38:20 GMT -->
+</html>

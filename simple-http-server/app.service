@@ -1,5 +1,0 @@
-[Unit]
-Description=Dtlab login
-
-[Service]
-ExecStart=/root/app

@@ -1,0 +1,42 @@
+version: '3'
+
+services:
+  rest:
+    build:
+      context: .
+      dockerfile: Dockerfile.rest
+    environment:
+      - DB_URI=
+      - BOT_TOKEN=
+      - FLASK_RUN_PORT=3000
+    ports:
+      - 3000:3000/tcp
+    depends_on:
+      - postgresql
+    restart: always
+
+  bot:
+    build:
+      context: .
+      dockerfile: Dockerfile.bot
+    environment:
+      - DB_URI=
+      - BOT_TOKEN=
+    depends_on:
+      - postgresql
+    restart: always
+
+  postgresql:
+    image: postgres:15-bullseye
+    environment:
+      - POSTGRES_PASSWORD=postgres
+    ports:
+      - 5432:5432
+    user: postgres
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready", "-d", "postgres", "-U", "postgres"]
+      interval: 30s
+      timeout: 60s
+      retries: 5
+      start_period: 80s
+      

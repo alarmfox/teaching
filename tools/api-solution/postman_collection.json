@@ -1,0 +1,282 @@
+{
+	"info": {
+		"_postman_id": "6b3e2948-063d-4c63-bb2d-9bb57f1a2522",
+		"name": "DTLab API",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "26804152"
+	},
+	"item": [
+		{
+			"name": "/routers",
+			"item": [
+				{
+					"name": "Get router by id",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:5000/routers/:id",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5000",
+							"path": [
+								"routers",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": null
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "List routers",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:5000/routers",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5000",
+							"path": [
+								"routers"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create router",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"hostname\": \"r1\",\n    \"motd\": \"hello\",\n    \"interfaces\": [\n        {\n            \"name\": \"g/0/0/0\",\n            \"ip\": \"192.168.1.1\",\n            \"netmask\": \"255.255.255.0\"\n        },\n        {\n            \"name\": \"g/0/0/1\",\n            \"ip\": \"10.10.1.1\",\n            \"netmask\": \"255.255.255.0\"\n        }\n    ]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:5000/routers",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5000",
+							"path": [
+								"routers"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update router",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"hostname\": \"r2\",\n    \"motd\": \"a\",\n    \"interfaces\": [\n        {\n            \"name\": \"g/0/0/0\",\n            \"ip\": \"192.168.1.1\",\n            \"netmask\": \"255.255.255.0\"\n        }\n    ]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:5000/routers/1",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5000",
+							"path": [
+								"routers",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete router",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:5000/routers/:id",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5000",
+							"path": [
+								"routers",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "1"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "/switches",
+			"item": [
+				{
+					"name": "Get switch by id",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:5000/switches/:id",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5000",
+							"path": [
+								"switches",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": null
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "List switches",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:5000/switches",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5000",
+							"path": [
+								"switches"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create switch",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"hostname\": \"r1\",\n    \"motd\": \"hello\",\n    \"interfaces\": [\n        {\n            \"name\": \"vlan1\",\n            \"ip\": \"192.168.1.10\",\n            \"netmask\": \"255.255.255.0\"\n        }\n    ],\n    \"ports\": [\n        {\n            \"name\": \"FastEthernet 0/1\",\n            \"status\": \"connected\",\n            \"security\": \"mac\"\n        }\n    ]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:5000/switches",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5000",
+							"path": [
+								"switches"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update switch",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"hostname\": \"r2\",\n    \"motd\": \"a\",\n    \"interfaces\": [\n        {\n            \"name\": \"g/0/0/0\",\n            \"ip\": \"192.168.1.1\",\n            \"netmask\": \"255.255.255.0\"\n        }\n    ],\n    \"ports\": []\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:5000/switches/:id",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5000",
+							"path": [
+								"switches",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "1"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete switch",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:5000/switches/:id",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5000",
+							"path": [
+								"switches",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "1"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}

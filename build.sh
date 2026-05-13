@@ -19,10 +19,10 @@ echo "Building materials for: $SOURCE_DIR"
 for md in "$SOURCE_DIR"/*.md; do
     [ -e "$md" ] || continue
     [ "$(basename "$md")" == "README.md" ] && continue
-    
+
     filename=$(basename "$md" .md)
     echo "  -> Processing $filename..."
-    
+
     # Check if banner exists and is an image/pdf
     if [[ -f "$BANNER" ]]; then
         # If it's a file, we use it as a header or include it

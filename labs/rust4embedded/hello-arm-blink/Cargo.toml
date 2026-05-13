@@ -1,0 +1,9 @@
+[package]
+name = "hello-arm-blink"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+
+[dev-dependencies]
+panic-halt = "0.2.0"

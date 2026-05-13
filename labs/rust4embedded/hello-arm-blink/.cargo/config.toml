@@ -1,0 +1,12 @@
+[build]
+# Specify the default target. This can be overridden by passing the "--target " flag to cargo
+target = "thumbv7em-none-eabihf"
+
+# Pass some arguments to the linker
+rustflags = [
+  "-C", "link-arg=-Tmemory.x",
+
+  # if you run into problems with LLD switch to the GNU linker by commenting out
+  # this line
+  # "-C", "linker=arm-none-eabi-ld",
+]

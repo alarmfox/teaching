@@ -85,14 +85,14 @@
 \chapter*{Introduzione al Corso e Strumenti di Sviluppo}
 \addcontentsline{toc}{chapter}{Introduzione al Corso e Strumenti di Sviluppo}
 
-\section{Obiettivi del Corso}
+\section*{Obiettivi del Corso}
 Oltre ai singoli traguardi di ogni lezione, il corso si pone l'obiettivo di portarvi a costruire progetti concreti che simulino scenari reali di sviluppo web:
 \begin{itemize}
     \item \textbf{Todo Application}: Svilupperemo una completa applicazione per la gestione dei compiti. Questo sarà il nostro banco di prova per imparare il paradigma \textbf{CRUD} (Create, Read, Update, Delete), ovvero le quattro operazioni fondamentali di ogni software che gestisce dati.
     \item \textbf{Chat Application}: Concluderemo il percorso realizzando una piccola applicazione di chat in tempo reale. Questo ci permetterà di esplorare tecnologie avanzate che vanno oltre il semplice modello richiesta-risposta, affrontando il tema della comunicazione bidirezionale.
 \end{itemize}
 
-\section{Obiettivi della Lezione}
+\section*{Obiettivi della Lezione}
 Lo scopo di questo corso è fornire le competenze necessarie per comprendere, progettare e sviluppare applicazioni web complete (end-to-end). Il livello di partenza assume una conoscenza basilare della logica di programmazione, ma esploreremo da zero l'ecosistema web. 
 
 Oggi, un'applicazione web non è più una semplice vetrina di documenti testuali (come era negli anni '90), ma un software complesso e interattivo distribuito su una rete. In questo primo capitolo, definiremo il perimetro di azione di uno sviluppatore e inizieremo il nostro percorso.
@@ -116,7 +116,7 @@ La regola fondamentale è: \textbf{Il server non invia mai dati al client senza 
 \begin{tikzpicture}[node distance=4cm, every node/.style={rectangle, draw, rounded corners, minimum width=3cm, minimum height=1.5cm, align=center, line width=1pt}]
     \node (client) [fill=primary!10] {\textbf{Client} \\ (Browser)};
     \node (server) [right=of client, fill=primary!10] {\textbf{Server} \\ (Cloud/Host)};
-    
+
     \draw [->, >=stealth, line width=1.2pt, primary] ([yshift=0.3cm]client.east) -- node[above, black] {Richiesta (Request)} ([yshift=0.3cm]server.west);
     \draw [<-, >=stealth, line width=1.2pt, primary] ([yshift=-0.3cm]client.east) -- node[below, black] {Risposta (Response)} ([yshift=-0.3cm]server.west);
 \end{tikzpicture}
@@ -564,7 +564,7 @@ Un file HTML è un documento dichiarativo. Quando lo apriamo, il browser lo anal
 </html>
 \end{lstlisting}
 Il browser espone l'oggetto globale \texttt{window} e l'oggetto \texttt{document}, che rappresenta l'intera pagina.
-\textbf{Task}: Sperimenta con l'interattività. Apri la console del browser (F12) e scrivi: \texttt{document.body.style.backgroundColor = 'yellow';}. Nota come l'oggetto \texttt{style} sia a sua volta un oggetto contenente proprietà CSS!
+\paragraph{Task} Sperimenta con l'interattività. Apri la console del browser (F12) e scrivi:\\ \texttt{document.body.style.backgroundColor = 'yellow';}. Nota come l'oggetto \texttt{style} sia a sua volta un oggetto contenente proprietà CSS!
 
 \subsection{Esercizio 2: Manipolazione del DOM e Gerarchia delle Classi}
 Il \textbf{DOM (Document Object Model)} è l'interfaccia che permette a JavaScript di agire sulla pagina. Ogni tag HTML diventa un oggetto JavaScript di una classe specifica (es. \texttt{HTMLDivElement}).
@@ -575,14 +575,14 @@ Il \textbf{DOM (Document Object Model)} è l'interfaccia che permette a JavaScri
 <script>
     // Selezioniamo un oggetto dal DOM tramite il suo ID univoco
     const container = document.getElementById('container');
-    
+
     // Accediamo all'oggetto 'style' per modificare il CSS
     container.style.backgroundColor = "lightblue";
     container.style.padding = "20px";
     container.style.borderRadius = "10px";
 </script>
 \end{lstlisting}
-\textbf{Task}: Modifica il contenuto testuale. Usa la proprietà \texttt{innerText} dell'oggetto recuperato con \texttt{document.getElementById('first')} per cambiare il testo in "Ho manipolato l'oggetto DOM!".
+\paragraph{Task} Modifica il contenuto testuale. Usa la proprietà \texttt{innerText} dell'oggetto recuperato con \texttt{document.getElementById('first')} per cambiare il testo in "Ho manipolato l'oggetto DOM!".
 
 \subsection{Esercizio 3: Gestione degli Eventi e Callback}
 Il browser è un ambiente \textit{event-driven}. Un evento è un segnale di notifica. Usiamo il metodo \texttt{addEventListener} che accetta due parametri: il nome dell'evento e una \textbf{funzione di callback} (codice da eseguire al verificarsi dell'evento).
@@ -591,7 +591,7 @@ Il browser è un ambiente \textit{event-driven}. Un evento è un segnale di noti
 <p id="msg"></p>
 <script>
     const btn = document.getElementById('myBtn');
-    
+
     // Usiamo una 'arrow function' (=>) come callback
     btn.addEventListener('click', () => {
         const msgPara = document.getElementById('msg');
@@ -600,7 +600,7 @@ Il browser è un ambiente \textit{event-driven}. Un evento è un segnale di noti
     });
 </script>
 \end{lstlisting}
-\textbf{Task}: Rendilo dinamico! Aggiungi un ascoltatore per l'evento \texttt{mouseover} (passaggio del mouse) che cambi il colore del bottone. Ricorda: ogni interazione è un evento gestito da un oggetto.
+\paragraph{Task} Rendilo dinamico! Aggiungi un ascoltatore per l'evento \texttt{mouseover} (passaggio del mouse) che cambi il colore del bottone. Ricorda: ogni interazione è un evento gestito da un oggetto.
 
 \subsection{Esercizio 4: Form Modulare e l'Oggetto Event}
 Nei form, intercettiamo l'invio dei dati. Quando un evento accade, il browser passa alla nostra funzione un oggetto \texttt{event} (spesso abbreviato in \texttt{e} o \texttt{evt}) che contiene dettagli sull'azione.
@@ -612,14 +612,14 @@ Nei form, intercettiamo l'invio dei dati. Quando un evento accade, il browser pa
 <script>
     document.getElementById('myForm').addEventListener('submit', (e) => {
         e.preventDefault(); // Metodo fondamentale: ferma il comportamento di default (il ricaricamento)
-        
+
         const email = document.getElementById('userEmail').value;
         alert("Dati inviati per l'email: " + email);
         console.log(e); // Ispeziona l'oggetto evento in console!
     });
 </script>
 \end{lstlisting}
-\textbf{Task}: Estendi il form. Aggiungi un campo \texttt{input} di tipo \texttt{number} per l'età e visualizza entrambi i valori nell'alert. Nota come accediamo alla proprietà \texttt{value} dell'oggetto input.
+\paragraph{Task} Estendi il form. Aggiungi un campo \texttt{input} di tipo \texttt{number} per l'età e visualizza entrambi i valori nell'alert. Nota come accediamo alla proprietà \texttt{value} dell'oggetto input.
 
 \subsection{Esercizio 5: Gestione Dinamica delle Liste (Factory Pattern)}
 Possiamo creare nuovi oggetti DOM dal nulla. Questo processo simula quello che in programmazione viene chiamato "Factory Pattern": chiediamo al \texttt{document} di fabbricare un nuovo elemento.
@@ -631,13 +631,13 @@ Possiamo creare nuovi oggetti DOM dal nulla. Questo processo simula quello che i
         // Creiamo una nuova istanza di un oggetto 'li'
         const nuovoItem = document.createElement('li');
         nuovoItem.innerText = 'Nuovo elemento ' + (document.querySelectorAll('li').length + 1);
-        
+
         // Lo 'appendiamo' come figlio dell'oggetto lista
         document.getElementById('lista').appendChild(nuovoItem);
     });
 </script>
 \end{lstlisting}
-\textbf{Task}: Implementa la rimozione. Aggiungi un bottone "Rimuovi Ultimo" che utilizza il metodo \texttt{remove()} sull'ultimo figlio della lista (\texttt{lista.lastElementChild}).
+\paragraph{Task} Implementa la rimozione. Aggiungi un bottone "Rimuovi Ultimo" che utilizza il metodo \texttt{remove()} sull'ultimo figlio della lista (\texttt{lista.lastElementChild}).
 
 \subsection{Esercizio 6: CSS Frameworks - Bootstrap vs Tailwind}
 Nello sviluppo reale, raramente scriviamo tutto il CSS da zero. Usiamo i \textbf{Framework}. In questo esercizio confrontiamo due filosofie diverse.
@@ -664,7 +664,7 @@ Nello sviluppo reale, raramente scriviamo tutto il CSS da zero. Usiamo i \textbf
 </div>
 \end{lstlisting}
 
-\textbf{Task}: Apri entrambi i file nella cartella \texttt{6.frameworks}. Prova a cambiare il colore dei bottoni usando le classi documentate sui siti ufficiali. Quale approccio ti sembra piu' intuitivo per personalizzare il design?
+\paragraph{Task} Apri entrambi i file nella cartella \texttt{6.frameworks}. Prova a cambiare il colore dei bottoni usando le classi documentate sui siti ufficiali. Quale approccio ti sembra piu' intuitivo per personalizzare il design?
 
 \subsection{Esercizio 7: Interazioni Asincrone con Fetch API}
 Come visto nella teoria, le operazioni asincrone non bloccano il browser. La \textbf{Fetch API} è lo standard moderno per richiedere dati a server esterni senza ricaricare la pagina. In questo esercizio interrogheremo un'API pubblica per ottenere dati fittizi.
@@ -677,7 +677,7 @@ Come visto nella teoria, le operazioni asincrone non bloccano il browser. La \te
 
 <script>
     const loadBtn = document.getElementById('loadUser');
-    
+
     loadBtn.addEventListener('click', () => {
         // La funzione fetch() restituisce una 'Promise' (una promessa di dati futuri)
         fetch('https://jsonplaceholder.typicode.com/users/1')
@@ -699,7 +699,7 @@ Come visto nella teoria, le operazioni asincrone non bloccano il browser. La \te
     \item \textbf{JSON}: È il formato standard per lo scambio di dati sul web. \texttt{response.json()} è un metodo asincrono che "traduce" il testo ricevuto dal server in un oggetto JavaScript manipolabile.
 \end{itemize}
 
-\textbf{Task}: Prova a cambiare l'URL in \texttt{https://jsonplaceholder.typicode.com/users/2} per vedere un utente diverso. Riusciresti a creare un campo di testo dove l'utente inserisce un ID (da 1 a 10) e cliccando sul bottone viene caricato esattamente quell'utente?
+\paragraph{Task} Prova a cambiare l'URL in \texttt{https://jsonplaceholder.typicode.com/users/2} per vedere un utente diverso. Riusciresti a creare un campo di testo dove l'utente inserisce un ID (da 1 a 10) e cliccando sul bottone viene caricato esattamente quell'utente?
 
 \section{Consigli per lo studio}
 \begin{itemize}

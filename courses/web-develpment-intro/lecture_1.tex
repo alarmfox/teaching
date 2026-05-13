@@ -535,79 +535,177 @@ Se volete portarvi avanti o consultare materiale aggiuntivo, ecco alcuni tutoria
 % ==========================================
 \chapter{Laboratorio: Primi Passi nel Frontend}
 
-Ora che conosciamo l'architettura del web, iniziamo a scrivere codice. Per questo laboratorio, useremo \textbf{Visual Studio Code (VS Code)} come nostro strumento principale.
+Ora che conosciamo l'architettura del web, iniziamo a scrivere codice. Per questo laboratorio, useremo \textbf{Visual Studio Code (VS Code)} come nostro strumento principale. In questa sezione metteremo in pratica i concetti teorici visti finora. Lo sviluppo frontend non è solo scrivere markup, ma interagire con un ecosistema complesso di oggetti e eventi gestiti dal browser.
+
+\section{Note sulla Sintassi e Programmazione ad Oggetti}
+Prima di iniziare, è fondamentale capire che JavaScript (JS) tratta quasi tutto come un \textbf{Oggetto}. Nel browser, la pagina stessa è rappresentata da un enorme oggetto chiamato \texttt{document}.
+\begin{itemize}
+    \item \textbf{Proprietà}: Sono variabili "attaccate" a un oggetto (es. \texttt{document.title}).
+    \item \textbf{Metodi}: Sono funzioni che un oggetto può eseguire (es. \texttt{document.write()}).
+    \item \textbf{Eventi}: Sono segnali che gli oggetti inviano quando succede qualcosa (es. un clic).
+\end{itemize}
 
 \section{Esercizi Guidati}
 Il materiale per questi esercizi si trova nella cartella \texttt{src/lezione1/} del repository.
 
-\subsection{Esercizio 1: Il browser come interprete}
+\subsection{Esercizio 1: Il browser come interprete e l'Oggetto Window}
 Un file HTML è un documento dichiarativo. Quando lo apriamo, il browser lo analizza (parse) costruendo una struttura in memoria. Lo script incluso viene eseguito nel contesto della pagina.
 \begin{lstlisting}[language=HTML]
 <!DOCTYPE html>
 <html>
 <body>
     <h1>Ciao Mondo</h1>
-    <script>console.log("Browser attivo!");</script>
+    <script>
+        // 'window' e' l'oggetto globale. Tutto cio' che facciamo vive qui.
+        console.log("Browser attivo!");
+        console.log("Larghezza finestra: " + window.innerWidth);
+    </script>
 </body>
 </html>
 \end{lstlisting}
 Il browser espone l'oggetto globale \texttt{window} e l'oggetto \texttt{document}, che rappresenta l'intera pagina.
-\textbf{Task}: Cambia il colore di sfondo della pagina scrivendo \texttt{document.body.style.backgroundColor = 'yellow';} nello script.
+\textbf{Task}: Sperimenta con l'interattività. Apri la console del browser (F12) e scrivi: \texttt{document.body.style.backgroundColor = 'yellow';}. Nota come l'oggetto \texttt{style} sia a sua volta un oggetto contenente proprietà CSS!
 
-\subsection{Esercizio 2: Manipolazione del DOM}
-Il \textbf{DOM (Document Object Model)} è l'interfaccia che permette a JavaScript di agire sulla pagina. Ogni tag HTML diventa un oggetto JavaScript. \texttt{getElementById} è il metodo base per cercare un nodo specifico nell'albero.
+\subsection{Esercizio 2: Manipolazione del DOM e Gerarchia delle Classi}
+Il \textbf{DOM (Document Object Model)} è l'interfaccia che permette a JavaScript di agire sulla pagina. Ogni tag HTML diventa un oggetto JavaScript di una classe specifica (es. \texttt{HTMLDivElement}).
 \begin{lstlisting}[language=HTML]
 <div id="container">
     <p id="first">Primo</p>
 </div>
 <script>
+    // Selezioniamo un oggetto dal DOM tramite il suo ID univoco
     const container = document.getElementById('container');
+    
+    // Accediamo all'oggetto 'style' per modificare il CSS
     container.style.backgroundColor = "lightblue";
+    container.style.padding = "20px";
+    container.style.borderRadius = "10px";
 </script>
 \end{lstlisting}
-\textbf{Task}: Modifica il testo del paragrafo \texttt{first} usando \texttt{document.getElementById('first').innerText = 'Testo modificato';}.
+\textbf{Task}: Modifica il contenuto testuale. Usa la proprietà \texttt{innerText} dell'oggetto recuperato con \texttt{document.getElementById('first')} per cambiare il testo in "Ho manipolato l'oggetto DOM!".
 
-\subsection{Esercizio 3: Gestione degli Eventi}
-Il browser è un ambiente \textit{event-driven}. Un evento è un segnale di notifica. \texttt{addEventListener} associa una funzione (callback) a un tipo di evento (click, mouseover, keydown).
+\subsection{Esercizio 3: Gestione degli Eventi e Callback}
+Il browser è un ambiente \textit{event-driven}. Un evento è un segnale di notifica. Usiamo il metodo \texttt{addEventListener} che accetta due parametri: il nome dell'evento e una \textbf{funzione di callback} (codice da eseguire al verificarsi dell'evento).
 \begin{lstlisting}[language=HTML]
 <button id="myBtn">Cliccami!</button>
 <p id="msg"></p>
 <script>
     const btn = document.getElementById('myBtn');
+    
+    // Usiamo una 'arrow function' (=>) come callback
     btn.addEventListener('click', () => {
-        document.getElementById('msg').innerText = "Hai cliccato!";
+        const msgPara = document.getElementById('msg');
+        msgPara.innerText = "Hai interagito con un oggetto di classe HTMLButtonElement!";
+        msgPara.style.color = "red";
     });
 </script>
 \end{lstlisting}
-\textbf{Task}: Aggiungi un ascoltatore per l'evento \texttt{mouseover} sul bottone che cambia il colore del testo.
+\textbf{Task}: Rendilo dinamico! Aggiungi un ascoltatore per l'evento \texttt{mouseover} (passaggio del mouse) che cambi il colore del bottone. Ricorda: ogni interazione è un evento gestito da un oggetto.
 
-\subsection{Esercizio 4: Form Modulare}
-Per progetti complessi, dividiamo i file. Il browser scarica i file referenziati.
+\subsection{Esercizio 4: Form Modulare e l'Oggetto Event}
+Nei form, intercettiamo l'invio dei dati. Quando un evento accade, il browser passa alla nostra funzione un oggetto \texttt{event} (spesso abbreviato in \texttt{e} o \texttt{evt}) che contiene dettagli sull'azione.
 \begin{lstlisting}[language=HTML, caption=index.html]
 <form id="myForm">
-    <input type="email" required placeholder="Email">
+    <input type="email" id="userEmail" required placeholder="Email">
     <button type="submit">Invia</button>
 </form>
-<script src="index.js"></script>
+<script>
+    document.getElementById('myForm').addEventListener('submit', (e) => {
+        e.preventDefault(); // Metodo fondamentale: ferma il comportamento di default (il ricaricamento)
+        
+        const email = document.getElementById('userEmail').value;
+        alert("Dati inviati per l'email: " + email);
+        console.log(e); // Ispeziona l'oggetto evento in console!
+    });
+</script>
 \end{lstlisting}
-L'evento \texttt{submit} va intercettato chiamando \texttt{e.preventDefault()} per evitare che il browser ricarichi la pagina.
-\textbf{Task}: Nel file \texttt{index.js}, aggiungi un campo \texttt{number} per l'età nel form e mostralo nell'alert al submit.
+\textbf{Task}: Estendi il form. Aggiungi un campo \texttt{input} di tipo \texttt{number} per l'età e visualizza entrambi i valori nell'alert. Nota come accediamo alla proprietà \texttt{value} dell'oggetto input.
 
-\subsection{Esercizio 5: Gestione delle liste}
-Possiamo creare nodi HTML dinamicamente. \texttt{createElement} crea un nuovo oggetto DOM non ancora visibile, \texttt{appendChild} lo inserisce come ultimo figlio di un genitore.
+\subsection{Esercizio 5: Gestione Dinamica delle Liste (Factory Pattern)}
+Possiamo creare nuovi oggetti DOM dal nulla. Questo processo simula quello che in programmazione viene chiamato "Factory Pattern": chiediamo al \texttt{document} di fabbricare un nuovo elemento.
 \begin{lstlisting}[language=HTML]
 <ul id="lista"><li>Pane</li></ul>
 <button id="addBtn">Aggiungi</button>
 <script>
     document.getElementById('addBtn').addEventListener('click', () => {
-        const li = document.createElement('li');
-        li.innerText = 'Nuovo elemento';
-        document.getElementById('lista').appendChild(li);
+        // Creiamo una nuova istanza di un oggetto 'li'
+        const nuovoItem = document.createElement('li');
+        nuovoItem.innerText = 'Nuovo elemento ' + (document.querySelectorAll('li').length + 1);
+        
+        // Lo 'appendiamo' come figlio dell'oggetto lista
+        document.getElementById('lista').appendChild(nuovoItem);
     });
 </script>
 \end{lstlisting}
-\textbf{Task}: Aggiungi un bottone "Rimuovi" che elimina l'ultimo elemento della lista usando \texttt{lista.lastElementChild.remove();}.
+\textbf{Task}: Implementa la rimozione. Aggiungi un bottone "Rimuovi Ultimo" che utilizza il metodo \texttt{remove()} sull'ultimo figlio della lista (\texttt{lista.lastElementChild}).
 
+\subsection{Esercizio 6: CSS Frameworks - Bootstrap vs Tailwind}
+Nello sviluppo reale, raramente scriviamo tutto il CSS da zero. Usiamo i \textbf{Framework}. In questo esercizio confrontiamo due filosofie diverse.
 
+\textbf{Bootstrap (Component-based)}: Ti fornisce componenti pronti (classi come \texttt{btn}, \texttt{card}). E' veloce ma piu' rigido.
+\begin{lstlisting}[language=HTML]
+<!-- bootstrap.html -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<div class="card" style="width: 18rem;">
+    <div class="card-body">
+        <h5 class="card-title">Bootstrap Card</h5>
+        <button class="btn btn-primary">Bottone Standard</button>
+    </div>
+</div>
+\end{lstlisting}
+
+\textbf{Tailwind (Utility-first)}: Ti fornisce classi atomiche (\texttt{bg-blue-500}, \texttt{p-4}, \texttt{rounded}). E' molto flessibile e moderno.
+\begin{lstlisting}[language=HTML]
+<!-- modern.html -->
+<script src="https://cdn.tailwindcss.com"></script>
+<div class="bg-white p-6 rounded-lg shadow-xl">
+    <h5 class="text-xl font-bold mb-2">Modern Tailwind</h5>
+    <button class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Bottone Custom</button>
+</div>
+\end{lstlisting}
+
+\textbf{Task}: Apri entrambi i file nella cartella \texttt{6.frameworks}. Prova a cambiare il colore dei bottoni usando le classi documentate sui siti ufficiali. Quale approccio ti sembra piu' intuitivo per personalizzare il design?
+
+\subsection{Esercizio 7: Interazioni Asincrone con Fetch API}
+Come visto nella teoria, le operazioni asincrone non bloccano il browser. La \textbf{Fetch API} è lo standard moderno per richiedere dati a server esterni senza ricaricare la pagina. In questo esercizio interrogheremo un'API pubblica per ottenere dati fittizi.
+
+\begin{lstlisting}[language=HTML]
+<div id="user-card" style="border: 1px solid #ccc; padding: 15px; max-width: 300px;">
+    <h3>Caricamento...</h3>
+    <button id="loadUser">Carica Nuovo Utente</button>
+</div>
+
+<script>
+    const loadBtn = document.getElementById('loadUser');
+    
+    loadBtn.addEventListener('click', () => {
+        // La funzione fetch() restituisce una 'Promise' (una promessa di dati futuri)
+        fetch('https://jsonplaceholder.typicode.com/users/1')
+            .then(response => response.json()) // Trasformiamo la risposta in un oggetto JS (JSON)
+            .then(data => {
+                // 'data' contiene ora l'oggetto utente ricevuto dal server
+                const card = document.getElementById('user-card');
+                card.querySelector('h3').innerText = data.name;
+                card.innerHTML += `<p>Email: ${data.email}</p><p>Citta': ${data.address.city}</p>`;
+            })
+            .catch(error => console.error("Errore nel recupero dati:", error));
+    });
+</script>
+\end{lstlisting}
+
+\textbf{Analisi del codice}:
+\begin{itemize}
+    \item \textbf{Asincronia}: Il codice dentro i \texttt{.then()} non viene eseguito subito, ma solo quando il server risponde. Nel frattempo, il browser rimane reattivo.
+    \item \textbf{JSON}: È il formato standard per lo scambio di dati sul web. \texttt{response.json()} è un metodo asincrono che "traduce" il testo ricevuto dal server in un oggetto JavaScript manipolabile.
+\end{itemize}
+
+\textbf{Task}: Prova a cambiare l'URL in \texttt{https://jsonplaceholder.typicode.com/users/2} per vedere un utente diverso. Riusciresti a creare un campo di testo dove l'utente inserisce un ID (da 1 a 10) e cliccando sul bottone viene caricato esattamente quell'utente?
+
+\section{Consigli per lo studio}
+\begin{itemize}
+    \item \textbf{Non aver paura di rompere le cose}: Il browser è un ambiente sicuro. Se qualcosa non funziona, la console ti dirà perché.
+    \item \textbf{Usa l'Ispeziona Elemento}: Fai clic destro su qualsiasi parte di una pagina web e seleziona "Ispeziona". Vedrai il DOM in tempo reale.
+    \item \textbf{Cerca la documentazione}: MDN Web Docs (\url{https://developer.mozilla.org/}) è la "Bibbia" dello sviluppatore web. Usala per cercare metodi come \texttt{appendChild} o eventi come \texttt{keydown}.
+\end{itemize}
 
 \end{document}

@@ -1,14 +1,31 @@
 <!DOCTYPE html>
 <html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <title>Esercizio 2 - DOM Manipulation</title>
+</head>
 <body>
     <div id="container">
-        <p id="first">Primo</p>
-        <p id="second">Secondo</p>
+        <p id="first">Oggetto Paragrafo 1</p>
+        <p id="second">Oggetto Paragrafo 2</p>
     </div>
+
     <script>
+        // Recuperiamo un riferimento all'oggetto DOM tramite il suo ID
         const container = document.getElementById('container');
-        console.log("Figli:", container.children);
+        
+        // Ispezioniamo i figli del contenitore (una lista di oggetti DOM)
+        console.log("Figli del container:", container.children);
+
+        // Modifichiamo le proprietà dell'oggetto 'style'
         container.style.backgroundColor = "lightblue";
+        container.style.padding = "20px";
+        container.style.borderRadius = "15px";
+        container.style.fontFamily = "sans-serif";
+
+        // Task: Cambia il testo del secondo paragrafo usando innerText
+        const p2 = document.getElementById('second');
+        p2.innerText = "Testo modificato via codice!";
     </script>
 </body>
 </html>

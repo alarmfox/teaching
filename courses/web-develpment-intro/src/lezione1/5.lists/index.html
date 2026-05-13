@@ -1,16 +1,42 @@
 <!DOCTYPE html>
 <html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <title>Esercizio 5 - Dynamic DOM (Factory)</title>
+</head>
 <body>
+    <h3>La mia lista dinamica</h3>
     <ul id="lista">
         <li>Pane</li>
-        <li>Latte</li>
     </ul>
-    <button id="addBtn">Aggiungi Elemento</button>
+
+    <button id="addBtn">Aggiungi</button>
+    <button id="removeBtn">Rimuovi Ultimo</button>
+
     <script>
-        document.getElementById('addBtn').addEventListener('click', () => {
-            const li = document.createElement('li');
-            li.innerText = 'Nuovo elemento';
-            document.getElementById('lista').appendChild(li);
+        const lista = document.getElementById('lista');
+        const addBtn = document.getElementById('addBtn');
+        const removeBtn = document.getElementById('removeBtn');
+
+        addBtn.addEventListener('click', () => {
+            // Factory: chiediamo al document di creare una nuova istanza di un oggetto 'li'
+            const nuovoItem = document.createElement('li');
+            
+            // Impostiamo le proprietà del nuovo oggetto
+            const count = lista.children.length + 1;
+            nuovoItem.innerText = 'Elemento ' + count;
+            nuovoItem.style.color = "green";
+            
+            // Lo inseriamo nell'albero del DOM
+            lista.appendChild(nuovoItem);
+        });
+
+        removeBtn.addEventListener('click', () => {
+            // Selezioniamo l'ultimo figlio dell'oggetto lista
+            const ultimo = lista.lastElementChild;
+            if (ultimo) {
+                ultimo.remove(); // Metodo per distruggere l'oggetto dal DOM
+            }
         });
     </script>
 </body>

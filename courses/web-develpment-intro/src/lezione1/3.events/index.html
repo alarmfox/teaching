@@ -1,12 +1,33 @@
 <!DOCTYPE html>
 <html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <title>Esercizio 3 - Event Driven</title>
+</head>
 <body>
-    <button id="myBtn">Cliccami!</button>
+    <button id="myBtn">Clicca questo oggetto!</button>
     <p id="msg"></p>
+
     <script>
+        // Il browser è un ambiente orientato agli eventi (Event-Driven)
         const btn = document.getElementById('myBtn');
+        const display = document.getElementById('msg');
+
+        // Associamo una funzione di callback all'evento 'click'
+        // Usiamo la sintassi moderna delle 'arrow function' (=>)
         btn.addEventListener('click', () => {
-            document.getElementById('msg').innerText = "Hai cliccato il bottone!";
+            display.innerText = "Hai scatenato un evento 'click'!";
+            display.style.color = "blue";
+            display.style.fontWeight = "bold";
+        });
+
+        // Task: Aggiungi un evento 'mouseover' per cambiare il colore del bottone
+        btn.addEventListener('mouseover', () => {
+            btn.style.backgroundColor = "orange";
+        });
+
+        btn.addEventListener('mouseout', () => {
+            btn.style.backgroundColor = "";
         });
     </script>
 </body>

@@ -1,20 +1,33 @@
 <!DOCTYPE html>
 <html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <title>Esercizio 3 (bis) - Form Handling</title>
+</head>
 <body>
     <form id="myForm">
         <input type="text" name="username" required placeholder="Nome utente">
         <input type="email" name="email" required placeholder="Email">
         <input type="number" name="age" required placeholder="Età">
-        <button type="submit">Invia</button>
+        <button type="submit">Invia Dati</button>
     </form>
+
     <script>
-        document.getElementById('myForm').onsubmit = (e) => {
+        const form = document.getElementById('myForm');
+
+        // L'evento 'submit' viene passato alla nostra funzione come oggetto 'e'
+        form.addEventListener('submit', (e) => {
+            // Impediamo al browser di ricaricare la pagina (comportamento di default)
             e.preventDefault();
+            
+            // Accediamo ai valori degli oggetti input dentro il form
             const name = e.target.username.value;
-            alert(`Ciao ${name}!`);
-            const age = prompt("Quanti anni hai?");
-            console.log("Età inserita:", age);
-        };
+            const email = e.target.email.value;
+            const age = e.target.age.value;
+
+            console.log("Oggetto Evento:", e);
+            alert(`Grazie ${name}! Abbiamo ricevuto i tuoi dati: ${email} (Età: ${age})`);
+        });
     </script>
 </body>
 </html>

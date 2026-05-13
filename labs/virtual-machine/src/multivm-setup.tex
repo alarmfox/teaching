@@ -1,0 +1,153 @@
+\documentclass[11pt,a4paper]{article}
+
+% --- Packages ---
+\usepackage[margin=.75in]{geometry}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern} % Fix for font not found error
+\usepackage{titlesec}
+\usepackage{enumitem}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{fancyhdr}
+\usepackage{comment}
+\usepackage{cleveref}
+\usepackage[bottom]{footmisc}
+\usepackage{graphicx}
+\usepackage{longtable}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{calc}
+\usepackage{etoolbox}
+
+% Standard Pandoc setup
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+
+\crefformat{section}{\S#2#1#3}
+\crefformat{subsection}{\S#2#1#3}
+\crefformat{subsubsection}{\S#2#1#3}
+\crefformat{figure}{#2Figure~#1#3}
+\crefformat{footnote}{#2\footnotemark[#1]#3}
+
+\linespread{0.9} % Riduce lo spazio tra le linee
+
+% --- Colors ---
+\definecolor{primary}{RGB}{0, 0, 0}
+\definecolor{links}{HTML}{0000EE}
+\definecolor{blue}{HTML}{26428B}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=links,
+    urlcolor=links,
+    citecolor=links,
+}
+
+% --- Section Formatting ---
+\titleformat{\section}
+  {\normalfont\Large\bfseries\color{blue}}{\thesection}{1em}{}
+\titleformat{\subsection}
+{\normalfont\large\bfseries\color{blue}}{\thesubsection}{1em}{}
+\titleformat{\subsubsection}
+{\normalfont\bfseries\color{blue}}{\thesubsubsection}{1em}{}
+
+% --- Header and Footer ---
+\pagestyle{fancy}
+\fancyhead[L]{\small Giuseppe Capasso}
+\fancyhead[R]{\small virtual-machine}
+\fancyfoot[C]{\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+
+% --- Custom Title Command ---
+\newcommand{\proposaltitle}[1]{
+    \begin{center}
+        \vspace*{0.1cm}
+        {\LARGE \bfseries \color{blue} #1} \\[1.5ex]
+        {\large \textbf{Giuseppe Capasso}} \\[1ex]
+                \small{
+            \vspace{0.1cm}
+            \textbf{Materia:} virtual-machine\\
+        }
+            \end{center}
+    \vspace{0.3cm}
+    \hrule height 0.5pt
+    \vspace{0.5cm}
+}
+
+\begin{document}
+
+\proposaltitle{Multi VM setup}
+
+\section{Multi VM setup}\label{multi-vm-setup}
+
+\subsection{Description}\label{description}
+
+In this activity, you will learn how to make two different virtual
+machines communicate.
+
+You will create a dedicated virtual network on your hypervisor and
+attach both virtual machines to it.
+
+\subsection{Virtual Box}\label{virtual-box}
+
+If you have Virtual Box as your hypervisor, you will need to go into
+\texttt{Files\ -\textgreater{}\ Tools\ -\textgreater{}\ Network\ tools}
+and create a new host network by clicking on the \texttt{New} button.
+
+Network Settings
+
+Once you click on \texttt{New}, a new network will be created with a
+dedicated IP LAN and a DHCP. Now you can use this network to make all
+your virtual machines to communicate.
+
+\subsection{Attaching Host to the created
+VM}\label{attaching-host-to-the-created-vm}
+
+\paragraph{Metasploitable}\label{metasploitable}
+
+For Metasploitable2 is simple: just go into settings and choose from the
+current NIC (it's not needed to enable a new one).
+
+IPv4 settings
+
+Reboot the virtual machine and now it should have an IP from the virtual
+network you created.
+
+\subsubsection{Kali Linux}\label{kali-linux}
+
+For example, if you want to attach Kali Linux to the new Network, go
+into VM settings, enable an extra adapter and choose the
+\texttt{vboxnet0}.
+
+Kali Network Settings
+
+When you enable an extra NIC, you will likely have to configure it (by
+default Kali configures only the first NIC). Start the virtual machine
+and enable the connection like in the pictures below.
+
+First, go to \texttt{Advanced\ Network\ Settings} and create a new
+Profile.
+
+Advanced Network Settings
+
+Choose Ethernet when asked.
+\includegraphics[width=5.83333in,height=3.03999in]{media/rId35.png}
+
+Select \texttt{eth1} for the device.
+\includegraphics[width=5.83333in,height=3.03999in]{media/rId38.png}
+
+Make sure, DHCP is enabled.
+\includegraphics[width=5.83333in,height=3.03999in]{media/rId41.png}
+
+\subsection{Result}\label{result}
+
+Now you have two virtual machines in the same virtual network and you
+can make practice on your own!
+
+Here it is the result of nmap from Kali Linux in the virtual network
+created.
+
+Nmap result
+
+\end{document}

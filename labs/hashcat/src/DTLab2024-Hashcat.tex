@@ -1,0 +1,296 @@
+\documentclass[11pt,a4paper]{article}
+
+% --- Packages ---
+\usepackage[margin=.75in]{geometry}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern} % Fix for font not found error
+\usepackage{titlesec}
+\usepackage{enumitem}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{fancyhdr}
+\usepackage{comment}
+\usepackage{cleveref}
+\usepackage[bottom]{footmisc}
+\usepackage{graphicx}
+\usepackage{longtable}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{calc}
+\usepackage{etoolbox}
+
+% Standard Pandoc setup
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+
+\crefformat{section}{\S#2#1#3}
+\crefformat{subsection}{\S#2#1#3}
+\crefformat{subsubsection}{\S#2#1#3}
+\crefformat{figure}{#2Figure~#1#3}
+\crefformat{footnote}{#2\footnotemark[#1]#3}
+
+\linespread{0.9} % Riduce lo spazio tra le linee
+
+% --- Colors ---
+\definecolor{primary}{RGB}{0, 0, 0}
+\definecolor{links}{HTML}{0000EE}
+\definecolor{blue}{HTML}{26428B}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=links,
+    urlcolor=links,
+    citecolor=links,
+}
+
+% --- Section Formatting ---
+\titleformat{\section}
+  {\normalfont\Large\bfseries\color{blue}}{\thesection}{1em}{}
+\titleformat{\subsection}
+{\normalfont\large\bfseries\color{blue}}{\thesubsection}{1em}{}
+\titleformat{\subsubsection}
+{\normalfont\bfseries\color{blue}}{\thesubsubsection}{1em}{}
+
+% --- Header and Footer ---
+\pagestyle{fancy}
+\fancyhead[L]{\small Giuseppe Capasso}
+\fancyhead[R]{\small hashcat}
+\fancyfoot[C]{\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+
+% --- Custom Title Command ---
+\newcommand{\proposaltitle}[1]{
+    \begin{center}
+        \vspace*{0.1cm}
+        {\LARGE \bfseries \color{blue} #1} \\[1.5ex]
+        {\large \textbf{Giuseppe Capasso}} \\[1ex]
+                \small{
+            \vspace{0.1cm}
+            \textbf{Materia:} hashcat\\
+        }
+            \end{center}
+    \vspace{0.3cm}
+    \hrule height 0.5pt
+    \vspace{0.5cm}
+}
+
+\begin{document}
+
+\proposaltitle{Password Cracking with Hashcat Lab}
+
+\section{Password Cracking with Hashcat
+Lab}\label{password-cracking-with-hashcat-lab}
+
+\subsection{Introduction}\label{introduction}
+
+In this lab, you will learn how to use Hashcat, a powerful password
+recovery tool, to crack password hashes. Hashcat supports many hash
+types and comes with various attack modes. This exercise will give you
+practical experience with password cracking techniques in a controlled
+environment.
+
+\subsection{Objectives}\label{objectives}
+
+\begin{itemize}
+\tightlist
+\item
+  Understand how to use Hashcat to crack password hashes.
+\item
+  Learn about different hash types and Hashcat attack modes.
+\end{itemize}
+
+\subsection{Prerequisites}\label{prerequisites}
+
+\begin{itemize}
+\tightlist
+\item
+  Basic knowledge of command line interface (CLI) usage.
+\item
+  Access to a computer with Kali Linux installed.
+\end{itemize}
+
+\subsection{Required Tools}\label{required-tools}
+
+\begin{itemize}
+\tightlist
+\item
+  Kali Linux
+\item
+  Hashcat (pre-installed on Kali Linux)
+\end{itemize}
+
+\subsection{Lab Setup}\label{lab-setup}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\item
+  \textbf{Start your Kali Linux environment.} Ensure that you have
+  administrative access.
+\item
+  \textbf{Open your terminal.} You will perform most of the tasks in
+  this terminal.
+\end{enumerate}
+
+\subsection{Lab Tasks}\label{lab-tasks}
+
+\subsubsection{Task 1: Identifying the Hash
+Type}\label{task-1-identifying-the-hash-type}
+
+Before you can begin cracking a hash, you need to identify what type of
+hash it is. Use the \texttt{hash-identifier} tool that comes with Kali
+Linux or refer to online resources to identify your hash type.
+
+\textbf{Example Command:}
+
+\begin{verbatim}
+ hash-identifier 5f4dcc3b5aa765d61d8327deb882cf99
+\end{verbatim}
+
+\subsubsection{Task 2: Prepare a Password
+List}\label{task-2-prepare-a-password-list}
+
+For successful password cracking with Hashcat, you will need a list of
+potential passwords, commonly referred to as a ``wordlist.'' Kali Linux
+comes equipped with several wordlists, including the widely used
+\texttt{rockyou.txt}.
+
+\textbf{Steps to prepare your password list:}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  \textbf{Locate the Wordlist:} Kali Linux stores its wordlists in the
+  \texttt{/usr/share/wordlists/} directory. For this task, we will use
+  \texttt{rockyou.txt}, which is a comprehensive list of commonly used
+  passwords.
+\end{enumerate}
+
+\begin{itemize}
+\item
+  \textbf{Command to locate} \texttt{rockyou.txt}\textbf{:}
+
+\begin{verbatim}
+ls /usr/share/wordlists/
+\end{verbatim}
+\end{itemize}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\setcounter{enumi}{1}
+\tightlist
+\item
+  Is the file there? You should see something like this:
+\end{enumerate}
+
+\begin{itemize}
+\tightlist
+\item
+  ┌──(kali㉿kali)-{[}\textasciitilde{]} └─\$ ls /usr/share/wordlists -lh
+  total 51M lrwxrwxrwx 1 root root 26 Mar 25 10:18 amass -\textgreater{}
+  /usr/share/amass/wordlists lrwxrwxrwx 1 root root 25 Mar 25 10:18 dirb
+  -\textgreater{} /usr/share/dirb/wordlists lrwxrwxrwx 1 root root 30
+  Mar 25 10:18 dirbuster -\textgreater{} /usr/share/dirbuster/wordlists
+  lrwxrwxrwx 1 root root 35 Mar 25 10:18 dnsmap.txt -\textgreater{}
+  /usr/share/dnsmap/wordlist\_TLAs.txt lrwxrwxrwx 1 root root 41 Mar 25
+  10:18 fasttrack.txt -\textgreater{}
+  /usr/share/set/src/fasttrack/wordlist.txt lrwxrwxrwx 1 root root 45
+  Mar 25 10:18 fern-wifi -\textgreater{}
+  /usr/share/fern-wifi-cracker/extras/wordlists lrwxrwxrwx 1 root root
+  28 Mar 25 10:18 john.lst -\textgreater{} /usr/share/john/password.lst
+  lrwxrwxrwx 1 root root 27 Mar 25 10:18 legion -\textgreater{}
+  /usr/share/legion/wordlists lrwxrwxrwx 1 root root 46 Mar 25 10:18
+  metasploit -\textgreater{}
+  /usr/share/metasploit-framework/data/wordlists lrwxrwxrwx 1 root root
+  41 Mar 25 10:18 nmap.lst -\textgreater{}
+  /usr/share/nmap/nselib/data/passwords.lst -rw-r--r-- 1 root root 51M
+  May 12 2023 rockyou.txt.gz lrwxrwxrwx 1 root root 39 Mar 25 10:18
+  sqlmap.txt -\textgreater{} /usr/share/sqlmap/data/txt/wordlist.txt
+  lrwxrwxrwx 1 root root 25 Mar 25 10:18 wfuzz -\textgreater{}
+  /usr/share/wfuzz/wordlist lrwxrwxrwx 1 root root 37 Mar 25 10:18
+  wifite.txt -\textgreater{} /usr/share/dict/wordlist-probable.txt
+\end{itemize}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\setcounter{enumi}{2}
+\tightlist
+\item
+  You need to decompress it:
+\end{enumerate}
+
+\begin{itemize}
+\item
+\begin{verbatim}
+  sudo gzip -d /usr/share/wordlists/rockyou.txt.gz
+      ```
+
+  Note: If the file is already decompressed, this step can be skipped. You can check if it exists in uncompressed form by using the ls command.
+  After decompressing the file, ensure it is ready for use by checking its content.
+  ```bash
+  head /usr/share/wordlists/rockyou.txt
+\end{verbatim}
+\end{itemize}
+
+\subsubsection{Task 3: Cracking the
+Hash}\label{task-3-cracking-the-hash}
+
+Now that you have identified the type of hash and prepared a wordlist,
+you're ready to use Hashcat to attempt to crack the hash. Follow the
+steps below to properly configure and execute Hashcat.
+
+\paragraph{Step 1: Prepare the Hash
+File}\label{step-1-prepare-the-hash-file}
+
+To begin, you'll need to place the hash you want to crack into a text
+file. Make sure the hash format is compatible with the hash type you
+identified in Task 1.
+
+\textbf{Example Command to Create a Hash File:}
+
+\begin{verbatim}
+echo "5f4dcc3b5aa765d61d8327deb882cf99" > hash.txt
+\end{verbatim}
+
+\subsubsection{Step 2: Choose the Right Hashcat
+Mode}\label{step-2-choose-the-right-hashcat-mode}
+
+Identifying the correct mode is crucial for effectively using Hashcat to
+crack a hash. Hashcat modes are specific to the type of hash you are
+dealing with. The mode tells Hashcat how to properly interpret the hash
+and what algorithm to use for cracking it.
+
+\textbf{How to Choose the Mode:}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\item
+  \textbf{Refer to Hashcat's Mode List:} Hashcat documentation provides
+  a complete list of modes for va
+\item
+  **Identify your hash type Recall the hash type you identified in Task
+  1. Use this information to find the corresponding mode in the Hashcat
+  list.
+\end{enumerate}
+
+\begin{verbatim}
+hashcat --help | grep -i md5
+\end{verbatim}
+
+The output will show the mode number for MD5 hashes, typically 0. This
+mode number is what you will use in the Hashcat command to crack the MD5
+hash. Once you have identified the correct mode number from the list,
+note it down as you will need to specify this mode in your Hashcat
+command line to ensure that Hashcat processes the hash correctly.
+
+\paragraph{Crack it!}\label{crack-it}
+
+If you are cracking an MD5 has, you should use mode 0. Your hashcat
+command will look like this:
+
+\begin{verbatim}
+hashcat -m 0 hash.txt /usr/share/wordlists/rockyou.txt
+\end{verbatim}
+
+\end{document}

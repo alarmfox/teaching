@@ -1,0 +1,136 @@
+\documentclass[11pt,a4paper]{article}
+
+% --- Packages ---
+\usepackage[margin=.75in]{geometry}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern} % Fix for font not found error
+\usepackage{titlesec}
+\usepackage{enumitem}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{fancyhdr}
+\usepackage{comment}
+\usepackage{cleveref}
+\usepackage[bottom]{footmisc}
+
+\crefformat{section}{\S#2#1#3}
+\crefformat{subsection}{\S#2#1#3}
+\crefformat{subsubsection}{\S#2#1#3}
+\crefformat{figure}{#2Figure~#1#3}
+\crefformat{footnote}{#2\footnotemark[#1]#3}
+
+\linespread{0.9} % Riduce lo spazio tra le linee
+
+% --- Colors ---
+\definecolor{primary}{RGB}{0, 0, 0}
+\definecolor{links}{HTML}{0000EE}
+\definecolor{blue}{HTML}{26428B}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=links,
+    urlcolor=links,
+    citecolor=links,
+}
+
+% --- Section Formatting ---
+\titleformat{\section}
+  {\normalfont\Large\bfseries\color{blue}}{\thesection}{1em}{}
+\titleformat{\subsection}
+{\normalfont\large\bfseries\color{blue}}{\thesubsection}{1em}{}
+\titleformat{\subsubsection}
+{\normalfont\bfseries\color{blue}}{\thesubsubsection}{1em}{}
+
+% --- Header and Footer ---
+\pagestyle{fancy}
+\fancyhead[L]{\small Giuseppe Capasso}
+\fancyhead[R]{\small Programmazione e Tecnologie per il Web}
+\fancyfoot[C]{\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+
+% --- Custom Title Command ---
+\newcommand{\proposaltitle}[1]{
+    \begin{center}
+        \vspace*{0.1cm}
+        {\LARGE \bfseries \color{blue} #1} \\[1.5ex]
+        {\large \textbf{Giuseppe Capasso}} \\[1ex]
+        \small{
+            \vspace{0.1cm}
+            \textbf{Tipologia:} Corso ITS\\
+            \textbf{Materia:} Programmazione e Tecnologie Web\\ 
+        }
+    \end{center}
+    \vspace{0.3cm}
+    \hrule height 0.5pt
+    \vspace{0.5cm}
+}
+
+\begin{document}
+
+\proposaltitle{Syllabus: Programmazione e Tecnologie Web}
+
+\noindent
+\textbf{Durata totale:} 35 ore (7 lezioni da 5 ore)\\
+\textbf{Obiettivo del corso:} Fornire una panoramica completa sul funzionamento del web moderno, rendendo gli studenti capaci di sviluppare e distribuire applicazioni web end-to-end, comprendendo architetture, protocolli e interfacce.
+
+\section*{Prerequisiti}
+\begin{itemize}[label=\textbullet]
+    \item Concetti base sulle reti di calcolatori (indirizzi IP, porte, concetto di rete).
+    \item Logica di programmazione di base (variabili, cicli, condizioni, funzioni).
+\end{itemize}
+
+\section*{Struttura del Corso}
+
+\subsection*{Lezione 1: Fondamenti del Web e Setup dell'Ambiente}
+\textbf{Obiettivo:} Comprendere come viaggiano i dati sul web, configurare gli strumenti di lavoro e scrivere le prime righe di codice frontend.
+\begin{itemize}
+    \item \textbf{Teoria (2 ore):} Il modello architetturale Client-Server: ruoli del Frontend e del Backend. Il protocollo HTTP: cos'è, come funziona (Request/Response), concetti di URL e DNS.
+    \item \textbf{Setup e Strumenti (1 ora):} Installazione e configurazione dell'ambiente: Visual Studio Code. Controllo di versione: concetti base di Git. Uso consapevole degli assistenti AI per la programmazione.
+    \item \textbf{Laboratorio Pratico (2 ore):} Introduzione pratica a HTML (struttura semantica), CSS (selettori e styling base) e JavaScript (interazione col DOM). \textit{Esercizio:} Creazione di una semplice pagina web interattiva.
+\end{itemize}
+
+\subsection*{Lezione 2: Il Web Statico vs Dinamico e la Logica Client-Side}
+\textbf{Obiettivo:} Differenziare le tipologie di siti web e imparare a gestire lo stato e i dati direttamente nel browser.
+\begin{itemize}
+    \item \textbf{Teoria (1.5 ore):} Siti statici vs Siti dinamici (Server-Side Rendering vs Client-Side Rendering): Introduzione ai generatori di siti statici (SSG).
+    \item \textbf{Laboratorio Pratico - Parte 1 (1 ore):} Generazione di un sito web statico utilizzando \textbf{Hugo}. Come strutturare i contenuti e compilare il sito.
+    \item \textbf{Laboratorio Pratico - Parte 2 (2.5 ore):} \textit{Esercizio guidato:} Creazione di una Todo App "Client-Only" (HTML/CSS/JS). Implementazione del paradigma CRUD (Create, Read, Update, Delete) utilizzando il DOM e salvando i dati nel \texttt{localStorage} del browser.
+\end{itemize}
+
+\subsection*{Lezione 3: Il Backend e le API RESTful}
+\textbf{Obiettivo:} Spostare il focus sul server, imparando a far comunicare sistemi diversi e comprendendo i concetti di sicurezza base.
+\begin{itemize}
+    \item \textbf{Teoria (2 ore):} Cosa significa "fare backend". Le API (Application Programming Interface): cosa sono e perché sono il collante del web. Principi delle REST API: Metodi HTTP (GET, POST, PUT, DELETE), status code, e formato JSON. Autenticazione: Basic, Bearer Token (JWT), OAuth.
+    \item \textbf{Laboratorio Pratico (3 ore):} Utilizzo di \textbf{Postman} per esplorare e testare API esistenti. Utilizzo di Python per effettuare richieste HTTP (libreria \texttt{requests}). \textit{Esercizio:} Interazione con le API di \textbf{Webex}. Creazione di un semplice script Python che invia messaggi tramite un Bot Webex sfruttando un Bearer Token.
+\end{itemize}
+
+\subsection*{Lezione 4: Sviluppare il proprio Backend}
+\textbf{Obiettivo:} Scrivere un server personalizzato, esporre le proprie API e connetterle al frontend precedentemente creato.
+\begin{itemize}
+    \item \textbf{Teoria (1 ora):} Architettura di un server web in Python (Flask) e JavaScript (Express.js). Cenni sui framework moderni e architetture enterprise (es. FastAPI, Django, Spring Boot).
+    \item \textbf{Laboratorio Pratico (4 ore):} Setup di un server backend semplice in Python (Flask) o Node.js (Express) per gestire i Todo. Implementazione dei selettori API REST per il CRUD dei task. Aggiunta di un sistema di autenticazione base (es. verifica di un token statico o basic auth) per proteggere le rotte. \textit{Integrazione:} Trasformazione della Todo App della Lezione 2 in un'applicazione Client-Server. Il frontend ora chiama le API del nostro backend tramite \texttt{fetch()}.
+\end{itemize}
+
+\subsection*{Lezione 5: I Framework Frontend Moderni (CSR vs SSR)}
+\textbf{Obiettivo:} Capire perché e come si usano i framework JavaScript moderni per gestire applicazioni complesse.
+\begin{itemize}
+    \item \textbf{Teoria (1.5 ore):} L'evoluzione del frontend: perché jQuery non bastava più. Il problema della manipolazione del DOM. Il concetto di Single Page Application (SPA) e Componenti. Panoramica su React, Angular e Vue.
+    \item \textbf{Laboratorio Pratico (3.5 ore):} Introduzione a React e al framework \textbf{Next.js} (fondamenti). Gestione dello stato in React (\texttt{useState}, \texttt{useEffect}). \textit{Esercizio:} Riscrittura del frontend della Todo App utilizzando React/Next.js e connessione al backend (sviluppato nella lezione 4).
+\end{itemize}
+
+\subsection*{Lezione 6: Il Web Real-Time e Multimediale}
+\textbf{Obiettivo:} Superare il paradigma request/response esplorando le tecnologie per la comunicazione in tempo reale.
+\begin{itemize}
+    \item \textbf{Teoria (1.5 ore):} Limiti dell'HTTP standard per il real-time (polling vs connessioni persistenti). Il protocollo \textbf{WebSocket}: comunicazione bidirezionale full-duplex. Cenni teorici su \textbf{WebRTC} (Web Real-Time Communication) per lo streaming audio/video peer-to-peer.
+    \item \textbf{Laboratorio Pratico (3.5 ore):} Implementazione di un server WebSocket (es. con Socket.io o librerie standard Python/Node). \textit{Esercizio:} Costruzione di una piccola applicazione di chat testuale di gruppo in tempo reale. Integrazione base di flussi video utilizzando le API HTML5 della fotocamera/microfono.
+\end{itemize}
+
+\subsection*{Lezione 7: Il Futuro del Web e Verifica Finale}
+\textbf{Obiettivo:} Concludere il corso con uno sguardo alle tecnologie emergenti e valutare le competenze acquisite.
+\begin{itemize}
+    \item \textbf{Teoria (4 ore):} L'evoluzione dei protocolli: problemi di HTTP/1.1. Caratteristiche e vantaggi di \textbf{HTTP/2} (multiplexing, server push). Introduzione a \textbf{HTTP/3} e al protocollo \textbf{QUIC} (basato su UDP): come riducono la latenza e migliorano le performance su reti mobili. Alternative a JavaScript: WebAssembly (WASM).
+    \item \textbf{Test Finale (1 ora):} Somministrazione test finale.
+\end{itemize}
+
+\end{document}

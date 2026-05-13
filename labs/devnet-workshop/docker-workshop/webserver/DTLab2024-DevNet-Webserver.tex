@@ -1,0 +1,160 @@
+\documentclass[11pt,a4paper]{article}
+
+% --- Packages ---
+\usepackage[margin=.75in]{geometry}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern} % Fix for font not found error
+\usepackage{titlesec}
+\usepackage{enumitem}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{fancyhdr}
+\usepackage{comment}
+\usepackage{cleveref}
+\usepackage[bottom]{footmisc}
+\usepackage{graphicx}
+\usepackage{longtable}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{calc}
+\usepackage{etoolbox}
+
+% Standard Pandoc setup
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+
+\crefformat{section}{\S#2#1#3}
+\crefformat{subsection}{\S#2#1#3}
+\crefformat{subsubsection}{\S#2#1#3}
+\crefformat{figure}{#2Figure~#1#3}
+\crefformat{footnote}{#2\footnotemark[#1]#3}
+
+\linespread{0.9} % Riduce lo spazio tra le linee
+
+% --- Colors ---
+\definecolor{primary}{RGB}{0, 0, 0}
+\definecolor{links}{HTML}{0000EE}
+\definecolor{blue}{HTML}{26428B}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=links,
+    urlcolor=links,
+    citecolor=links,
+}
+
+% --- Section Formatting ---
+\titleformat{\section}
+  {\normalfont\Large\bfseries\color{blue}}{\thesection}{1em}{}
+\titleformat{\subsection}
+{\normalfont\large\bfseries\color{blue}}{\thesubsection}{1em}{}
+\titleformat{\subsubsection}
+{\normalfont\bfseries\color{blue}}{\thesubsubsection}{1em}{}
+
+% --- Header and Footer ---
+\pagestyle{fancy}
+\fancyhead[L]{\small Giuseppe Capasso}
+\fancyhead[R]{\small devnet-workshop}
+\fancyfoot[C]{\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+
+% --- Custom Title Command ---
+\newcommand{\proposaltitle}[1]{
+    \begin{center}
+        \vspace*{0.1cm}
+        {\LARGE \bfseries \color{blue} #1} \\[1.5ex]
+        {\large \textbf{Giuseppe Capasso}} \\[1ex]
+                \small{
+            \vspace{0.1cm}
+            \textbf{Materia:} devnet-workshop\\
+        }
+            \end{center}
+    \vspace{0.3cm}
+    \hrule height 0.5pt
+    \vspace{0.5cm}
+}
+
+\begin{document}
+
+\proposaltitle{A Python web-server with Docker}
+
+\section{A Python web-server with
+Docker}\label{a-python-web-server-with-docker}
+
+\subsection{Goal}\label{goal}
+
+We want to deploy a web server application using Docker.
+
+\subsubsection{Integrated web-server}\label{integrated-web-server}
+
+Did you know? Python already has an integrated web server. We can run a
+web server by running the command:
+
+\begin{verbatim}
+python -m http.server 3000
+\end{verbatim}
+
+Let's put it in a Docker container. So we need a Dockerfile
+
+\begin{verbatim}
+FROM python:3.10.14-bookworm
+
+WORKDIR /
+
+CMD [ "python", "-m", "http.server", "3000" ]
+\end{verbatim}
+
+Build the image
+
+\begin{verbatim}
+docker build -t dtlab-simple-webserver .
+\end{verbatim}
+
+Run the container
+
+\begin{verbatim}
+docker run -p 3000:3000 dtlab-simple-webserver:latest
+\end{verbatim}
+
+\textbf{STOP and THINK}: what does \texttt{-p} flag do?
+
+\subsection{Now it's your turn}\label{now-its-your-turn}
+
+\subsubsection{Scenario}\label{scenario}
+
+You are working as a DevOps engineer and you need to deploy an website.
+The developer used Python and sends you a Github link. Code can be found
+at this \href{https://github.com/alarmfox/dtlab-website}{link}.
+
+Click on the \texttt{code} button and dowload the directory as a ZIP.
+\includegraphics[width=5.83333in,height=2.89838in]{media/rId23.png}
+
+You need to: * Download the source code from Github; * Create a
+Dockerfile; * Running the application as a Docker container on your PC;
+
+\paragraph{Downloading code from
+Github}\label{downloading-code-from-github}
+
+You can simply donwload someone's code from Github, by downloading a
+ZIP. The code has 3 files: 1. \texttt{main.py}: a python script acting
+as a webserver; 2. \texttt{index.html}: the entrypoint for every
+website; 3. \texttt{requirements.txt}: a list of libraries the developer
+used;
+
+\paragraph{Creating the Dockerfile}\label{creating-the-dockerfile}
+
+The Dockerfile is similar to the previous one, but we need to
+\textbf{COPY} also the files \texttt{index.html} and
+\texttt{requirements.txt}. Also we need to and a \textbf{RUN} command to
+install the libraries from the \texttt{requirements.txt} file.
+
+\paragraph{Running the application}\label{running-the-application}
+
+Like the previous example you can the application by using the
+\texttt{docker\ run} command.
+
+\textbf{DOES IT WORK?} If not, why? Try to inspect the python script and
+see if you see an error! You can fix it and re-build the image!
+
+\end{document}

@@ -1,0 +1,145 @@
+\documentclass[11pt,a4paper]{article}
+
+% --- Packages ---
+\usepackage[margin=.75in]{geometry}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern} % Fix for font not found error
+\usepackage{titlesec}
+\usepackage{enumitem}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{fancyhdr}
+\usepackage{comment}
+\usepackage{cleveref}
+\usepackage[bottom]{footmisc}
+\usepackage{graphicx}
+\usepackage{longtable}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{calc}
+\usepackage{etoolbox}
+
+% Standard Pandoc setup
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+
+\crefformat{section}{\S#2#1#3}
+\crefformat{subsection}{\S#2#1#3}
+\crefformat{subsubsection}{\S#2#1#3}
+\crefformat{figure}{#2Figure~#1#3}
+\crefformat{footnote}{#2\footnotemark[#1]#3}
+
+\linespread{0.9} % Riduce lo spazio tra le linee
+
+% --- Colors ---
+\definecolor{primary}{RGB}{0, 0, 0}
+\definecolor{links}{HTML}{0000EE}
+\definecolor{blue}{HTML}{26428B}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=links,
+    urlcolor=links,
+    citecolor=links,
+}
+
+% --- Section Formatting ---
+\titleformat{\section}
+  {\normalfont\Large\bfseries\color{blue}}{\thesection}{1em}{}
+\titleformat{\subsection}
+{\normalfont\large\bfseries\color{blue}}{\thesubsection}{1em}{}
+\titleformat{\subsubsection}
+{\normalfont\bfseries\color{blue}}{\thesubsubsection}{1em}{}
+
+% --- Header and Footer ---
+\pagestyle{fancy}
+\fancyhead[L]{\small Giuseppe Capasso}
+\fancyhead[R]{\small virtual-machine}
+\fancyfoot[C]{\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+
+% --- Custom Title Command ---
+\newcommand{\proposaltitle}[1]{
+    \begin{center}
+        \vspace*{0.1cm}
+        {\LARGE \bfseries \color{blue} #1} \\[1.5ex]
+        {\large \textbf{Giuseppe Capasso}} \\[1ex]
+                \small{
+            \vspace{0.1cm}
+            \textbf{Materia:} virtual-machine\\
+        }
+            \end{center}
+    \vspace{0.3cm}
+    \hrule height 0.5pt
+    \vspace{0.5cm}
+}
+
+\begin{document}
+
+\proposaltitle{Setup a linux virtual machine}
+
+\section{Setup a linux virtual
+machine}\label{setup-a-linux-virtual-machine}
+
+We will be using \href{https://www.kali.org/}{Kali Linux} for the
+cybersecurity class. Any other linux environment will be fine (feel free
+to reach out if you encounter any issues with software we use during
+practical labs).
+
+If you have already a linux machine skip the installation phase.
+
+\subsection{Download ISO}\label{download-iso}
+
+Get your Kali Linux ISO
+\href{https://www.kali.org/get-kali/\#kali-installer-images}{here}.
+
+Kali
+
+\subsubsection{Hypervisor setup}\label{hypervisor-setup}
+
+Now you need an hypervisor (something that runs virtual machines). We
+will use Virtual Box which can be download from the
+\href{https://www.virtualbox.org/wiki/Downloads}{official site} (most
+likely you will have to download the Windows Hosts version.)
+\includegraphics[width=5.83333in,height=2.83772in]{media/rId26.png}
+
+Create a new virtual machine, as in pictures.
+\includegraphics[width=4.16667in,height=2.77778in]{media/rId29.webp}
+
+Give it a name and select the ISO you just downloaded.
+\includegraphics[width=5.83333in,height=2.24121in]{media/rId32.png}
+
+Finally, give it at least 2GB ram and 2CPUs and start the installation!
+
+\subsubsection{Installation guide}\label{installation-guide}
+
+Installation is very simple. Just follow the instructions!
+
+First, you will see a screen like this:
+
+Create VM
+
+Choose graphical install and go on, you will be asked for general
+informations about languages and to create a user (provide username and
+password).
+
+Create VM
+
+Create a simple partition scheme and confirm choices (select
+\texttt{yes}):
+
+\includegraphics[width=5.83333in,height=4.375in]{media/rId42.png}
+\includegraphics[width=5.83333in,height=4.375in]{media/rId45.png}
+
+Leave blank here and click \texttt{Continue}:
+\includegraphics[width=5.83333in,height=4.375in]{media/rId48.png}
+
+Select default option for installation:
+
+Create VM
+
+When the installation end, you should reboot in your new virtual
+machine.
+
+\end{document}

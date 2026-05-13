@@ -1,0 +1,613 @@
+\documentclass[11pt,a4paper]{report}
+
+% --- Pacchetti Fondamentali ---
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage[italian]{babel}
+\usepackage{etoolbox}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage{enumitem}
+\usepackage{titlesec}
+\usepackage{fancyhdr}
+\usepackage{hyperref}
+\usepackage{cleveref}
+
+\crefformat{section}{\S#2#1#3}
+\crefformat{subsection}{\S#2#1#3}
+\crefformat{subsubsection}{\S#2#1#3}
+\crefformat{figure}{#2Figura~#1#3}
+\crefformat{footnote}{#2\footnotemark[#1]#3}
+\crefformat{table}{#2Tabella~#1#3}
+
+% --- Configurazione Header e Footer ---
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small Programmazione e Tecnologie Web}
+\fancyhead[R]{\small Giuseppe Capasso}
+\fancyfoot[C]{\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta, positioning, shapes.geometric, decorations.pathreplacing}
+
+% --- Configurazione Colori e Link ---
+\definecolor{primary}{RGB}{38, 66, 139} % Blu scuro istituzionale
+\definecolor{codebg}{RGB}{245, 245, 245}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=primary,
+    urlcolor=primary,
+    citecolor=primary,
+}
+
+% --- Configurazione Formattazione Codice ---
+\lstset{
+    backgroundcolor=\color{codebg},
+    basicstyle=\ttfamily\small,
+    breaklines=true,
+    frame=single,
+    rulecolor=\color{lightgray},
+    captionpos=b,
+    xleftmargin=1em,
+    xrightmargin=1em
+}
+
+% --- Formattazione Titoli ---
+\titleformat{\chapter}[display]
+  {\normalfont\bfseries\color{primary}}{\huge Capitolo \thechapter}{1ex}{\Huge}
+\titlespacing*{\chapter}{0pt}{-20pt}{40pt}
+
+\begin{document}
+
+% --- Frontespizio ---
+\begin{titlepage}
+    \centering
+    \vspace*{4cm}
+    {\Huge \textbf{\color{primary} Programmazione e Tecnologie Web}} \\[1.5cm]
+    {\Large \textbf{Dispense del Corso - Lezione 1}} \\[0.5cm]
+    {\large Docente: Giuseppe Capasso} \\[1.5cm]
+    {\normalsize \textbf{Cloud Native Development \& Cybersecurity Specialist}} \\
+    {\normalsize Istituto Tecnico Superiore (ITS)} \\
+    \vfill
+    {\normalsize Anno Accademico 2025/2026}
+\end{titlepage}
+
+\tableofcontents
+\newpage
+
+% ==========================================
+% CAPITOLO 1
+% ==========================================
+\chapter*{Introduzione al Corso e Strumenti di Sviluppo}
+\addcontentsline{toc}{chapter}{Introduzione al Corso e Strumenti di Sviluppo}
+
+\section{Obiettivi del Corso}
+Oltre ai singoli traguardi di ogni lezione, il corso si pone l'obiettivo di portarvi a costruire progetti concreti che simulino scenari reali di sviluppo web:
+\begin{itemize}
+    \item \textbf{Todo Application}: Svilupperemo una completa applicazione per la gestione dei compiti. Questo sarà il nostro banco di prova per imparare il paradigma \textbf{CRUD} (Create, Read, Update, Delete), ovvero le quattro operazioni fondamentali di ogni software che gestisce dati.
+    \item \textbf{Chat Application}: Concluderemo il percorso realizzando una piccola applicazione di chat in tempo reale. Questo ci permetterà di esplorare tecnologie avanzate che vanno oltre il semplice modello richiesta-risposta, affrontando il tema della comunicazione bidirezionale.
+\end{itemize}
+
+\section{Obiettivi della Lezione}
+Lo scopo di questo corso è fornire le competenze necessarie per comprendere, progettare e sviluppare applicazioni web complete (end-to-end). Il livello di partenza assume una conoscenza basilare della logica di programmazione, ma esploreremo da zero l'ecosistema web. 
+
+Oggi, un'applicazione web non è più una semplice vetrina di documenti testuali (come era negli anni '90), ma un software complesso e interattivo distribuito su una rete. In questo primo capitolo, definiremo il perimetro di azione di uno sviluppatore e inizieremo il nostro percorso.
+
+% ==========================================
+% CAPITOLO 2
+% ==========================================
+\chapter{L'Architettura del Web e il Modello Client-Server}
+
+\section{Il Modello Architetturale Client-Server}
+Internet è un'enorme rete di calcolatori interconnessi. Il Web, che è uno dei servizi che "girano" su Internet, si basa quasi interamente sull'architettura \textbf{Client-Server}. Si tratta di un modello distribuito in cui i ruoli sono asimmetrici (si veda la \cref{fig:client_server}):
+
+\begin{itemize}
+    \item \textbf{Il Client:} È il dispositivo (o meglio, il software su quel dispositivo) che \textit{richiede} una risorsa o un servizio. Nel nostro contesto, il client per eccellenza è il \textbf{Browser web} (Chrome, Firefox, Safari). Il client è la parte "attiva" della comunicazione: avvia sempre la conversazione.
+    \item \textbf{Il Server:} È un computer (o un programma in esecuzione su di esso) sempre acceso e in ascolto, in attesa di ricevere richieste. Quando ne riceve una, la elabora e fornisce una \textit{risposta}. Server web famosi sono Apache, Nginx o applicazioni scritte in Express/Flask.
+\end{itemize}
+La regola fondamentale è: \textbf{Il server non invia mai dati al client senza che questi siano stati esplicitamente richiesti.}
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[node distance=4cm, every node/.style={rectangle, draw, rounded corners, minimum width=3cm, minimum height=1.5cm, align=center, line width=1pt}]
+    \node (client) [fill=primary!10] {\textbf{Client} \\ (Browser)};
+    \node (server) [right=of client, fill=primary!10] {\textbf{Server} \\ (Cloud/Host)};
+    
+    \draw [->, >=stealth, line width=1.2pt, primary] ([yshift=0.3cm]client.east) -- node[above, black] {Richiesta (Request)} ([yshift=0.3cm]server.west);
+    \draw [<-, >=stealth, line width=1.2pt, primary] ([yshift=-0.3cm]client.east) -- node[below, black] {Risposta (Response)} ([yshift=-0.3cm]server.west);
+\end{tikzpicture}
+\caption{Modello architetturale Client-Server.}
+\label{fig:client_server}
+\end{figure}
+
+\section{Localizzare le Risorse: Indirizzi IP e URL}
+Affinché il client possa contattare il server corretto su scala globale, è necessario un sistema di indirizzamento. I server (così come i client) sono identificati da un \textbf{Indirizzo IP} (es. \texttt{142.250.184.46}). Tuttavia, gli IP sono difficili da memorizzare per gli esseri umani. Per questo utilizziamo le URL.
+
+Un \textbf{URL} (Uniform Resource Locator) è una stringa che definisce in modo univoco dove si trova una risorsa e come accedervi. La struttura formale di un URL è la seguente:
+
+\begin{lstlisting}
+schema://host:porta/percorso?query_string#frammento
+\end{lstlisting}
+
+\begin{itemize}
+    \item \textbf{schema (scheme):} Indica il protocollo da utilizzare (es. \texttt{http}, \texttt{https}, \texttt{ftp}).
+    \item \textbf{host:} Il nome a dominio del server (es. \texttt{www.esempio.com}) o l'indirizzo IP.
+    \item \textbf{porta (port):} Un numero che identifica il processo logico sul server. Se omesso, si assumono le porte standard (80 per HTTP, 443 per HTTPS).
+    \item \textbf{percorso (path):} La posizione gerarchica della risorsa specifica all'interno del server (es. \texttt{/utenti/profilo.html}).
+    \item \textbf{query string:} Parametri opzionali passati alla risorsa, introdotti dal punto interrogativo \texttt{?} e separati dalla e-commerciale \texttt{\&} (es. \texttt{?id=123\&lang=it}).
+    \item \textbf{frammento (fragment):} Identifica una sezione specifica all'interno della risorsa, preceduta dall'hash \texttt{\#} (es. \texttt{\#paragrafo2}). Non viene inviato al server, è gestito dal browser.
+\end{itemize}
+
+\section{Il Sistema DNS (Domain Name System)}
+Poiché la rete instrada le comunicazioni utilizzando gli indirizzi IP numerici, ma gli utenti utilizzano nomi a dominio testuali (URL), serve un sistema di traduzione. 
+
+Il \textbf{DNS} agisce come la rubrica telefonica di Internet. Quando digiti \texttt{www.google.com} nel browser, succede quanto segue:
+\begin{enumerate}
+    \item Il browser chiede al sistema operativo se conosce già l'IP di quel dominio (cache locale).
+    \item In caso negativo, il sistema interroga un \textbf{Server DNS} (solitamente fornito dal provider di rete, o servizi pubblici come 8.8.8.8 di Google).
+    \item Il Server DNS cerca nei suoi registri il nome a dominio e restituisce al browser il corrispondente Indirizzo IP.
+    \item Solo a questo punto il browser può instaurare una connessione diretta con il server.
+\end{enumerate}
+
+\section{Il Protocollo HTTP (HyperText Transfer Protocol)}
+Una volta instaurata la connessione (tipicamente tramite TCP/IP), client e server devono comunicare utilizzando una lingua comune. Questo linguaggio è il protocollo \textbf{HTTP}.
+
+L'HTTP è un protocollo \textbf{stateless} (senza stato): ogni richiesta è totalmente indipendente dalle precedenti e dalle successive. Il server non ha memoria di default delle interazioni passate con un client (problema che risolveremo in seguito usando i Cookie e i Token).
+L'interazione HTTP è divisa strettamente in due fasi: \textbf{Richiesta} (inviata dal client) e \textbf{Risposta} (restituita dal server), come illustrato nella \cref{fig:http_cycle}. L'HTTP è un protocollo basato su testo in chiaro.
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[>=stealth, thick, node distance=3cm]
+    % Entities
+    \node (client) [rectangle, draw, fill=primary!10, minimum width=2.5cm, minimum height=1cm, line width=1pt] {Client};
+    \node (server) [rectangle, draw, fill=primary!10, minimum width=2.5cm, minimum height=1cm, right=5cm of client, line width=1pt] {Server};
+    
+    % Lifelines
+    \draw [dashed] (client.south) -- +(0,-4);
+    \draw [dashed] (server.south) -- +(0,-4);
+    
+    % Request
+    \draw [->, primary, line width=1.5pt] ([yshift=-1cm]client.south) -- node[above, black] {\textbf{HTTP Request}} node[below, black, scale=0.8] {(GET /index.html)} ([yshift=-1.5cm]server.south);
+    
+    % Processing
+    \draw [decorate, decoration={brace, amplitude=5pt}] ([xshift=0.2cm, yshift=-1.5cm]server.south) -- node[right=10pt, black, scale=0.8] {Elaborazione} ([xshift=0.2cm, yshift=-2.5cm]server.south);
+    
+    % Response
+    \draw [<-, primary, line width=1.5pt] ([yshift=-3cm]client.south) -- node[above, black] {\textbf{HTTP Response}} node[below, black, scale=0.8] {(200 OK + HTML)} ([yshift=-2.5cm]server.south);
+\end{tikzpicture}
+\caption{Ciclo di Richiesta e Risposta HTTP.}
+\label{fig:http_cycle}
+\end{figure}
+
+\subsection{Anatomia di una Richiesta HTTP}
+Una richiesta HTTP è composta da una riga iniziale, delle intestazioni (Headers) e un corpo opzionale (Body).
+
+\begin{lstlisting}[language=HTML, caption=Esempio di Richiesta HTTP cruda]
+GET /index.html?lang=it HTTP/1.1
+Host: www.esempio.com
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64)
+Accept: text/html
+Accept-Language: it-IT
+\end{lstlisting}
+
+La riga iniziale definisce:
+\begin{itemize}
+    \item \textbf{Metodo HTTP (Verbo):} Indica l'intenzione dell'operazione. I principali sono:
+    \begin{itemize}
+        \item \texttt{GET}: Richiede il recupero di una risorsa (sola lettura).
+        \item \texttt{POST}: Invia dati al server per essere elaborati o salvati (es. invio di un form).
+        \item \texttt{PUT}: Aggiorna o crea una risorsa sostituendola integralmente.
+        \item \texttt{DELETE}: Richiede l'eliminazione di una risorsa.
+    \end{itemize}
+    \item \textbf{Path:} Il percorso della risorsa richiesta (\texttt{/index.html}).
+    \item \textbf{Versione:} Es. \texttt{HTTP/1.1} o \texttt{HTTP/2}.
+\end{itemize}
+Gli \textbf{Headers} (\texttt{Host}, \texttt{User-Agent}) sono coppie chiave-valore che passano metadati aggiuntivi al server.
+
+\subsection{Anatomia di una Risposta HTTP}
+Il server risponde con un blocco di testo simile, che include lo stato dell'operazione e i dati richiesti.
+
+\begin{lstlisting}[caption=Esempio di Risposta HTTP cruda]
+HTTP/1.1 200 OK
+Date: Mon, 01 Jan 2026 10:00:00 GMT
+Content-Type: text/html; charset=UTF-8
+Content-Length: 138
+
+<!DOCTYPE html>
+<html>
+  <head><title>Benvenuto</title></head>
+  <body><h1>Ciao Mondo!</h1></body>
+</html>
+\end{lstlisting}
+
+La riga iniziale della risposta contiene lo \textbf{Status Code} (Codice di Stato), fondamentale per capire l'esito della richiesta:
+\begin{itemize}
+    \item \textbf{1xx (Informativi):} Richiesta ricevuta, elaborazione in corso.
+    \item \textbf{2xx (Successo):} L'azione è stata ricevuta, compresa e accettata con successo (es. \texttt{200 OK}, \texttt{201 Created}).
+    \item \textbf{3xx (Reindirizzamento):} È necessaria un'ulteriore azione da parte del client (es. \texttt{301 Moved Permanently}).
+    \item \textbf{4xx (Errore del Client):} La richiesta contiene una sintassi errata o non può essere soddisfatta. È colpa del browser o dell'utente (es. \texttt{400 Bad Request}, \texttt{403 Forbidden}, \texttt{404 Not Found}).
+    \item \textbf{5xx (Errore del Server):} Il server ha fallito nel soddisfare una richiesta apparentemente valida, a causa di un bug o di un crollo interno (es. \texttt{500 Internal Server Error}, \texttt{502 Bad Gateway}).
+\end{itemize}
+
+Dopo gli headers della risposta, separato da una riga vuota, si trova il \textbf{Body} (corpo), che contiene l'effettivo documento HTML, l'immagine o l'oggetto JSON richiesto.
+
+\section{Interazione con il Browser: API Sincrone vs Asincrone}
+Lo sviluppo web moderno non riguarda solo la visualizzazione di documenti, ma l'interazione dinamica con l'utente e con i dati. Il browser mette a disposizione degli sviluppatori una serie di strumenti (API) per manipolare la pagina e comunicare con l'esterno. La distinzione più importante in questo contesto è tra operazioni \textbf{Sincrone} e \textbf{Asincrone}.
+
+\subsection{API Sincrone (Blocking)}
+In un modello sincrono, le operazioni vengono eseguite una dopo l'altra. Se un'operazione richiede tempo (es. un calcolo complesso o l'attesa di un input), il "filo" dell'esecuzione (Main Thread) si ferma. Poiché il browser usa un unico thread per gestire sia il codice JavaScript che il rendering della pagina (grafica), un'operazione sincrona lenta \textbf{blocca l'interfaccia utente}.
+\begin{itemize}
+    \item \textbf{Esempio classico:} La funzione \texttt{alert()} di JavaScript. Finché l'utente non preme "OK", il browser è totalmente congelato: non puoi scorrere la pagina, cliccare pulsanti o vedere animazioni.
+    \item \textbf{Vantaggi:} Logica semplice da seguire (flusso lineare).
+    \item \textbf{Svantaggi:} Pessima esperienza utente (il sito sembra "rotto" o bloccato).
+\end{itemize}
+
+\subsection{API Asincrone (Non-blocking)}
+Le API asincrone permettono di avviare un'operazione e "mettersi in attesa" della sua conclusione senza bloccare il resto del programma. Il browser continua a rispondere ai clic dell'utente e a renderizzare la pagina, mentre l'operazione lenta (es. scaricare un'immagine o i dati di una Todo list) prosegue in background.
+\begin{itemize}
+    \item \textbf{Tecnologie chiave:} \textbf{AJAX} (Asynchronous JavaScript and XML) e la moderna API \textbf{Fetch}.
+    \item \textbf{Vantaggi:} Interfaccia sempre fluida e reattiva; possibilità di aggiornare solo parti della pagina senza ricaricarla interamente.
+    \item \textbf{Svantaggi:} Codice più complesso da gestire (necessità di usare Callback, Promises o \texttt{async/await}).
+\end{itemize}
+
+Le differenze tra questi due approcci sono visualizzate nella \cref{fig:sync_model} e nella \cref{fig:async_model}.
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[>=stealth, thick]
+    % Timeline
+    \draw [->, line width=1.5pt] (0,0) -- (0,-7) node[below] {Tempo};
+    \node at (0, 0.5) {\textbf{Main Thread}};
+
+    % Task 1
+    \node (t1) [rectangle, draw, fill=primary!15, minimum width=4.5cm, minimum height=0.8cm, align=center] at (0,-1.5) {Esecuzione Task 1};
+    
+    % Blocco
+    \node (t2) [rectangle, draw, fill=red!20, minimum width=4.5cm, minimum height=2.5cm, line width=1.5pt, align=center] at (0,-3.5) {\textbf{Task Lento (Blocking)} \\ \small es. \texttt{alert()} o calcolo pesante};
+    
+    % Task 2
+    \node (t3) [rectangle, draw, fill=primary!15, minimum width=4.5cm, minimum height=0.8cm, align=center] at (0,-6) {Esecuzione Task 2};
+
+    % Frecce di flusso
+    \draw [->, line width=1pt] (t1) -- (t2);
+    \draw [->, line width=1pt] (t2) -- (t3);
+
+    % Brace di blocco
+    \draw [decorate, decoration={brace, amplitude=10pt}, red, line width=1.5pt] (2.5, -2.25) -- (2.5, -4.75) 
+        node [midway, right=10pt, text width=4cm, font=\small\bfseries, color=red!80!black] {L'utente non può interagire, il browser è "congelato"};
+\end{tikzpicture}
+\caption{Modello di esecuzione sincrono (bloccante).}
+\label{fig:sync_model}
+\end{figure}
+
+\vspace{1cm}
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[>=stealth, thick]
+    % Timelines
+    \draw [->, line width=1.5pt] (0,0) -- (0,-7) node[below] {Tempo};
+    \node at (0, 0.5) {\textbf{Main Thread}};
+
+    \draw [->, line width=1.5pt, dashed, gray!60] (6,0) -- (6,-7) node[below, black] {Web APIs};
+    \node at (6, 0.5) {\textbf{Background}};
+
+    % Task 1
+    \node (t1) [rectangle, draw, fill=primary!15, minimum width=3.5cm, align=center] at (0,-1) {Esecuzione Task 1};
+
+    % Inizio Async
+    \node (t2a) [rectangle, draw, fill=primary!5, minimum width=3.5cm, align=center] at (0,-2.2) {Avvio Task Asincrono};
+    \draw [->, primary, line width=1.5pt] (1.8, -2.2) -- node[above, black, scale=0.8] {Delega alle Web APIs} (5.9, -2.2);
+
+    % Task 2 (prosegue)
+    \node (t3) [rectangle, draw, fill=primary!15, minimum width=3.5cm, align=center] at (0,-3.8) {Esecuzione Task 2 \\ \small (UI Reattiva)};
+
+    % API Lavora
+    \node (api) [rectangle, draw, fill=gray!15, minimum width=3cm, minimum height=2cm, align=center] at (6,-4) {Lavoro in \\ Background \\ (es. Fetch)};
+
+    % Fine Async
+    \draw [->, primary, line width=1.5pt] (5.9, -5.8) -- node[above, black, scale=0.8] {Risultato / Callback} (1.8, -5.8);
+    \node (t2b) [rectangle, draw, fill=green!15, minimum width=3.5cm, align=center] at (0,-5.8) {Gestione Risultato};
+
+    % Connessioni Main
+    \draw [->, line width=1pt] (t1) -- (t2a);
+    \draw [->, line width=1pt] (t2a) -- (t3);
+    \draw [->, line width=1pt] (t3) -- (t2b);
+\end{tikzpicture}
+\caption{Modello di esecuzione asincrono (non-bloccante).}
+\label{fig:async_model}
+\end{figure}
+
+\section{L'Evoluzione del Protocollo HTTP}
+Il protocollo HTTP non è rimasto statico nel tempo. Dalla sua nascita al CERN di Ginevra per mano di Tim Berners-Lee, si è evoluto per gestire pagine sempre più ricche di risorse (immagini, script, stili) e per ridurre i tempi di caricamento, che sono critici per l'esperienza utente.
+
+\subsection{HTTP/0.9 (1991) - The One-Line Protocol}
+Nato per scambiare semplici documenti testuali, HTTP/0.9 era un protocollo estremamente minimale. Non esisteva ancora il concetto di "multimedialità" nel web come lo intendiamo oggi; l'obiettivo era semplicemente recuperare un file di testo.
+
+\begin{itemize}
+    \item \textbf{Semplicità assoluta:} La richiesta era composta da una sola riga: \texttt{GET /file.html}.
+    \item \textbf{Senza Metadati:} Non esistevano intestazioni (headers), quindi il server non poteva inviare informazioni extra come il tipo di file o la data.
+    \item \textbf{Solo HTML:} Il protocollo poteva trasferire solo documenti HTML.
+\end{itemize}
+
+\subsection{HTTP/1.0 (1996) - L'Espansione}
+Con la crescita del Web, divenne necessario trasmettere non solo testo ma anche immagini e altri tipi di file. HTTP/1.0 introdusse la struttura a "messaggio" che usiamo ancora oggi, con intestazioni e codici di stato. Inoltre, soffriva di un grave problema di performance: ogni risorsa richiedeva una nuova connessione TCP (come mostrato nella \cref{fig:http10_conn}).
+
+\begin{itemize}
+    \item \textbf{Introduzione degli Headers:} Permise di negoziare il tipo di contenuto (\textit{Content-Type}) e altre impostazioni.
+    \item \textbf{Codici di Stato:} Fondamentali per far capire al browser se la richiesta era andata a buon fine o meno (es. 404).
+\end{itemize}
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[>=stealth, thick, scale=0.8, every node/.style={scale=0.8}]
+    \node (C) at (0,0) {\textbf{Client}};
+    \node (S) at (4,0) {\textbf{Server}};
+    \draw [line width=1.2pt] (0,-0.5) -- (0,-9);
+    \draw [line width=1.2pt] (4,-0.5) -- (4,-9);
+
+    % First Connection
+    \draw [->, dashed, gray] (0,-1) -- node[above, sloped] {TCP Open} (4,-1.5);
+    \draw [->, primary] (0,-2) -- node[above, sloped] {GET /img1.jpg} (4,-2.5);
+    \draw [<-, primary] (0,-3.5) -- node[above, sloped] {200 OK (Data)} (4,-3);
+    \draw [->, dashed, gray] (0,-4) -- node[above, sloped] {TCP Close} (4,-4.5);
+
+    % Second Connection
+    \draw [->, dashed, gray] (0,-5) -- node[above, sloped] {TCP Open} (4,-5.5);
+    \draw [->, primary] (0,-6) -- node[above, sloped] {GET /img2.jpg} (4,-6.5);
+    \draw [<-, primary] (0,-7.5) -- node[above, sloped] {200 OK (Data)} (4,-7);
+    \draw [->, dashed, gray] (0,-8) -- node[above, sloped] {TCP Close} (4,-8.5);
+\end{tikzpicture}
+\caption{Interazione HTTP/1.0 con connessioni TCP multiple.}
+\label{fig:http10_conn}
+\end{figure}
+
+\subsection{HTTP/1.1 (1997) - L'Ottimizzazione}
+HTTP/1.1 è diventato lo standard de facto del Web per oltre un decennio. Il suo contributo principale è stato il concetto di \textbf{connessione persistente}, che permette di abbattere drasticamente la latenza evitando i ripetuti "handshake" TCP (si veda la \cref{fig:http11_conn}).
+
+\begin{itemize}
+    \item \textbf{Keep-Alive:} La connessione TCP rimane aperta dopo la prima risposta, permettendo al client di inviare immediatamente altre richieste sulla stessa "linea".
+    \item \textbf{Virtual Hosting:} Grazie all'header \texttt{Host}, un server può distinguere tra più siti web ospitati sullo stesso indirizzo IP.
+    \item \textbf{Caching Migliorato:} Introduzione di controlli più granulari su quanto tempo una risorsa può rimanere nella memoria del browser.
+\end{itemize}
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[>=stealth, thick, scale=0.8, every node/.style={scale=0.8}]
+    \node (C) at (0,0) {\textbf{Client}};
+    \node (S) at (4,0) {\textbf{Server}};
+    \draw [line width=1.2pt] (0,-0.5) -- (0,-7.5);
+    \draw [line width=1.2pt] (4,-0.5) -- (4,-7.5);
+
+    % Single Connection
+    \draw [->, dashed, gray] (0,-1) -- node[above, sloped] {TCP Open} (4,-1.5);
+
+    \draw [->, primary] (0,-2) -- node[above, sloped] {GET /img1.jpg} (4,-2.5);
+    \draw [<-, primary] (0,-3.5) -- node[above, sloped] {200 OK} (4,-3);
+
+    \draw [->, primary] (0,-4.5) -- node[above, sloped] {GET /img2.jpg} (4,-5);
+    \draw [<-, primary] (0,-6) -- node[above, sloped] {200 OK} (4,-5.5);
+
+    \draw [->, dashed, gray] (0,-7) -- node[above, sloped] {TCP Close} (4,-7.5);
+\end{tikzpicture}
+\caption{Interazione HTTP/1.1 con connessioni persistenti (Keep-Alive).}
+\label{fig:http11_conn}
+\end{figure}
+
+Nelle prossime lezioni vedremo come l'evoluzione sia continuata. Tuttavia, è importante sottolineare che \textbf{la stragrande maggioranza delle applicazioni statiche e dei siti web moderni funziona perfettamente con HTTP/1.1}. Sebbene esistano versioni più recenti, la 1.1 rimane una solida base per comprendere il web.
+
+Verso la fine del corso, quando avremo padroneggiato le basi, analizzeremo quali sono i limiti strutturali che hanno portato alla nascita di \textbf{HTTP/2} e \textbf{HTTP/3} e come queste tecnologie risolvano problemi di latenza estrema e multiplexing delle risorse.
+
+% ==========================================
+% CAPITOLO 3
+% ==========================================
+\chapter{Setup dell'Ambiente di Lavoro}
+
+Per sviluppare software in modo professionale, non possiamo limitarci a usare un semplice editor di testo. Abbiamo bisogno di strumenti che ci aiutino a scrivere codice più velocemente, a individuare errori e a gestire le diverse versioni del nostro lavoro.
+
+\section{L'Editor di Codice: Visual Studio Code}
+Visual Studio Code (spesso chiamato \textbf{VS Code}) è attualmente lo standard de facto per lo sviluppo web. È un editor gratuito, open-source e leggerissimo, ma estremamente potente grazie al suo sistema di estensioni.
+
+\begin{itemize}
+    \item \textbf{Download:} Potete scaricarlo dal sito ufficiale: \url{https://code.visualstudio.com/}.
+    \item \textbf{Perché VS Code?} Offre evidenziazione della sintassi, completamento automatico intelligente (IntelliSense) e un terminale integrato che useremo moltissimo.
+\end{itemize}
+
+\subsection{Estensioni Consigliate}
+Le estensioni permettono di aggiungere funzionalità a VS Code. Durante il corso useremo principalmente:
+\begin{itemize}
+    \item \textbf{Italian Language Pack}: Per tradurre l'interfaccia in italiano.
+    \item \textbf{Prettier - Code formatter}: Per formattare automaticamente il codice e renderlo ordinato.
+    \item \textbf{Live Server}: Fondamentale per questa lezione. Crea un piccolo server locale che aggiorna automaticamente il browser ogni volta che salvate un file HTML o CSS. \textbf{Installatela subito!}
+\end{itemize}
+
+\section{Il Controllo di Versione: Git}
+
+\subsection{Installazione di Git}
+Prima di poter utilizzare Git, è necessario installarlo sul proprio computer:
+\begin{itemize}
+    \item \textbf{Windows}: Scaricate il programma di installazione da \url{https://git-scm.com/}. Seguite il wizard di installazione accettando le impostazioni predefinite.
+    \item \textbf{macOS}: Se avete installato i command line tools di Xcode, Git potrebbe essere già presente. Altrimenti, scaricatelo dal sito ufficiale o usate Homebrew: \texttt{brew install git}.
+    \item \textbf{Linux}: Solitamente è preinstallato. In caso contrario, usate il gestore pacchetti della vostra distribuzione (es. \texttt{sudo apt install git} su Ubuntu).
+\end{itemize}
+Dopo l'installazione, verificate il funzionamento aprendo il terminale e scrivendo: \texttt{git --version}.
+
+Il controllo di versione è la capacità di tenere traccia di ogni singola modifica apportata al codice. Immaginate Git come una "macchina del tempo" per il vostro progetto. Lo impareremo a usare gradualmente durante tutto il corso.
+
+\subsection{Git: Un Sistema Distribuito}
+Git è un sistema di controllo di versione \textbf{distribuito}. A differenza di sistemi centralizzati, dove ogni modifica deve essere inviata subito al server, in Git ogni sviluppatore ha una copia completa dell'intero storico del progetto sul proprio computer.
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[>=stealth, thick, node distance=2cm]
+    \node (github) [rectangle, draw, fill=primary!20, minimum width=3cm, minimum height=1cm] {\textbf{GitHub (Remoto)}};
+
+    \node (dev1) [circle, draw, fill=primary!10, below left=2cm of github] {Dev 1};
+    \node (dev2) [circle, draw, fill=primary!10, below right=2cm of github] {Dev 2};
+
+    \draw [->, thick] (dev1) -- node[above, sloped, scale=0.8] {push/pull} (github);
+    \draw [->, thick] (dev2) -- node[above, sloped, scale=0.8] {push/pull} (github);
+
+    \node at (dev1.south) [below, scale=0.8] {Storico Completo};
+    \node at (dev2.south) [below, scale=0.8] {Storico Completo};
+\end{tikzpicture}
+\caption{Git è distribuito: ogni sviluppatore possiede l'intero database locale.}
+\end{figure}
+
+\paragraph{Branch}
+Un \textit{branch} (ramo) è essenzialmente un puntatore a un determinato commit. I branch permettono di lavorare su nuove funzionalità o correggere bug in isolamento, senza compromettere il codice stabile (il branch principale, solitamente chiamato \texttt{main} o \texttt{master}).
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[>=stealth, thick, node distance=1.5cm]
+    % Nodes
+    \node (c1) [circle, draw, fill=primary!10] {C1};
+    \node (c2) [circle, draw, fill=primary!10, right=of c1] {C2};
+    \node (c3) [circle, draw, fill=primary!10, right=of c2] {C3};
+    \node (f1) [circle, draw, fill=green!20, above right=0.8cm and 0.5cm of c2] {F1};
+    \node (f2) [circle, draw, fill=green!20, right=of f1] {F2};
+
+    % Connections
+    \draw [->, line width=1pt] (c1) -- (c2);
+    \draw [->, line width=1pt] (c2) -- (c3);
+    \draw [->, line width=1pt, green!50!black] (c2) -- (f1);
+    \draw [->, line width=1pt, green!50!black] (f1) -- (f2);
+    \draw [->, dashed, line width=1pt, green!50!black] (f2) -- (c3);
+
+    % Labels
+    \node at (c3.south) [below, font=\small] {main};
+    \node at (f2.north) [above, font=\small, color=green!50!black] {feature-branch};
+\end{tikzpicture}
+\caption{Lavoro parallelo con i branch: la funzionalità viene sviluppata separatamente e poi integrata nel branch main.}
+\end{figure}
+
+\subsection{Il Workflow di Git: Concetti Base ed Esempi}
+Per capire come funziona Git, dobbiamo immaginare che il nostro progetto passi attraverso tre stati principali:
+\begin{enumerate}
+    \item \textbf{Working Directory}: La cartella dove state modificando i file.
+    \item \textbf{Staging Area}: Una "sala d'attesa" dove preparate i file che volete includere nel prossimo salvataggio.
+    \item \textbf{Repository (Git Directory)}: Il punto in cui i file vengono salvati in modo permanente (i \textit{commit}).
+\end{enumerate}
+
+Ecco un esempio pratico di un flusso di lavoro tipico:
+
+\begin{enumerate}
+    \item \textbf{Inizializzazione}: Entrate nella cartella del vostro progetto dal terminale e scrivete:
+    \begin{lstlisting}[language=bash]
+$ git init
+    \end{lstlisting}
+    Questo comando crea una cartella nascosta \texttt{.git} che contiene tutto lo storico del progetto.
+
+    \item \textbf{Verifica dello stato}: Per vedere quali file avete modificato, usate:
+    \begin{lstlisting}[language=bash]
+$ git status
+    \end{lstlisting}
+    Git vi indicherà in rosso i file che sono stati modificati ma non ancora "preparati".
+
+    \item \textbf{Staging}: Per aggiungere un file alla sala d'attesa (Staging Area), usate:
+    \begin{lstlisting}[language=bash]
+$ git add index.html
+$ git add .
+    \end{lstlisting}
+    Il primo comando aggiunge un singolo file; il secondo aggiunge tutti i file modificati nella cartella corrente.
+
+    \item \textbf{Commit}: Una volta pronti, salvate le modifiche nel repository:
+    \begin{lstlisting}[language=bash]
+$ git commit -m "Aggiunta struttura base e stile CSS"
+    \end{lstlisting}
+    Il messaggio (indicato da \texttt{-m}) è fondamentale: deve descrivere brevemente cosa avete cambiato, così da poter ritrovare facilmente la versione corretta in futuro.
+\end{enumerate}
+
+\subsection{Risorse per Approfondire}
+Se volete portarvi avanti o consultare materiale aggiuntivo, ecco alcuni tutorial eccellenti:
+\begin{itemize}
+    \item \textbf{Pro Git Book}: La guida ufficiale e completa (\url{https://git-scm.com/book/it/v2}).
+    \item \textbf{Oh My Git!}: Un gioco interattivo per imparare Git (\url{https://ohmygit.org/}).
+    \item \textbf{Git Immersion}: Un tour guidato nei fondamenti di Git (\url{https://gitimmersion.com/}).
+\end{itemize}
+
+% ==========================================
+% CAPITOLO 4
+% ==========================================
+\chapter{Laboratorio: Primi Passi nel Frontend}
+
+Ora che conosciamo l'architettura del web, iniziamo a scrivere codice. Per questo laboratorio, useremo \textbf{Visual Studio Code (VS Code)} come nostro strumento principale.
+
+\section{Esercizi Guidati}
+Il materiale per questi esercizi si trova nella cartella \texttt{src/lezione1/} del repository.
+
+\subsection{Esercizio 1: Il browser come interprete}
+Un file HTML è un documento dichiarativo. Quando lo apriamo, il browser lo analizza (parse) costruendo una struttura in memoria. Lo script incluso viene eseguito nel contesto della pagina.
+\begin{lstlisting}[language=HTML]
+<!DOCTYPE html>
+<html>
+<body>
+    <h1>Ciao Mondo</h1>
+    <script>console.log("Browser attivo!");</script>
+</body>
+</html>
+\end{lstlisting}
+Il browser espone l'oggetto globale \texttt{window} e l'oggetto \texttt{document}, che rappresenta l'intera pagina.
+\textbf{Task}: Cambia il colore di sfondo della pagina scrivendo \texttt{document.body.style.backgroundColor = 'yellow';} nello script.
+
+\subsection{Esercizio 2: Manipolazione del DOM}
+Il \textbf{DOM (Document Object Model)} è l'interfaccia che permette a JavaScript di agire sulla pagina. Ogni tag HTML diventa un oggetto JavaScript. \texttt{getElementById} è il metodo base per cercare un nodo specifico nell'albero.
+\begin{lstlisting}[language=HTML]
+<div id="container">
+    <p id="first">Primo</p>
+</div>
+<script>
+    const container = document.getElementById('container');
+    container.style.backgroundColor = "lightblue";
+</script>
+\end{lstlisting}
+\textbf{Task}: Modifica il testo del paragrafo \texttt{first} usando \texttt{document.getElementById('first').innerText = 'Testo modificato';}.
+
+\subsection{Esercizio 3: Gestione degli Eventi}
+Il browser è un ambiente \textit{event-driven}. Un evento è un segnale di notifica. \texttt{addEventListener} associa una funzione (callback) a un tipo di evento (click, mouseover, keydown).
+\begin{lstlisting}[language=HTML]
+<button id="myBtn">Cliccami!</button>
+<p id="msg"></p>
+<script>
+    const btn = document.getElementById('myBtn');
+    btn.addEventListener('click', () => {
+        document.getElementById('msg').innerText = "Hai cliccato!";
+    });
+</script>
+\end{lstlisting}
+\textbf{Task}: Aggiungi un ascoltatore per l'evento \texttt{mouseover} sul bottone che cambia il colore del testo.
+
+\subsection{Esercizio 4: Form Modulare}
+Per progetti complessi, dividiamo i file. Il browser scarica i file referenziati.
+\begin{lstlisting}[language=HTML, caption=index.html]
+<form id="myForm">
+    <input type="email" required placeholder="Email">
+    <button type="submit">Invia</button>
+</form>
+<script src="index.js"></script>
+\end{lstlisting}
+L'evento \texttt{submit} va intercettato chiamando \texttt{e.preventDefault()} per evitare che il browser ricarichi la pagina.
+\textbf{Task}: Nel file \texttt{index.js}, aggiungi un campo \texttt{number} per l'età nel form e mostralo nell'alert al submit.
+
+\subsection{Esercizio 5: Gestione delle liste}
+Possiamo creare nodi HTML dinamicamente. \texttt{createElement} crea un nuovo oggetto DOM non ancora visibile, \texttt{appendChild} lo inserisce come ultimo figlio di un genitore.
+\begin{lstlisting}[language=HTML]
+<ul id="lista"><li>Pane</li></ul>
+<button id="addBtn">Aggiungi</button>
+<script>
+    document.getElementById('addBtn').addEventListener('click', () => {
+        const li = document.createElement('li');
+        li.innerText = 'Nuovo elemento';
+        document.getElementById('lista').appendChild(li);
+    });
+</script>
+\end{lstlisting}
+\textbf{Task}: Aggiungi un bottone "Rimuovi" che elimina l'ultimo elemento della lista usando \texttt{lista.lastElementChild.remove();}.
+
+
+
+\end{document}

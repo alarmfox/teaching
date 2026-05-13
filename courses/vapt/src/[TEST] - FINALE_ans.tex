@@ -1,0 +1,723 @@
+\documentclass[11pt,a4paper]{article}
+
+% --- Packages ---
+\usepackage[margin=.75in]{geometry}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern} % Fix for font not found error
+\usepackage{titlesec}
+\usepackage{enumitem}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{fancyhdr}
+\usepackage{comment}
+\usepackage{cleveref}
+\usepackage[bottom]{footmisc}
+\usepackage{graphicx}
+\usepackage{longtable}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{calc}
+\usepackage{etoolbox}
+
+% Standard Pandoc setup
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+
+\crefformat{section}{\S#2#1#3}
+\crefformat{subsection}{\S#2#1#3}
+\crefformat{subsubsection}{\S#2#1#3}
+\crefformat{figure}{#2Figure~#1#3}
+\crefformat{footnote}{#2\footnotemark[#1]#3}
+
+\linespread{0.9} % Riduce lo spazio tra le linee
+
+% --- Colors ---
+\definecolor{primary}{RGB}{0, 0, 0}
+\definecolor{links}{HTML}{0000EE}
+\definecolor{blue}{HTML}{26428B}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=links,
+    urlcolor=links,
+    citecolor=links,
+}
+
+% --- Section Formatting ---
+\titleformat{\section}
+  {\normalfont\Large\bfseries\color{blue}}{\thesection}{1em}{}
+\titleformat{\subsection}
+{\normalfont\large\bfseries\color{blue}}{\thesubsection}{1em}{}
+\titleformat{\subsubsection}
+{\normalfont\bfseries\color{blue}}{\thesubsubsection}{1em}{}
+
+% --- Header and Footer ---
+\pagestyle{fancy}
+\fancyhead[L]{\small Giuseppe Capasso}
+\fancyhead[R]{\small vapt}
+\fancyfoot[C]{\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+
+% --- Custom Title Command ---
+\newcommand{\proposaltitle}[1]{
+    \begin{center}
+        \vspace*{0.1cm}
+        {\LARGE \bfseries \color{blue} #1} \\[1.5ex]
+        {\large \textbf{Giuseppe Capasso}} \\[1ex]
+                \small{
+            \vspace{0.1cm}
+            \textbf{Materia:} vapt\\
+        }
+            \end{center}
+    \vspace{0.3cm}
+    \hrule height 0.5pt
+    \vspace{0.5cm}
+}
+
+\begin{document}
+
+\proposaltitle{Nome e Cognome: _____________________________________________________}
+
+Nome e Cognome:
+\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_
+Data: \_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_
+
+Punteggio: \_\_\_\_\_/20
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  Qual è l'obiettivo principale della Binary Exploitation?
+\end{enumerate}
+
+\begin{enumerate}
+\def\labelenumi{\Alph{enumi})}
+\tightlist
+\item
+  Alterare il codice sorgente originale del programma
+\item
+  Aggiornare le difese del sistema operativo
+\item
+  Manipolare il flusso di esecuzione tramite input malformati per
+  ottenere l'Arbitrary Code Execution
+\item
+  Crittografare i file sensibili sul server bersaglio
+\end{enumerate}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\setcounter{enumi}{1}
+\tightlist
+\item
+  Nella memoria virtuale di un processo, quale area è specificamente
+  dedicata all'allocazione dinamica (ad esempio quando si utilizzano
+  funzioni come malloc())?
+\end{enumerate}
+
+\begin{enumerate}
+\def\labelenumi{\Alph{enumi})}
+\tightlist
+\item
+  Stack
+\item
+  Heap
+\item
+  Text
+\item
+  BSS
+\end{enumerate}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\setcounter{enumi}{2}
+\tightlist
+\item
+  Per quale motivo strutturale il linguaggio C è particolarmente esposto
+  alla vulnerabilità di Buffer Overflow?
+\end{enumerate}
+
+\begin{enumerate}
+\def\labelenumi{\Alph{enumi})}
+\tightlist
+\item
+  Perché la memoria viene gestita da un Garbage Collector troppo lento
+\item
+  Perché non effettua alcun controllo automatico dei limiti (bounds
+  checking) sulle allocazioni
+\item
+  Perché richiede permessi di root per ogni esecuzione
+\item
+  Perché non supporta l'utilizzo dei registri della CPU
+\end{enumerate}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\setcounter{enumi}{3}
+\tightlist
+\item
+  Qual è la dimensione standard di un Indirizzo Fisico (MAC Address)?
+\end{enumerate}
+
+\begin{enumerate}
+\def\labelenumi{\Alph{enumi})}
+\tightlist
+\item
+  32 bit
+\item
+  48 bit
+\item
+  64 bit
+\item
+  128 bit
+\end{enumerate}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\setcounter{enumi}{4}
+\tightlist
+\item
+  Come si comporta uno switch di rete quando riceve un frame con un MAC
+  Address di destinazione non presente nella sua tabella (Unknown
+  Unicast)?
+\end{enumerate}
+
+\begin{enumerate}
+\def\labelenumi{\Alph{enumi})}
+\tightlist
+\item
+  Scarta immediatamente il frame per sicurezza
+\item
+  Rimanda il frame al mittente con un messaggio di errore
+\end{enumerate}
+
+Nome e Cognome:
+\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_
+Data: \_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_
+
+Punteggio: \_\_\_\_\_/20
+
+\begin{enumerate}
+\def\labelenumi{\Alph{enumi})}
+\setcounter{enumi}{2}
+\tightlist
+\item
+  Effettua il Flooding, inoltrando il frame su tutte le porte attive
+  tranne quella di origine
+\item
+  Mette il frame in coda aspettando che il destinatario si presenti
+\end{enumerate}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\setcounter{enumi}{5}
+\tightlist
+\item
+  Quale debolezza architetturale fondamentale del protocollo ARP viene
+  sfruttata nell'attacco di ARP Spoofing?
+\end{enumerate}
+
+\begin{enumerate}
+\def\labelenumi{\Alph{enumi})}
+\tightlist
+\item
+  La mancanza di qualsiasi meccanismo di autenticazione per i messaggi
+  inviati
+\item
+  L'uso di chiavi crittografiche deboli a 56-bit
+\item
+  La lentezza intrinseca nella propagazione dei pacchetti broadcast
+\item
+  La frammentazione dei pacchetti a livello 3
+\end{enumerate}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\setcounter{enumi}{6}
+\tightlist
+\item
+  Qual è uno dei principali impatti di un attacco di ARP Spoofing (o
+  Poisoning) riuscito?
+\end{enumerate}
+
+\begin{enumerate}
+\def\labelenumi{\Alph{enumi})}
+\tightlist
+\item
+  La corruzione del firmware del router
+\item
+  L'esecuzione di uno shellcode remoto
+\item
+  L'intercettazione del traffico tramite una posizione di
+  Man-in-the-Middle (MitM)
+\item
+  La cancellazione della MAC Address Table dello switch
+\end{enumerate}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\setcounter{enumi}{7}
+\tightlist
+\item
+  Cosa può accadere se un attaccante riesce a sovrascrivere illegalmente
+  il ``Return Address'' salvato nello Stack?
+\end{enumerate}
+
+\begin{enumerate}
+\def\labelenumi{\Alph{enumi})}
+\tightlist
+\item
+  Il sistema formatta automaticamente la memoria per prevenire danni
+\item
+  L'attaccante può deviare il flusso del programma verso un indirizzo di
+  sua scelta
+\item
+  Il router isola l'host compromesso dalla rete
+\item
+  Il programma viene ricompilato in modalità sicura
+\end{enumerate}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\setcounter{enumi}{8}
+\tightlist
+\item
+  In ambito di Network Security, quale intervento rappresenta una
+  ``mitigazione operativa'' (seppur non scalabile) contro l'ARP
+  Spoofing?
+\end{enumerate}
+
+\begin{enumerate}
+\def\labelenumi{\Alph{enumi})}
+\tightlist
+\item
+  L'uso di cavi schermati
+\item
+  L'impostazione manuale di Tabelle ARP Statiche sugli host critici
+\item
+  Il riavvio periodico dello switch
+\item
+  La disabilitazione della porta 80
+\end{enumerate}
+
+Nome e Cognome:
+\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_
+Data: \_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_
+
+Punteggio: \_\_\_\_\_/20
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\setcounter{enumi}{9}
+\tightlist
+\item
+  In ambito di Network Security, in cosa cosa consiste la Dynamic ARP
+  Inspection? ?
+\end{enumerate}
+
+\begin{enumerate}
+\def\labelenumi{\Alph{enumi})}
+\tightlist
+\item
+  Bloccare l'ARP per permettere alla rete di funzionare solo a livello 3
+\item
+  Riconoscere il MAC address del gateway dinamicamente
+\item
+  Utilizzo di richieste DHCP snooping per mantenere associazione tra
+  MAC-Address e IP address
+\item
+  Abilitare la comunicazione tra host wireless e wired
+\end{enumerate}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\setcounter{enumi}{10}
+\tightlist
+\item
+  Cos'è un attacco di tipo ``Rogue DHCP''?
+\end{enumerate}
+
+\begin{enumerate}
+\def\labelenumi{\Alph{enumi})}
+\tightlist
+\item
+  Un server DHCP legittimo che esaurisce improvvisamente gli indirizzi
+  IP disponibili
+\item
+  Un malware che disabilita il servizio DHCP sul router principale
+  dell'azienda
+\item
+  L'introduzione nella rete di un server DHCP non autorizzato, che
+  assegna configurazioni IP malevole (es. gateway e DNS errati) agli
+  ignari client
+\item
+  Una tecnica crittografica per nascondere il traffico DHCP agli sniffer
+  di rete
+\end{enumerate}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\setcounter{enumi}{11}
+\tightlist
+\item
+  Qual è l'obiettivo primario di un attacco di ``DHCP Starvation''?
+\end{enumerate}
+
+\begin{enumerate}
+\def\labelenumi{\Alph{enumi})}
+\tightlist
+\item
+  Bloccare la porta 80 del server web aziendale
+\item
+  Esaurire tutti gli indirizzi IP disponibili nel pool del server DHCP
+  legittimo inviando continue e false richieste di assegnazione
+\item
+  Rubare le password di amministratore memorizzate nel server DHCP
+\item
+  Forzare il server DHCP a fare il downgrade del protocollo alla
+  versione precedente
+\end{enumerate}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\setcounter{enumi}{12}
+\tightlist
+\item
+  Come funziona tipicamente un attacco di ``DNS Spoofing'' (o DNS
+  Poisoning) all'interno di una rete locale?
+\end{enumerate}
+
+\begin{enumerate}
+\def\labelenumi{\Alph{enumi})}
+\tightlist
+\item
+  Inviando milioni di pacchetti ICMP (ping) al server DNS per farlo
+  crashare
+\item
+  Sfruttando un Buffer Overflow nel browser della vittima
+\item
+  Rispondendo alle richieste DNS della vittima con indirizzi IP
+  falsificati, reindirizzando così il suo traffico web verso un server
+  controllato dall'attaccante
+\item
+  Cancellando fisicamente il file hosts sul computer del bersaglio
+\end{enumerate}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\setcounter{enumi}{13}
+\tightlist
+\item
+  Durante l'analisi di un'applicazione web, qual è lo scopo principale
+  dell'utilizzo di un tool come FFUF per la ``Directory e Domain
+  Enumeration''?
+\end{enumerate}
+
+\begin{enumerate}
+\def\labelenumi{\Alph{enumi})}
+\tightlist
+\item
+  Decifrare le password degli utenti tramite un attacco a forza bruta
+  sul form di login
+\end{enumerate}
+
+Nome e Cognome:
+\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_
+Data: \_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_
+
+Punteggio: \_\_\_\_\_/20
+
+\begin{enumerate}
+\def\labelenumi{\Alph{enumi})}
+\setcounter{enumi}{1}
+\tightlist
+\item
+  Scoprire cartelle, file nascosti o sottodomini non pubblici sul server
+  web inviando rapidamente migliaia di richieste automatizzate basate su
+  un dizionario
+\item
+  Intercettare in chiaro il traffico di rete tra il client e il server
+  web
+\item
+  Eseguire comandi di amministrazione direttamente sul database del sito
+\end{enumerate}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\setcounter{enumi}{14}
+\tightlist
+\item
+  Quale delle seguenti definizioni descrive meglio una vulnerabilità di
+  ``SQL Injection'' (SQLi)?
+\end{enumerate}
+
+\begin{enumerate}
+\def\labelenumi{\Alph{enumi})}
+\tightlist
+\item
+  L'inserimento di input utente non filtrato all'interno di una query
+  diretta al database, che permette all'attaccante di manipolare la
+  richiesta o estrarre dati sensibili
+\item
+  L'inserimento di codice JavaScript maligno che verrà eseguito nel
+  browser degli altri visitatori del sito
+\item
+  Un difetto di configurazione del server web che permette l'accesso
+  alle cartelle senza password
+\item
+  Un attacco DoS (Denial of Service) che satura la banda di rete del
+  server database
+\end{enumerate}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\setcounter{enumi}{15}
+\tightlist
+\item
+  In ambito di Penetration Testing, qual è la caratteristica distintiva
+  di una ``Reverse Shell'' rispetto a una shell tradizionale (Bind
+  Shell)?
+\end{enumerate}
+
+\begin{enumerate}
+\def\labelenumi{\Alph{enumi})}
+\tightlist
+\item
+  La Reverse Shell è un'interfaccia grafica, mentre la Bind Shell è solo
+  a riga di comando
+\item
+  La Reverse Shell si può utilizzare solo su sistemi operativi Linux
+\item
+  Nella Reverse Shell è il sistema vittima (compromesso) che avvia
+  attivamente la connessione verso l'indirizzo IP della macchina
+  dell'attaccante in ascolto
+\item
+  La Reverse Shell richiede sempre l'inserimento di una password di root
+\end{enumerate}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\setcounter{enumi}{16}
+\tightlist
+\item
+  In un MAC Address, a cosa servono i primi 24 bit (chiamati OUI)?
+\end{enumerate}
+
+\begin{enumerate}
+\def\labelenumi{\Alph{enumi})}
+\tightlist
+\item
+  A identificare univocamente la singola scheda di rete prodotta
+\item
+  A stabilire la classe dell'indirizzo IP associato
+\item
+  A identificare il vendor (produttore) dell'interfaccia di rete
+\item
+  A determinare la priorità del traffico VLAN
+\end{enumerate}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\setcounter{enumi}{17}
+\tightlist
+\item
+  Nella segmentazione della memoria di un processo, cosa contiene la
+  sezione ``Text'' (o Code)?
+\end{enumerate}
+
+\begin{enumerate}
+\def\labelenumi{\Alph{enumi})}
+\tightlist
+\item
+  I file di testo aperti dall'utente
+\item
+  L'allocazione dinamica degli oggetti
+\item
+  Le istruzioni macchina eseguibili del programma, tipicamente in sola
+  lettura
+\item
+  I messaggi di errore del compilatore
+\end{enumerate}
+
+Nome e Cognome:
+\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_
+Data: \_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_
+
+Punteggio: \_\_\_\_\_/20
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\setcounter{enumi}{18}
+\tightlist
+\item
+  Qual è lo scopo primario del protocollo ARP (Address Resolution
+  Protocol)?
+\end{enumerate}
+
+\begin{enumerate}
+\def\labelenumi{\Alph{enumi})}
+\tightlist
+\item
+  Risolvere i nomi a dominio nel corrispondente indirizzo IP
+\item
+  Assegnare un indirizzo IP dinamico a un nuovo host
+\item
+  Crittografare la comunicazione locale tra due switch
+\item
+  Conoscere il MAC Address di una macchina di cui si conosce già
+  l'indirizzo
+\end{enumerate}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\setcounter{enumi}{19}
+\tightlist
+\item
+  Nei processori con architettura x86 a 32-bit, qual è il registro
+  critico che contiene l'indirizzo di memoria della prossima istruzione
+  che la CPU dovrà eseguire?
+\end{enumerate}
+
+\begin{enumerate}
+\def\labelenumi{\Alph{enumi})}
+\tightlist
+\item
+  EAX
+\item
+  EBP
+\item
+  ESP
+\item
+  EIP
+\end{enumerate}
+
+N. Domanda
+
+Risposta Corretta
+
+Argomento Principale / Parola Chiave
+
+1
+
+C
+
+Obiettivo Binary Exploitation (Arbitrary Code Execution)
+
+2
+
+D
+
+Registro EIP (Instruction Pointer a 32-bit)
+
+3
+
+B
+
+Debolezza del C (Mancanza di bounds checking)
+
+4
+
+C
+
+Dimensione del MAC Address (48 bit)
+
+5
+
+C
+
+Comportamento Switch (Flooding su Unknown Unicast)
+
+6
+
+A
+
+Vulnerabilità ARP (Assenza totale di autenticazione)
+
+7
+
+C
+
+Attacco ARP
+
+8
+
+B
+
+Return address overwriting
+
+9
+
+B
+
+ARP spoofing mitigazione operativa
+
+10
+
+C
+
+Definizione DAI
+
+11
+
+C
+
+DHCP Rogue definizione
+
+12
+
+B
+
+DHCP startvation definizione
+
+13
+
+C
+
+DNS spoofing definizione
+
+14
+
+B
+
+Domain enumeration con fuzzing
+
+15
+
+A
+
+SQL injection definizione
+
+16
+
+C
+
+Definizione reverse shell
+
+17
+
+C
+
+Struttura del MAC address
+
+18
+
+C
+
+Cosa fa la sezione TEXT
+
+19
+
+D
+
+ARP Protocol
+
+20
+
+D
+
+Registri X86
+
+
+
+\end{document}

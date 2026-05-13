@@ -1,0 +1,205 @@
+\documentclass[11pt,a4paper]{article}
+
+% --- Packages ---
+\usepackage[margin=.75in]{geometry}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern} % Fix for font not found error
+\usepackage{titlesec}
+\usepackage{enumitem}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{fancyhdr}
+\usepackage{comment}
+\usepackage{cleveref}
+\usepackage[bottom]{footmisc}
+\usepackage{graphicx}
+\usepackage{longtable}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{calc}
+\usepackage{etoolbox}
+
+% Standard Pandoc setup
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+
+\crefformat{section}{\S#2#1#3}
+\crefformat{subsection}{\S#2#1#3}
+\crefformat{subsubsection}{\S#2#1#3}
+\crefformat{figure}{#2Figure~#1#3}
+\crefformat{footnote}{#2\footnotemark[#1]#3}
+
+\linespread{0.9} % Riduce lo spazio tra le linee
+
+% --- Colors ---
+\definecolor{primary}{RGB}{0, 0, 0}
+\definecolor{links}{HTML}{0000EE}
+\definecolor{blue}{HTML}{26428B}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=links,
+    urlcolor=links,
+    citecolor=links,
+}
+
+% --- Section Formatting ---
+\titleformat{\section}
+  {\normalfont\Large\bfseries\color{blue}}{\thesection}{1em}{}
+\titleformat{\subsection}
+{\normalfont\large\bfseries\color{blue}}{\thesubsection}{1em}{}
+\titleformat{\subsubsection}
+{\normalfont\bfseries\color{blue}}{\thesubsubsection}{1em}{}
+
+% --- Header and Footer ---
+\pagestyle{fancy}
+\fancyhead[L]{\small Giuseppe Capasso}
+\fancyhead[R]{\small firewall}
+\fancyfoot[C]{\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+
+% --- Custom Title Command ---
+\newcommand{\proposaltitle}[1]{
+    \begin{center}
+        \vspace*{0.1cm}
+        {\LARGE \bfseries \color{blue} #1} \\[1.5ex]
+        {\large \textbf{Giuseppe Capasso}} \\[1ex]
+                \small{
+            \vspace{0.1cm}
+            \textbf{Materia:} firewall\\
+        }
+            \end{center}
+    \vspace{0.3cm}
+    \hrule height 0.5pt
+    \vspace{0.5cm}
+}
+
+\begin{document}
+
+\proposaltitle{Lab 3 - Configure a ZPF}
+
+\section{Lab 3 - Configure a ZPF}\label{lab-3---configure-a-zpf}
+
+We will work in pair tables. Each table will have a LAN and will have to
+forward only the correct traffic class to the other one.
+
+Topology
+
+Even tables (2, 4, 6) will have to forward \textbf{FTP} traffic while
+odd tables (1, 3, 5) will have to allow \textbf{HTTP} traffic.
+
+\subsubsection{Running test services}\label{running-test-services}
+
+You can use Docker to run test servers. For example, to run a web server
+you can use:
+
+\begin{verbatim}
+docker run -p 80:80 nginx
+\end{verbatim}
+
+Open your browser on localhost. You should see the following:
+
+Web server
+
+While for an ftp server, the command will be (substitute the with a real
+directory you want to share):
+
+\begin{verbatim}
+docker run --env FTP_PASS=123 --env FTP_USER=user  --publish 20-21:20-21/tcp --publish 40000-40009:40000-40009/tcp --volume <path-to-dir>:/home/user garethflowers/ftp-server
+\end{verbatim}
+
+You can check the configuration by running an ftp client. Open your file
+explorer and put the following in your bar
+
+Ftp
+
+\subsection{Configuration steps}\label{configuration-steps}
+
+\textbf{\emph{Assumptions}}: the topology does not need routing as the
+networks are directly attached. In the initial state, all devices can be
+reached through \texttt{ping} and hosts in T1 network can configure
+switch in T6 network. Assume that the server has a static IP address
+configured.
+
+Some part of the Lab will require the two tables to interact and agree
+on policies
+
+\subsubsection{Zone configuration}\label{zone-configuration}
+
+The two tables will interact to decide zone names. These names will be
+used to create the \texttt{zone-pair} and to assign the interface with
+the \texttt{zone-member\ securitu\ \textless{}zone-name\textgreater{}}
+command.
+
+Configure the zones in the router with the
+\texttt{zone\ security\ \textless{}zone-name\textgreater{}}.
+
+\subsubsection{Traffic type
+identification}\label{traffic-type-identification}
+
+Now each group will create a \textbf{class map} to identify the traffic
+to forward.
+
+\textbf{\emph{Remember}}: a default class action exists and drops every
+packet by default.
+
+The traffic type should have two elements: 1. identify source and
+destination IP addresses: for this purpose you should create an
+\textbf{extended} ACL allowing for IP protocol specifying as source the
+LAN source and as destination the static server IP address; 2. allow
+HTTP (or FTP traffic): use multiple \textbf{match} statements when
+configuring the class map;
+
+For example:
+
+\begin{verbatim}
+r0(config)#access-list 100 permit ip 192.168.1.0 0.0.0.255 host 192.168.6.50
+r0(config)#class-map type inspect match-all t1-traffic
+r0(config-cmap)#match access-group 100
+r0(config-cmap)#match protocol http
+r0(config-cmap)#exit
+r0(config)#
+\end{verbatim}
+
+\subsubsection{Create a policy}\label{create-a-policy}
+
+Now you should create a policy and attach the created class map to it.
+
+\begin{verbatim}
+R0(config)#policy-map type inspect t1-policy
+R0(config-pmap)#class type inspect t1-traffic
+R0(config-pmap-c)#inspect
+R0(config-pmap-c)#
+\end{verbatim}
+
+\subsubsection{Create a zone-pair}\label{create-a-zone-pair}
+
+Now you can create a pair and assign the policy to it. For example, we
+will configure the policy from t1 to t6.
+
+\begin{verbatim}
+R0(config)#zone-pair security t1-2-t6 source <t1-zone> destination <t6-zone>
+R0(config-sec-zone-pair)#service-policy type inspect t1-policy
+R0(config-sec-zone-pair)#exit
+\end{verbatim}
+
+\subsubsection{Assign the zones to the
+interfaces}\label{assign-the-zones-to-the-interfaces}
+
+Finally you can assign the interfaces according to zones. For example,
+if \texttt{\textless{}t1-zone\textgreater{}} is attached to interface
+\texttt{g/0/0/0}, command should be:
+
+\begin{verbatim}
+R0(config)#interface g/0/0/0
+R0(config)#zone-memeber security <t1-zone>
+\end{verbatim}
+
+\subsubsection{Verify}\label{verify}
+
+Now you should be able to visit the web server on \textbf{192.168.6.50},
+but you cannot access any devices with ICMP messages. Same should be for
+FTP server for \textbf{192.168.1.50}.
+
+\end{document}

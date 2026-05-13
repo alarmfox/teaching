@@ -1,0 +1,272 @@
+\documentclass[11pt,a4paper]{article}
+
+% --- Packages ---
+\usepackage[margin=.75in]{geometry}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern} % Fix for font not found error
+\usepackage{titlesec}
+\usepackage{enumitem}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{fancyhdr}
+\usepackage{comment}
+\usepackage{cleveref}
+\usepackage[bottom]{footmisc}
+\usepackage{graphicx}
+\usepackage{longtable}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{calc}
+\usepackage{etoolbox}
+
+% Standard Pandoc setup
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+
+\crefformat{section}{\S#2#1#3}
+\crefformat{subsection}{\S#2#1#3}
+\crefformat{subsubsection}{\S#2#1#3}
+\crefformat{figure}{#2Figure~#1#3}
+\crefformat{footnote}{#2\footnotemark[#1]#3}
+
+\linespread{0.9} % Riduce lo spazio tra le linee
+
+% --- Colors ---
+\definecolor{primary}{RGB}{0, 0, 0}
+\definecolor{links}{HTML}{0000EE}
+\definecolor{blue}{HTML}{26428B}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=links,
+    urlcolor=links,
+    citecolor=links,
+}
+
+% --- Section Formatting ---
+\titleformat{\section}
+  {\normalfont\Large\bfseries\color{blue}}{\thesection}{1em}{}
+\titleformat{\subsection}
+{\normalfont\large\bfseries\color{blue}}{\thesubsection}{1em}{}
+\titleformat{\subsubsection}
+{\normalfont\bfseries\color{blue}}{\thesubsubsection}{1em}{}
+
+% --- Header and Footer ---
+\pagestyle{fancy}
+\fancyhead[L]{\small Giuseppe Capasso}
+\fancyhead[R]{\small intro-to-linux}
+\fancyfoot[C]{\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+
+% --- Custom Title Command ---
+\newcommand{\proposaltitle}[1]{
+    \begin{center}
+        \vspace*{0.1cm}
+        {\LARGE \bfseries \color{blue} #1} \\[1.5ex]
+        {\large \textbf{Giuseppe Capasso}} \\[1ex]
+                \small{
+            \vspace{0.1cm}
+            \textbf{Materia:} intro-to-linux\\
+        }
+            \end{center}
+    \vspace{0.3cm}
+    \hrule height 0.5pt
+    \vspace{0.5cm}
+}
+
+\begin{document}
+
+\proposaltitle{Mount point Backup}
+
+Laboratorio Pratico Lezione 3: Storage \& Backup Management Scenario:
+Sei il nuovo Junior SysAdmin della ``ITS Tech Solutions''. Il CTO ti ha
+assegnato un nuovo server (la tua VM) a cui è stato appena collegato un
+nuovo disco fisico. Il tuo compito è configurarlo per ospitare i dati
+aziendali e impostare un sistema di backup automatico. Tempo stimato: 90
+minuti Prerequisiti: Macchina Virtuale spenta (inizialmente).
+
+Parte 1: Hardware Provisioning (VirtualBox) Obiettivo: Simulare
+l'inserimento fisico di un disco nel server. 1. Spegni la VM se è
+accesa. 2. Vai su Impostazioni -\textgreater{} Archiviazione. 3.
+Seleziona il Controller: SATA. 4. Clicca sull'icona ``Aggiungi disco
+rigido'' (icona disco con il +). 5. Seleziona Crea -\textgreater{} VDI
+-\textgreater{} Allocato dinamicamente. 6. Imposta la dimensione a 4 GB
+(o 5GB). Chiamalo Disco\_Dati. 7. Conferma e avvia la VM.
+
+Parte 2: Partizionamento (fdisk/cfdisk) Obiettivo: Suddividere il disco
+per scopi diversi. 1. Apri il terminale e identifica il nuovo disco:
+Bash lsblk
+
+(Dovresti vedere un device, probabilmente sdb, da 4GB senza partizioni).
+2. Lancia l'utility di partizionamento: Bash sudo cfdisk /dev/sdb
+
+(Se ti chiede il tipo di etichetta, scegli gpt). 3. Crea la seguente
+struttura:
+
+• Partizione 1: 2 GB (Sarà usata per i ``Dati Produzione''). •
+Partizione 2: 2 GB (Spazio rimanente, sarà usata per i ``Backup
+Locali''). 4. Seleziona {[} Write {]}, digita yes per confermare e poi
+{[} Quit {]}. 5. Verifica che le partizioni esistano: Bash lsblk
+
+(Ora dovresti vedere sdb1 e sdb2).
+
+Parte 3: Filesystem e Formattazione Obiettivo: Rendere le partizioni
+utilizzabili. 1. Formatta entrambe le partizioni con il filesystem
+standard ext4: Bash sudo mkfs.ext4 /dev/sdb1 sudo mkfs.ext4 /dev/sdb2
+
+Parte 4: Mounting Persistente (/etc/fstab) Obiettivo: Configurare il
+server affinché i dischi siano pronti ad ogni riavvio. 1. Crea i punti
+di mount (le cartelle vuote): Bash sudo mkdir -p /mnt/produzione sudo
+mkdir -p /mnt/backup\_drive
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\setcounter{enumi}{1}
+\item
+  Ottieni gli UUID delle partizioni (copiali su un blocco note o tienili
+  pronti): Bash sudo blkid
+\item
+  Modifica il file /etc/fstab per rendere il mount permanente: Bash sudo
+  nano /etc/fstab
+\item
+  Aggiungi in fondo al file queste due righe (sostituisci
+  TUO\_UUID\_\ldots{} con i codici reali): Plaintext
+\end{enumerate}
+
+\# Mount point Dati Produzione UUID=inserisci-uuid-sdb1
+
+/mnt/produzione
+
+ext4
+
+defaults
+
+0
+
+2
+
+/mnt/backup\_drive
+
+ext4
+
+defaults
+
+0
+
+2
+
+\section{Mount point Backup}\label{mount-point-backup}
+
+UUID=inserisci-uuid-sdb2
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\setcounter{enumi}{4}
+\tightlist
+\item
+  TEST CRUCIALE: Prima di riavviare, verifica che non ci siano errori!
+  Bash sudo mount -a
+\end{enumerate}
+
+(Se il comando non restituisce output, è andato tutto bene. Se dà
+errore, correggi fstab o la VM non partirà). 6. Verifica che siano
+montati: Bash df -h
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\setcounter{enumi}{6}
+\tightlist
+\item
+  Gestione Permessi: Di default, root possiede queste cartelle.
+  Assegnale al tuo utente: Bash sudo chown -R \(USER:\)USER
+  /mnt/produzione sudo chown -R \(USER:\)USER /mnt/backup\_drive
+\end{enumerate}
+
+Parte 5: Simulazione Dati e Backup ``Cold'' (TAR) Obiettivo: Creare un
+archivio compresso di salvataggio. 1. Generazione Dati: Crea una
+struttura di file finti in produzione: Bash mkdir
+/mnt/produzione/progetto\_web echo ``Codice importante'' \textgreater{}
+/mnt/produzione/progetto\_web/index.html echo ``Configurazione segreta''
+\textgreater{} /mnt/produzione/progetto\_web/config.php
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\setcounter{enumi}{1}
+\item
+  Esecuzione Backup (Full): Crea un archivio .tar.gz di tutto il
+  progetto e salvalo nel disco di backup. Bash tar -czvf
+  /mnt/backup\_drive/backup\_full\_v1.tar.gz
+  /mnt/produzione/progetto\_web
+\item
+  Simulazione Disastro: Un utente distratto cancella tutto!
+\end{enumerate}
+
+Bash rm -rf /mnt/produzione/progetto\_web
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\setcounter{enumi}{3}
+\tightlist
+\item
+  Restore (Ripristino): Recupera i dati dall'archivio. Bash \#
+  Attenzione alla posizione: tar scompatta dove gli dici o nel percorso
+  assoluto se registrato tar -xzvf
+  /mnt/backup\_drive/backup\_full\_v1.tar.gz -C /
+\end{enumerate}
+
+(Nota: Abbiamo usato -C / perché il tar è stato creato con percorsi
+assoluti. Verifica se i file sono tornati in /mnt/produzione).
+
+Parte 6: Backup Incrementale e Sync (RSYNC) Obiettivo: Mantenere una
+copia speculare (mirror) sempre aggiornata. 1. Crea una cartella per il
+mirror sul disco di backup: Bash mkdir
+/mnt/backup\_drive/mirror\_giornaliero
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\setcounter{enumi}{1}
+\tightlist
+\item
+  Lancia la prima sincronizzazione: Bash rsync -av /mnt/produzione/
+  /mnt/backup\_drive/mirror\_giornaliero/
+\end{enumerate}
+
+(Nota lo slash finale / dopo produzione: significa ``il contenuto di'',
+non la cartella stessa). 3. Modifica Dati: Aggiungi un nuovo file in
+produzione. Bash touch /mnt/produzione/progetto\_web/nuovo\_file.txt
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\setcounter{enumi}{3}
+\tightlist
+\item
+  Sync Incrementale: Rilancia lo stesso comando rsync di prima. •
+  Osserva l'output: copierà solo nuovo\_file.txt. Non ricopia tutto il
+  resto. Questo è il vantaggio di rsync!
+\end{enumerate}
+
+Challenge Finale (Per chi finisce prima) Obiettivo: Automatizzare il
+backup con Cron. Configura il sistema affinché esegua il comando rsync
+(quello della Parte 6) automaticamente ogni minuto (solo per test
+didattico).
+
+1. Apri il crontab: crontab -e 2. Aggiungi la riga magica (cerca su
+Google ``Crontab every minute syntax'' se non la ricordi): \emph{ } * *
+* rsync -av /mnt/produzione/ /mnt/backup\_drive/mirror\_giornaliero/
+\textgreater\textgreater{} /tmp/backup.log 3. Crea un file in
+produzione, aspetta 60 secondi e controlla se appare magicamente nel
+backup.
+
+Troubleshooting Rapido • Errore ``Permission Denied'': Hai dimenticato
+il sudo chown nella Parte 4. Le cartelle montate appartengono a root
+finché non le cambi. • Errore ``Device is busy'' (quando smonti): Sei
+ancora dentro la cartella col terminale. Fai cd \textasciitilde{} e
+riprova. • La VM va in Emergency Mode al riavvio: Hai sbagliato l'UUID
+in /etc/fstab. • Soluzione: Inserisci la password di root, dai nano
+/etc/fstab, commenta (metti \#) davanti alle righe aggiunte, salva e
+riavvia. Poi riprova con calma.
+
+
+
+\end{document}

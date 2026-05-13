@@ -1,0 +1,458 @@
+\documentclass[11pt,a4paper]{article}
+
+% --- Packages ---
+\usepackage[margin=.75in]{geometry}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern} % Fix for font not found error
+\usepackage{titlesec}
+\usepackage{enumitem}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{fancyhdr}
+\usepackage{comment}
+\usepackage{cleveref}
+\usepackage[bottom]{footmisc}
+\usepackage{graphicx}
+\usepackage{longtable}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{calc}
+\usepackage{etoolbox}
+
+% Standard Pandoc setup
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+
+\crefformat{section}{\S#2#1#3}
+\crefformat{subsection}{\S#2#1#3}
+\crefformat{subsubsection}{\S#2#1#3}
+\crefformat{figure}{#2Figure~#1#3}
+\crefformat{footnote}{#2\footnotemark[#1]#3}
+
+\linespread{0.9} % Riduce lo spazio tra le linee
+
+% --- Colors ---
+\definecolor{primary}{RGB}{0, 0, 0}
+\definecolor{links}{HTML}{0000EE}
+\definecolor{blue}{HTML}{26428B}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=links,
+    urlcolor=links,
+    citecolor=links,
+}
+
+% --- Section Formatting ---
+\titleformat{\section}
+  {\normalfont\Large\bfseries\color{blue}}{\thesection}{1em}{}
+\titleformat{\subsection}
+{\normalfont\large\bfseries\color{blue}}{\thesubsection}{1em}{}
+\titleformat{\subsubsection}
+{\normalfont\bfseries\color{blue}}{\thesubsubsection}{1em}{}
+
+% --- Header and Footer ---
+\pagestyle{fancy}
+\fancyhead[L]{\small Giuseppe Capasso}
+\fancyhead[R]{\small intro-to-linux}
+\fancyfoot[C]{\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+
+% --- Custom Title Command ---
+\newcommand{\proposaltitle}[1]{
+    \begin{center}
+        \vspace*{0.1cm}
+        {\LARGE \bfseries \color{blue} #1} \\[1.5ex]
+        {\large \textbf{Giuseppe Capasso}} \\[1ex]
+                \small{
+            \vspace{0.1cm}
+            \textbf{Materia:} intro-to-linux\\
+        }
+            \end{center}
+    \vspace{0.3cm}
+    \hrule height 0.5pt
+    \vspace{0.5cm}
+}
+
+\begin{document}
+
+\proposaltitle{1. Il File System (FHS): La Mappa del Tesoro (30 min)}
+
+\textbf{Corso:} Linux Livello ITS\\
+\textbf{Obiettivo:} Comprendere l'ecosistema Linux, prendere confidenza
+con la CLI via browser e preparare l'ambiente di virtualizzazione.
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\section{1. Il File System (FHS): La Mappa del Tesoro (30
+min)}\label{il-file-system-fhs-la-mappa-del-tesoro-30-min}
+
+\textbf{Obiettivo:} Spiegare che non esiste il disco \texttt{C:} e che
+\emph{tutto è un file}.
+
+\subsection{Concetti Chiave da
+Trasmettere}\label{concetti-chiave-da-trasmettere}
+
+\begin{itemize}
+\item
+  \textbf{La Radice (\texttt{/})}\\
+  L'inizio di tutto l'albero del filesystem.
+\item
+  \textbf{Mount Point}\\
+  Se inserisci una USB, non diventa \texttt{E:} ma una \emph{cartella}\\
+  (solitamente in \texttt{/media} o \texttt{/mnt}).
+\item
+  \textbf{Case Sensitivity}\\
+  \texttt{File.txt} ≠ \texttt{file.txt}\\
+  👉 Fai fare un test pratico: è uno degli errori più comuni.
+\end{itemize}
+
+\subsection{Tour Guidato (Live Demo)}\label{tour-guidato-live-demo}
+
+Apri il terminale e naviga con \texttt{cd}, mostrando queste directory:
+
+\begin{itemize}
+\item
+  \textbf{\texttt{/bin} \& \texttt{/sbin}}\\
+  I binari (eseguibili).\\
+  Qui vivono comandi come \texttt{ls}, \texttt{cp}, \texttt{ip}.
+\item
+  \textbf{\texttt{/etc}}\strut \\
+  Configurazione del sistema.\\
+  Mnemonico: \textbf{Editable Text Configuration}\\
+  Qui vive l'anima del sistema.
+\item
+  \textbf{\texttt{/home}}\strut \\
+  Le cartelle degli utenti standard.
+\item
+  \textbf{\texttt{/root}}\strut \\
+  La home dell'amministratore (spesso inaccessibile senza permessi).
+\item
+  \textbf{\texttt{/var}}\strut \\
+  Dati variabili: log, spool di stampa, database, siti web.
+\item
+  \textbf{\texttt{/tmp}}\strut \\
+  File temporanei (di solito si svuota al riavvio).
+\item
+  \textbf{\texttt{/dev}}\strut \\
+  I file device (es. \texttt{/dev/null}, il buco nero).
+\end{itemize}
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\section{2. Editing di Testo: Nano vs Vim (30
+min)}\label{editing-di-testo-nano-vs-vim-30-min}
+
+\textbf{Obiettivo:} Configurare server senza interfaccia grafica.
+
+\subsection{Nano (La scelta sicura)}\label{nano-la-scelta-sicura}
+
+Editor immediato per principianti.\\
+I comandi sono visibili in basso.
+
+\subsubsection{Comandi base}\label{comandi-base}
+
+\begin{itemize}
+\tightlist
+\item
+  \texttt{nano\ file.txt} → apre/crea il file
+\item
+  \texttt{CTRL\ +\ O} → salva (Write Out)
+\item
+  \texttt{CTRL\ +\ X} → esce
+\end{itemize}
+
+\subsection{Vim (Il ``Mostro Finale'' --
+Opzionale)}\label{vim-il-mostro-finale-opzionale}
+
+Mostralo solo se c'è tempo o curiosità.\\
+È \textbf{modale} (Insert vs Command).
+
+\subsubsection{Panic Button}\label{panic-button}
+
+Se qualcuno entra per sbaglio e non sa uscire:
+
+\subsection{ESC -\textgreater{} :q! -\textgreater{}
+INVIO}\label{esc---q---invio}
+
+\section{3. Utenti e Superpoteri: sudo (45
+min)}\label{utenti-e-superpoteri-sudo-45-min}
+
+\textbf{Obiettivo:} Capire la gestione multi-utente e la sicurezza.
+
+\subsection{Concetti}\label{concetti}
+
+\begin{itemize}
+\item
+  \textbf{Root}\\
+  L'amministratore supremo.
+\item
+  \textbf{User}\\
+  L'utente limitato (quello che usano loro).
+\item
+  \textbf{Sudo}\\
+  \emph{SuperUser DO} → permesso temporaneo per agire come root.
+\end{itemize}
+
+\subsection{Demo: I file degli utenti}\label{demo-i-file-degli-utenti}
+
+Gli utenti sono solo righe di testo in un file.
+
+\begin{itemize}
+\item
+  \texttt{cat\ /etc/passwd}\strut \\
+  Lista utenti pubblica.\\
+  Spiegare i campi:\\
+  \textbf{User -- UID -- GID -- Home -- Shell}
+\item
+  \texttt{cat\ /etc/shadow}\strut \\
+  Password hashate (file privato).
+\end{itemize}
+
+\subsubsection{Prova pratica}\label{prova-pratica}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{cat}\NormalTok{ /etc/shadow}
+\end{Highlighting}
+\end{Shaded}
+
+\textbf{Permesso negato}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{sudo}\NormalTok{ cat /etc/shadow}
+\end{Highlighting}
+\end{Shaded}
+
+→ \textbf{Funziona}
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\section{4. Permessi e Proprietà (1 ora --
+Cruciale)}\label{permessi-e-proprietuxe0-1-ora-cruciale}
+
+\textbf{Obiettivo:} Decifrare \texttt{ls\ -l}.
+
+\subsection{\texorpdfstring{La Triade:
+\texttt{rwx}}{La Triade: rwx}}\label{la-triade-rwx}
+
+Usa \texttt{ls\ -l} su un file e spiega la prima colonna\\
+(es. \texttt{-rwxr-xr-\/-}).
+
+\subsubsection{Struttura}\label{struttura}
+
+\begin{itemize}
+\item
+  \textbf{Tipo}
+
+  \begin{itemize}
+  \tightlist
+  \item
+    \texttt{-} file
+  \item
+    \texttt{d} directory
+  \end{itemize}
+\item
+  \textbf{User (u)}\\
+  Proprietario del file
+\item
+  \textbf{Group (g)}\\
+  Gruppo assegnato
+\item
+  \textbf{Others (o)}\\
+  Tutti gli altri
+\end{itemize}
+
+\subsubsection{Significato dei permessi}\label{significato-dei-permessi}
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{r (Read)}
+
+  \begin{itemize}
+  \tightlist
+  \item
+    File: leggere\\
+  \item
+    Directory: listare contenuto
+  \end{itemize}
+\item
+  \textbf{w (Write)}
+
+  \begin{itemize}
+  \tightlist
+  \item
+    File: modificare\\
+  \item
+    Directory: creare/cancellare file
+  \end{itemize}
+\item
+  \textbf{x (Execute)}
+
+  \begin{itemize}
+  \tightlist
+  \item
+    File: eseguire\\
+  \item
+    Directory: entrarci (\texttt{cd})
+  \end{itemize}
+\end{itemize}
+
+\subsection{Comandi Lab}\label{comandi-lab}
+
+\subsubsection{\texorpdfstring{\texttt{chmod} (Change
+Mode)}{chmod (Change Mode)}}\label{chmod-change-mode}
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{Simbolico}
+\end{itemize}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{chmod}\NormalTok{ u+x script.sh}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{Ottale}
+\end{itemize}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{chmod}\NormalTok{ 755 script.sh }\CommentTok{\# script standard}
+\FunctionTok{chmod}\NormalTok{ 644 file.txt }\CommentTok{\# file standard}
+\end{Highlighting}
+\end{Shaded}
+
+⚠️ \textbf{Warning:} evitare \texttt{777} se non per test disperati.
+
+\subsubsection{\texorpdfstring{\texttt{chown} (Change
+Owner)}{chown (Change Owner)}}\label{chown-change-owner}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{sudo}\NormalTok{ chown utente:gruppo file}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\section{5. Gestione Pacchetti: APT (45
+min)}\label{gestione-pacchetti-apt-45-min}
+
+\textbf{Obiettivo:} Installare software in modo professionale.
+
+\subsection{Concetti}\label{concetti-1}
+
+\begin{itemize}
+\item
+  \textbf{Repository}\\
+  Il ``magazzino'' ufficiale del software.
+\item
+  \textbf{Dipendenze}\\
+  APT scarica automaticamente le librerie necessarie.
+\end{itemize}
+
+\subsection{Il Flusso Sacro}\label{il-flusso-sacro}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{sudo}\NormalTok{ apt update}
+\end{Highlighting}
+\end{Shaded}
+
+Aggiorna la \textbf{lista} dei pacchetti (non il software).
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{sudo}\NormalTok{ apt upgrade}
+\end{Highlighting}
+\end{Shaded}
+
+Aggiorna i pacchetti installati.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{sudo}\NormalTok{ apt install nome}
+\end{Highlighting}
+\end{Shaded}
+
+Installa un programma (es. \texttt{htop}, \texttt{neofetch}).
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{sudo}\NormalTok{ apt remove nome}
+\end{Highlighting}
+\end{Shaded}
+
+Rimuove il programma (mantiene i file di config).
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{sudo}\NormalTok{ apt purge nome}
+\end{Highlighting}
+\end{Shaded}
+
+Rimuove tutto.
+
+\subsection{Lab ``Gratificazione
+Immediata''}\label{lab-gratificazione-immediata}
+
+Installare:
+
+\begin{itemize}
+\tightlist
+\item
+  \texttt{cmatrix} → effetto Matrix
+\item
+  \texttt{sl} → locomotiva se sbagliano \texttt{ls}
+\item
+  \texttt{htop} → monitor risorse colorato
+\end{itemize}
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\section{6. Note Mentali per
+l'Istruttore}\label{note-mentali-per-listruttore}
+
+\begin{itemize}
+\item
+  \textbf{Il TAB è tuo amico}\\
+  Insistere sull'autocompletamento.\\
+  Scrivere i percorsi a mano = frustrazione garantita.
+\item
+  \textbf{Root vs Permessi}\\
+  Root ignora i permessi.\\
+  Un file \texttt{chmod\ 000} può essere letto da root.
+\item
+  \textbf{Disclaimer \texttt{rm\ -rf}}\\
+  Quando spieghi la cancellazione ricorsiva con \texttt{sudo},\\
+  fai un avviso enorme:\\
+  \emph{``Da grandi poteri derivano grandi responsabilità.''}
+\end{itemize}
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\section{7. Link e Risorse Extra (per gli
+studenti)}\label{link-e-risorse-extra-per-gli-studenti}
+
+\begin{itemize}
+\item
+  \textbf{Chmod Calculator}\\
+  Per visualizzare e capire i permessi ottali.
+\item
+  \textbf{Linux FHS Official}\\
+  Documentazione ufficiale della gerarchia filesystem.
+\item
+  \textbf{Vim Adventures}\\
+  Gioco per imparare Vim divertendosi.
+\end{itemize}
+
+\end{document}

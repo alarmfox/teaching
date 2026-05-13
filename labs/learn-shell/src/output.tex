@@ -1,0 +1,217 @@
+\documentclass[11pt,a4paper]{article}
+
+% --- Packages ---
+\usepackage[margin=.75in]{geometry}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern} % Fix for font not found error
+\usepackage{titlesec}
+\usepackage{enumitem}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{fancyhdr}
+\usepackage{comment}
+\usepackage{cleveref}
+\usepackage[bottom]{footmisc}
+\usepackage{graphicx}
+\usepackage{longtable}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{calc}
+\usepackage{etoolbox}
+
+% Standard Pandoc setup
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+
+\crefformat{section}{\S#2#1#3}
+\crefformat{subsection}{\S#2#1#3}
+\crefformat{subsubsection}{\S#2#1#3}
+\crefformat{figure}{#2Figure~#1#3}
+\crefformat{footnote}{#2\footnotemark[#1]#3}
+
+\linespread{0.9} % Riduce lo spazio tra le linee
+
+% --- Colors ---
+\definecolor{primary}{RGB}{0, 0, 0}
+\definecolor{links}{HTML}{0000EE}
+\definecolor{blue}{HTML}{26428B}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=links,
+    urlcolor=links,
+    citecolor=links,
+}
+
+% --- Section Formatting ---
+\titleformat{\section}
+  {\normalfont\Large\bfseries\color{blue}}{\thesection}{1em}{}
+\titleformat{\subsection}
+{\normalfont\large\bfseries\color{blue}}{\thesubsection}{1em}{}
+\titleformat{\subsubsection}
+{\normalfont\bfseries\color{blue}}{\thesubsubsection}{1em}{}
+
+% --- Header and Footer ---
+\pagestyle{fancy}
+\fancyhead[L]{\small Giuseppe Capasso}
+\fancyhead[R]{\small learn-shell}
+\fancyfoot[C]{\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+
+% --- Custom Title Command ---
+\newcommand{\proposaltitle}[1]{
+    \begin{center}
+        \vspace*{0.1cm}
+        {\LARGE \bfseries \color{blue} #1} \\[1.5ex]
+        {\large \textbf{Giuseppe Capasso}} \\[1ex]
+                \small{
+            \vspace{0.1cm}
+            \textbf{Materia:} learn-shell\\
+        }
+            \end{center}
+    \vspace{0.3cm}
+    \hrule height 0.5pt
+    \vspace{0.5cm}
+}
+
+\begin{document}
+
+\proposaltitle{Learn Linux Shell}
+
+\section{Learn Linux Shell}\label{learn-linux-shell}
+
+\subsection{Anatomy of a Command}\label{anatomy-of-a-command}
+
+A Linux command typically consists of three parts:
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  \textbf{Command}: The action you want to perform.
+\item
+  \textbf{Options}: Flags or modifiers to change the behavior of the
+  command.
+\item
+  \textbf{Arguments}: Additional information required by the command to
+  execute.
+\end{enumerate}
+
+Basic syntax:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\BuiltInTok{command} \PreprocessorTok{[}\SpecialStringTok{options}\PreprocessorTok{]} \PreprocessorTok{[}\SpecialStringTok{arguments}\PreprocessorTok{]}
+\end{Highlighting}
+\end{Shaded}
+
+\subsection{Essential Commands}\label{essential-commands}
+
+\subsubsection{\texorpdfstring{\texttt{ls} - List Directory
+Contents}{ls - List Directory Contents}}\label{ls---list-directory-contents}
+
+Lists files and directories in the current directory.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{ls} \PreprocessorTok{[}\SpecialStringTok{options}\PreprocessorTok{]} \PreprocessorTok{[}\SpecialStringTok{directory}\PreprocessorTok{]}
+\end{Highlighting}
+\end{Shaded}
+
+\textbf{Options}: - \texttt{-l}: Use long format, displaying detailed
+information (permissions, owner, size, etc.). - \texttt{-a}: Include
+hidden files and directories (those starting with \texttt{.}). -
+\texttt{-h}: Show human-readable sizes (e.g., KB, MB, GB).
+
+\subsubsection{\texorpdfstring{\texttt{cd} - Change
+Directory}{cd - Change Directory}}\label{cd---change-directory}
+
+Changes the current working directory.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\BuiltInTok{cd} \PreprocessorTok{[}\SpecialStringTok{directory}\PreprocessorTok{]}
+\end{Highlighting}
+\end{Shaded}
+
+\subsubsection{\texorpdfstring{\texttt{mkdir} - Create
+Directories}{mkdir - Create Directories}}\label{mkdir---create-directories}
+
+Creates new directories.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{mkdir} \PreprocessorTok{[}\SpecialStringTok{directory\_name}\PreprocessorTok{]}
+\end{Highlighting}
+\end{Shaded}
+
+\subsubsection{\texorpdfstring{\texttt{touch} - Create Empty
+Files}{touch - Create Empty Files}}\label{touch---create-empty-files}
+
+Creates empty files or updates the timestamps of existing files.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{touch} \PreprocessorTok{[}\SpecialStringTok{file\_name}\PreprocessorTok{]}
+\end{Highlighting}
+\end{Shaded}
+
+\subsubsection{\texorpdfstring{\texttt{rm} - Remove Files or
+Directories}{rm - Remove Files or Directories}}\label{rm---remove-files-or-directories}
+
+Removes files or directories.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{rm} \PreprocessorTok{[}\SpecialStringTok{options}\PreprocessorTok{]} \PreprocessorTok{[}\SpecialStringTok{file/directory}\PreprocessorTok{]}
+\end{Highlighting}
+\end{Shaded}
+
+\textbf{Options}: - \texttt{-r}: Recursively remove directories and
+their contents. - \texttt{-f}: Force removal without confirmation (use
+with extreme caution).
+
+\subsubsection{\texorpdfstring{\texttt{cat} - Concatenate and Display
+Files}{cat - Concatenate and Display Files}}\label{cat---concatenate-and-display-files}
+
+Displays the content of files to standard output.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{cat} \PreprocessorTok{[}\SpecialStringTok{file\_name}\PreprocessorTok{]}
+\end{Highlighting}
+\end{Shaded}
+
+\subsubsection{\texorpdfstring{\texttt{chmod} - Change File
+Permissions}{chmod - Change File Permissions}}\label{chmod---change-file-permissions}
+
+Modifies file or directory permissions (read, write, execute).
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{chmod} \PreprocessorTok{[}\SpecialStringTok{options}\PreprocessorTok{]}\NormalTok{ mode file}
+\end{Highlighting}
+\end{Shaded}
+
+\textbf{Options/Modes}: - \texttt{+}: Adds the specified permissions. -
+\texttt{-}: Removes the specified permissions. - \texttt{=}: Sets the
+permissions exactly as specified.
+
+\subsubsection{\texorpdfstring{\texttt{curl} - Transfer
+Data}{curl - Transfer Data}}\label{curl---transfer-data}
+
+Transfers data to or from a server, supporting various protocols (HTTP,
+HTTPS, FTP, etc.).
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\ExtensionTok{curl} \PreprocessorTok{[}\SpecialStringTok{options}\PreprocessorTok{]} \PreprocessorTok{[}\SpecialStringTok{URL}\PreprocessorTok{]}
+\end{Highlighting}
+\end{Shaded}
+
+\textbf{Options}: - \texttt{-O}: Save the downloaded file with its
+original name. - \texttt{-o\ {[}file{]}}: Save the downloaded file with
+a specified name. - \texttt{-L}: Follow redirects.
+
+\end{document}

@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="it">
+<body>
+    <ul id="lista">
+        <li>Pane</li>
+        <li>Latte</li>
+    </ul>
+    <button id="addBtn">Aggiungi Elemento</button>
+    <script>
+        document.getElementById('addBtn').addEventListener('click', () => {
+            const li = document.createElement('li');
+            li.innerText = 'Nuovo elemento';
+            document.getElementById('lista').appendChild(li);
+        });
+    </script>
+</body>
+</html>

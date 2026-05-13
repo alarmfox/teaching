@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html lang="it">
+<body>
+    <button id="myBtn">Cliccami!</button>
+    <p id="msg"></p>
+    <script>
+        const btn = document.getElementById('myBtn');
+        btn.addEventListener('click', () => {
+            document.getElementById('msg').innerText = "Hai cliccato il bottone!";
+        });
+    </script>
+</body>
+</html>

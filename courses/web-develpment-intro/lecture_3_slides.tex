@@ -1,0 +1,414 @@
+\documentclass[10pt]{beamer}
+
+% --- Configurazione Tema ---
+\usetheme{Madrid}
+\usecolortheme{default}
+
+% --- Pacchetti ---
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[italian]{babel}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta, positioning, shapes.geometric, decorations.pathreplacing, calc, shadows, fit}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{booktabs}
+
+% --- Colori Personalizzati ---
+\definecolor{primary}{RGB}{38, 66, 139}
+\definecolor{codebg}{RGB}{245, 245, 245}
+\definecolor{keywordcolor}{RGB}{0, 0, 255}
+\definecolor{stringcolor}{RGB}{163, 21, 21}
+\definecolor{commentcolor}{RGB}{0, 128, 0}
+
+\setbeamercolor{structure}{fg=primary}
+\setbeamercolor{title}{fg=white, bg=primary}
+
+% --- Configurazione Codice ---
+\lstdefinelanguage{json}{
+    basicstyle=\ttfamily\scriptsize,
+    showstringspaces=false,
+    breaklines=true,
+    frame=lines,
+    backgroundcolor=\color{codebg},
+    string=[s]{"}{"},
+    stringstyle=\color{stringcolor},
+    keywordstyle=\color{keywordcolor},
+}
+
+\lstdefinelanguage{javascript}{
+    keywords={async, await, break, case, catch, class, const, continue, debugger, default, delete, do, else, export, extends, false, finally, for, function, if, import, in, instanceof, new, null, return, super, switch, this, throw, true, try, typeof, var, void, while, with, yield, let},
+    morekeywords={console, log, Error, fetch, JSON, parse, stringify},
+    sensitive=true,
+    morecomment=[l]{//},
+    morecomment=[s]{/*}{*/},
+    morestring=[b]',
+    morestring=[b]",
+    morestring=[b]`,
+    keywordstyle=\color{primary},
+    commentstyle=\color{commentcolor},
+    stringstyle=\color{stringcolor},
+    basicstyle=\ttfamily\scriptsize
+}
+
+\lstset{
+    backgroundcolor=\color{codebg},
+    basicstyle=\ttfamily\scriptsize,
+    breaklines=true,
+    frame=single,
+    keywordstyle=\color{keywordcolor},
+    commentstyle=\color{commentcolor},
+    stringstyle=\color{stringcolor}
+}
+
+% --- Informazioni ---
+\title[Backend e API]{Programmazione e Tecnologie Web}
+\subtitle{Lezione 3: Il Backend e le API RESTful}
+\author{Giuseppe Capasso}
+\institute[ITS]{Istituto Tecnico Superiore (ITS)}
+\date{A.A. 2025/2026}
+
+\begin{document}
+
+% --- Slide Titolo ---
+\begin{frame}
+    \titlepage
+\end{frame}
+
+% --- Obiettivi ---
+\begin{frame}{Obiettivi della Lezione}
+    \begin{itemize}
+        \item \textbf{Architetture Moderne}: Il paradigma API-First e Microservizi.
+        \item \textbf{RESTful Design}: Semantica HTTP, JSON e Stato.
+        \item \textbf{Cybersecurity}: AAA, JWT e OAuth 2.0.
+        \item \textbf{Design Patterns}: Versioning, Filtering e Paginazione.
+        \item \textbf{Laboratorio}: Consumo API con Python e Node.js.
+    \end{itemize}
+\end{frame}
+
+% ==========================================
+% CAPITOLO 1: ARCHITETTURE
+% ==========================================
+\section{Architetture API-First}
+
+\begin{frame}{Il Paradigma API-First}
+    \begin{itemize}
+        \item Il backend non genera HTML (SSR), ma espone \textbf{dati grezzi}.
+        \item L'API \`e il "contratto" tra client e server.
+    \end{itemize}
+    \centering
+    \resizebox{0.7\textwidth}{!}{
+    \begin{tikzpicture}[
+        node distance=1.5cm,
+        client/.style={rectangle, draw, rounded corners, fill=blue!5, minimum width=2.5cm, minimum height=1cm, align=center, font=\small},
+        server/.style={rectangle, draw, rounded corners, fill=primary!20, minimum width=3.5cm, minimum height=1.5cm, align=center, font=\bfseries},
+        database/.style={cylinder, draw, rotate=90, fill=gray!10, minimum width=1.2cm, minimum height=1.5cm, align=center, font=\small}
+    ]
+        \node (web) [client] {SPA Client\\(React/Angular)};
+        \node (mobile) [client, below=of web] {Mobile Client\\(iOS/Android)};
+        \node (iot) [client, below=of mobile] {IoT/CLI\\(Python/Node)};
+        
+        \node (api) [server, right=3cm of mobile] {API Gateway /\\Backend Service};
+        \node (db) [database, right=2.5cm of api] {\rotatebox{-90}{Database}};
+
+        \draw [latex-latex, line width=1pt, primary] (web.east) -- node[above, black, scale=0.7, sloped] {HTTP/JSON} (api.west);
+        \draw [latex-latex, line width=1pt, primary] (mobile.east) -- node[above, black, scale=0.7] {HTTP/JSON} (api.west);
+        \draw [latex-latex, line width=1pt, primary] (iot.east) -- node[below, black, scale=0.7, sloped] {HTTP/JSON} (api.west);
+        \draw [dashed, line width=0.8pt] (api.east) -- (db.north);
+    \end{tikzpicture}
+    }
+\end{frame}
+
+\begin{frame}{Monoliti vs Microservizi}
+    \centering
+    \resizebox{0.8\textwidth}{!}{
+    \begin{tikzpicture}[
+        node distance=0.8cm and 1.5cm,
+        module/.style={rectangle, draw, fill=gray!5, minimum width=2.2cm, minimum height=0.8cm, font=\scriptsize, align=center},
+        service/.style={rectangle, draw, rounded corners, fill=primary!10, minimum width=2.5cm, minimum height=1cm, font=\small, align=center},
+        mono_container/.style={rectangle, draw, thick, dashed, inner sep=0.4cm, fill=gray!2, label=above:\textbf{Monolith}},
+        gateway/.style={trapezium, draw, trapezium left angle=120, trapezium right angle=120, fill=primary!20, minimum width=4cm, font=\small\bfseries, align=center}
+    ]
+        % Monolith
+        \node (m1) [module] {Auth Module};
+        \node (m2) [module, below=of m1] {User Module};
+        \node (m3) [module, below=of m2] {Order Module};
+        \node (m4) [module, below=of m3] {Notify Module};
+        \node [mono_container, fit=(m1) (m4)] {};
+
+        % Microservices
+        \node (gw) [gateway, right=5cm of m1, yshift=-1.5cm] {API Gateway};
+        \node (s1) [service, right=2cm of gw, yshift=1.5cm] {Auth Service};
+        \node (s2) [service, below=0.5cm of s1] {User Service};
+        \node (s3) [service, below=0.5cm of s2] {Order Service};
+        \node (s4) [service, below=0.5cm of s3] {Notify Service};
+
+        \draw [latex-latex, primary] (gw.east) -- (s1.west);
+        \draw [latex-latex, primary] (gw.east) -- (s2.west);
+        \draw [latex-latex, primary] (gw.east) -- (s3.west);
+        \draw [latex-latex, primary] (gw.east) -- (s4.west);
+    \end{tikzpicture}
+    }
+    \vspace{0.3cm}
+    \begin{columns}
+        \begin{column}{0.5\textwidth}
+            \textbf{Monolito}: Semplice, ma difficile da scalare e mantenere.
+        \end{column}
+        \begin{column}{0.5\textwidth}
+            \textbf{Microservizi}: Complesso, ma scalabile e resiliente.
+        \end{column}
+    \end{columns}
+\end{frame}
+
+\begin{frame}{Tassonomia delle API}
+    \centering
+    \resizebox{0.7\textwidth}{!}{
+    \begin{tikzpicture}[
+        layer/.style={rectangle, draw, thick, minimum width=8cm, minimum height=1.2cm, align=center, font=\small\bfseries},
+        arrow/.style={-latex, line width=1pt, primary}
+    ]
+        \node (web) [layer, fill=primary!20] {Web APIs (REST, GraphQL, RPC)\\ \normalfont\scriptsize Comunicazione via Rete (HTTP)};
+        \node (browser) [layer, fill=primary!10, below=0.5cm of web] {Browser APIs (DOM, Fetch, Canvas)\\ \normalfont\scriptsize Runtime del Client};
+        \node (lib) [layer, fill=gray!10, below=0.5cm of browser] {Library APIs (Standard Library, SDKs)\\ \normalfont\scriptsize Spazio di Memoria Locale};
+
+        \draw [arrow] (browser.north) -- (web.south);
+        \draw [arrow] (lib.north) -- (browser.south);
+    \end{tikzpicture}
+    }
+\end{frame}
+
+% ==========================================
+% CAPITOLO 2: REST & JSON
+% ==========================================
+\section{REST e Scambio Dati}
+
+\begin{frame}[fragile]{Serializzazione e JSON}
+    \centering
+    \begin{tikzpicture}[
+        box/.style={rectangle, draw, rounded corners, minimum width=3cm, minimum height=1.2cm, align=center, font=\small},
+        arrow/.style={-latex, line width=1pt, primary}
+    ]
+        \node (mem) [box, fill=gray!10] {Oggetto in Memoria\\(Dict / Object)};
+        \node (wire) [box, fill=primary!10, right=4cm of mem] {Stringa JSON\\(Payload Rete)};
+
+        \draw [arrow] ([yshift=0.2cm]mem.east) -- node[above, scale=0.7] {Serializzazione} ([yshift=0.2cm]wire.west);
+        \draw [arrow] ([yshift=-0.2cm]wire.west) -- node[below, scale=0.7] {Deserializzazione} ([yshift=-0.2cm]mem.east);
+    \end{tikzpicture}
+    
+    \vspace{0.3cm}
+    \begin{lstlisting}[language=json]
+{
+  "id": 42,
+  "title": "Introduzione alle API",
+  "author": {"name": "Giuseppe Capasso"},
+  "tags": ["web", "api", "rest"]
+}
+    \end{lstlisting}
+\end{frame}
+
+\begin{frame}{Semantica HTTP in REST}
+    \centering
+    \begin{table}
+    \begin{tabular}{lccl}
+    \toprule
+    \textbf{Metodo} & \textbf{Sicuro} & \textbf{Idempotente} & \textbf{Azione REST} \\
+    \midrule
+    \texttt{GET}    & S\`i & S\`i & Legge una risorsa \\
+    \texttt{POST}   & No & No & Crea una risorsa \\
+    \texttt{PUT}    & No & S\`i & Sostituisce risorsa \\
+    \texttt{PATCH}  & No & No & Modifica parziale \\
+    \texttt{DELETE} & No & S\`i & Elimina risorsa \\
+    \bottomrule
+    \end{tabular}
+    \end{table}
+    \vspace{0.3cm}
+    \begin{itemize}
+        \item \textbf{Sicurezza}: Non modifica lo stato sul server.
+        \item \textbf{Idempotenza}: Pi\`u chiamate identiche = stesso effetto di una.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}{HTTP Status Codes}
+    \begin{itemize}
+        \item \textbf{2xx (Successo)}:
+        \begin{itemize}
+            \item \texttt{200 OK}, \texttt{201 Created}, \texttt{204 No Content}.
+        \end{itemize}
+        \item \textbf{4xx (Errore Client)}:
+        \begin{itemize}
+            \item \texttt{400 Bad Request}: Dati inviati errati.
+            \item \texttt{401 Unauthorized}: Autenticazione mancante.
+            \item \texttt{403 Forbidden}: Mancanza di permessi.
+            \item \texttt{404 Not Found}: Risorsa inesistente.
+        \end{itemize}
+        \item \textbf{5xx (Errore Server)}:
+        \begin{itemize}
+            \item \texttt{500 Internal Server Error}.
+        \end{itemize}
+    \end{itemize}
+\end{frame}
+
+% ==========================================
+% CAPITOLO 3: SICUREZZA
+% ==========================================
+\section{Sicurezza delle API}
+
+\begin{frame}{Il Modello AAA}
+    \begin{enumerate}
+        \item \textbf{Authentication} (Chi sei?): Verifica identit\`a.
+        \item \textbf{Authorization} (Cosa puoi fare?): Controllo permessi.
+        \item \textbf{Accounting} (Cosa hai fatto?): Logging e Audit.
+    \end{enumerate}
+    \vspace{0.5cm}
+    \textbf{Fattori di Autenticazione}:
+    \begin{itemize}
+        \item \textbf{Something you know}: Password, PIN.
+        \item \textbf{Something you have}: Token hardware, Smartphone (OTP).
+        \item \textbf{Something you are}: Biometria (Impronta, Viso).
+    \end{itemize}
+\end{frame}
+
+\begin{frame}{JWT: JSON Web Tokens}
+    \centering
+    \resizebox{0.8\textwidth}{!}{
+    \begin{tikzpicture}[
+        node distance=0cm,
+        part/.style={rectangle, draw, minimum width=3cm, minimum height=1cm, align=center, font=\ttfamily\small, thick},
+        header_style/.style={fill=red!15},
+        payload_style/.style={fill=blue!15},
+        sig_style/.style={fill=green!15}
+    ]
+        \node (header) [part, header_style] {Header};
+        \node (p1) [right=0.2cm of header, font=\huge] {.};
+        \node (payload) [part, payload_style, right=0.2cm of p1] {Payload};
+        \node (p2) [right=0.2cm of payload, font=\huge] {.};
+        \node (sig) [part, sig_style, right=0.2cm of p2] {Signature};
+
+        \node [below=0.2cm of header, font=\scriptsize, text=red!70!black] {Algoritmo \& Tipo};
+        \node [below=0.2cm of payload, font=\scriptsize, text=blue!70!black] {Claims (Dati Utente)};
+        \node [below=0.2cm of sig, font=\scriptsize, text=green!70!black] {Firma Integrit\`a};
+    \end{tikzpicture}
+    }
+    \vspace{0.5cm}
+    \begin{itemize}
+        \item \textbf{Stateless}: Il server non deve salvare sessioni nel DB.
+        \item \textbf{Self-contained}: Contiene tutte le info necessarie.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}{OAuth 2.0: Authorization Code Flow}
+    \centering
+    \resizebox{0.7\textwidth}{!}{
+    \begin{tikzpicture}[
+        node distance=1.5cm, font=\sffamily\small,
+        line/.style={draw, -latex, thick, primary},
+        lifeline/.style={draw, dashed, thick, gray!50},
+        actor/.style={rectangle, draw, rounded corners, fill=primary!10, minimum width=2cm, minimum height=0.7cm, align=center, font=\bfseries\scriptsize}
+    ]
+        \node (user) [actor] {User};
+        \node (client) [actor, right=2cm of user] {Client App};
+        \node (auth) [actor, right=2cm of client] {Auth Server};
+        \node (api) [actor, right=2cm of auth] {API Server};
+
+        \draw [lifeline] (user.south) -- ++(0,-5.5);
+        \draw [lifeline] (client.south) -- ++(0,-5.5);
+        \draw [lifeline] (auth.south) -- ++(0,-5.5);
+        \draw [lifeline] (api.south) -- ++(0,-5.5);
+
+        \draw [line] ($(user.south)-(0,0.5)$) -- node[above, scale=0.6] {1. Login Request} ($(client.south)-(0,0.5)$);
+        \draw [line] ($(client.south)-(0,1.2)$) -- node[above, scale=0.6, sloped] {2. Redirect to Auth} ($(auth.south)-(0,1.2)$);
+        \draw [line] ($(auth.south)-(0,1.9)$) -- node[above, scale=0.6] {3. Auth Code} ($(client.south)-(0,1.9)$);
+        \draw [line] ($(client.south)-(0,2.6)$) -- node[above, scale=0.6] {4. Exchange Code} ($(auth.south)-(0,2.6)$);
+        \draw [line] ($(auth.south)-(0,3.3)$) -- node[above, scale=0.6] {5. Access Token} ($(client.south)-(0,3.3)$);
+        \draw [line] ($(client.south)-(0,4.0)$) -- node[above, scale=0.6] {6. Call API + Token} ($(api.south)-(0,4.0)$);
+    \end{tikzpicture}
+    }
+\end{frame}
+
+% ==========================================
+% CAPITOLO 4: DESIGN PATTERNS
+% ==========================================
+\section{Design Patterns Avanzati}
+
+\begin{frame}{Paginazione: Offset vs Cursor}
+    \centering
+    \resizebox{0.8\textwidth}{!}{
+    \begin{tikzpicture}[
+        record/.style={rectangle, draw, minimum width=0.8cm, minimum height=0.6cm, fill=gray!10},
+        active_record/.style={rectangle, draw, minimum width=0.8cm, minimum height=0.6cm, fill=primary!20, thick},
+        arrow/.style={-latex, line width=1pt, primary}
+    ]
+        % Offset
+        \node (o1) [record] {1}; \node (o2) [record, right=0.1cm of o1] {2}; \node (o3) [record, right=0.1cm of o2] {3};
+        \node (o4) [active_record, right=0.1cm of o3] {4}; \node (o5) [active_record, right=0.1cm of o4] {5};
+        \draw [decorate, decoration={brace, amplitude=5pt}] (o1.north west) -- (o3.north east) node [black, midway, yshift=0.4cm, font=\scriptsize] {Offset (skip 3)};
+
+        % Cursor
+        \begin{scope}[yshift=-1.5cm]
+            \node (c3) [record, label=below:{\scriptsize Cursor}] {3};
+            \node (c4) [active_record, right=0.1cm of c3] {4}; \node (c5) [active_record, right=0.1cm of c4] {5};
+            \draw [arrow] (c3.north) -- ++(0,0.3) -- ++(0.9,0) -- (c4.north);
+        \end{scope}
+    \end{tikzpicture}
+    }
+    \vspace{0.3cm}
+    \begin{itemize}
+        \item \textbf{Offset}: Facile, ma lento su milioni di righe.
+        \item \textbf{Cursor}: Performante e stabile su dati real-time.
+    \end{itemize}
+\end{frame}
+
+% ==========================================
+% CAPITOLO 5: LABORATORIO
+% ==========================================
+\section{Laboratorio Pratico}
+
+\begin{frame}[fragile]{Python: requests}
+    \begin{lstlisting}[language=python]
+import requests
+url = "https://jsonplaceholder.typicode.com/posts/1"
+
+try:
+    response = requests.get(url, timeout=5)
+    response.raise_for_status() 
+    
+    data = response.json()
+    print(f"Titolo: {data['title']}")
+
+except Exception as e:
+    print(f"Errore: {e}")
+    \end{lstlisting}
+    \textbf{Esecuzione}: \texttt{python client.py}
+\end{frame}
+
+\begin{frame}[fragile]{Node.js: fetch (v18+)}
+    \begin{lstlisting}[language=javascript]
+async function getPost() {
+    const url = "https://jsonplaceholder.typicode.com/posts/1";
+    try {
+        const response = await fetch(url);
+        if (!response.ok) throw new Error("Errore HTTP");
+
+        const data = await response.json();
+        console.log("Titolo:", data.title);
+    } catch (error) {
+        console.error("Errore:", error.message);
+    }
+}
+getPost();
+    \end{lstlisting}
+    \textbf{Esecuzione}: \texttt{node api\_test.js}
+\end{frame}
+
+\begin{frame}{Conclusioni}
+    \begin{itemize}
+        \item Le API sono il \textbf{tessuto connettivo} del web moderno.
+        \item Progettare bene significa pensare a \textbf{sicurezza} e \textbf{scalabilit\`a} sin dal primo giorno.
+        \item \textbf{Prossimi Passi}: Sperimentare con OpenAPI (Swagger) per documentare i vostri servizi.
+    \end{itemize}
+    \centering
+    \vspace{0.8cm}
+    \Large \textbf{\textcolor{primary}{Domande?}}
+\end{frame}
+
+\end{document}

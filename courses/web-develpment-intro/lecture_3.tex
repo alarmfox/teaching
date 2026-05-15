@@ -1,0 +1,691 @@
+\documentclass[11pt,a4paper]{report}
+
+% --- Pacchetti Fondamentali ---
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage[italian]{babel}
+\usepackage{etoolbox}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage{enumitem}
+\usepackage{titlesec}
+\usepackage{fancyhdr}
+\usepackage{cleveref}
+\usepackage{graphicx}
+\usepackage{longtable}
+\usepackage{booktabs}
+\usepackage{setspace}
+
+\crefformat{section}{\S#2#1#3}
+\crefformat{subsection}{\S#2#1#3}
+\crefformat{subsubsection}{\S#2#1#3}
+\crefformat{figure}{#2Figura~#1#3}
+\crefformat{footnote}{#2\footnotemark[#1]#3}
+\crefformat{table}{#2Tabella~#1#3}
+
+% --- Configurazione Header e Footer ---
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small Programmazione e Tecnologie Web}
+\fancyhead[R]{\small Giuseppe Capasso}
+\fancyfoot[C]{\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta, positioning, shapes.geometric, decorations.pathreplacing, calc, shadows, fit}
+
+% --- Configurazione Colori e Link ---
+\definecolor{primary}{RGB}{38, 66, 139}
+\definecolor{codebg}{RGB}{245, 245, 245}
+\definecolor{keywordcolor}{RGB}{0, 0, 255}
+\definecolor{stringcolor}{RGB}{163, 21, 21}
+\definecolor{commentcolor}{RGB}{0, 128, 0}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=primary,
+    urlcolor=primary,
+    citecolor=primary,
+}
+
+% --- Configurazione Formattazione Codice ---
+\lstdefinelanguage{json}{
+    basicstyle=\ttfamily\small,
+    numbers=left,
+    numberstyle=\scriptsize,
+    stepnumber=1,
+    numbersep=8pt,
+    showstringspaces=false,
+    breaklines=true,
+    frame=lines,
+    backgroundcolor=\color{codebg},
+    string=[s]{"}{"},
+    comment=[l]{//},
+    morecomment=[s]{/*}{*/},
+    stringstyle=\color{stringcolor},
+    keywordstyle=\color{keywordcolor},
+}
+
+\lstdefinelanguage{javascript}{
+    keywords={async, await, break, case, catch, class, const, continue, debugger, default, delete, do, else, export, extends, false, finally, for, function, if, import, in, instanceof, new, null, return, super, switch, this, throw, true, try, typeof, var, void, while, with, yield, let},
+    morekeywords={console, log, Error, fetch, JSON, parse, stringify},
+    sensitive=true,
+    morecomment=[l]{//},
+    morecomment=[s]{/*}{*/},
+    morestring=[b]',
+    morestring=[b]",
+    morestring=[b]`,
+    keywordstyle=\color{primary}\bfseries,
+    commentstyle=\color{commentcolor}\itshape,
+    stringstyle=\color{stringcolor},
+    basicstyle=\ttfamily\small
+}
+
+\lstset{
+    backgroundcolor=\color{codebg},
+    basicstyle=\ttfamily\small,
+    breaklines=true,
+    frame=single,
+    rulecolor=\color{lightgray},
+    captionpos=b,
+    xleftmargin=1em,
+    xrightmargin=1em,
+    keywordstyle=\color{keywordcolor},
+    commentstyle=\color{commentcolor},
+    stringstyle=\color{stringcolor}
+}
+
+% --- Formattazione Titoli ---
+\titleformat{\chapter}[display]
+  {\normalfont\bfseries\color{primary}}{\huge Capitolo \thechapter}{1ex}{\Huge}
+\titlespacing*{\chapter}{0pt}{-20pt}{40pt}
+
+\onehalfspacing
+
+\begin{document}
+
+% --- Frontespizio ---
+\begin{titlepage}
+    \centering
+    \vspace*{4cm}
+    {\Huge \textbf{\color{primary} Programmazione e Tecnologie Web}} \\[1.5cm]
+    {\Large \textbf{Dispense del Corso - Lezione 3}} \\[0.5cm]
+    {\large Docente: Giuseppe Capasso} \\[1.5cm]
+    {\normalsize \textbf{Cloud Native Development \& Cybersecurity Specialist}} \\
+    {\normalsize Istituto Tecnico Superiore (ITS)} \\
+    \vfill
+    {\normalsize Anno Accademico 2025/2026}
+\end{titlepage}
+
+\newpage
+\tableofcontents
+\newpage
+
+% ==========================================
+% CAPITOLO 1
+% ==========================================
+\chapter{Architetture Web e API-First}
+
+\section{Transizione verso il Disaccoppiamento}
+L'evoluzione delle architetture web moderne è caratterizzata dal passaggio da sistemi monolitici e strettamente accoppiati verso modelli distribuiti e agnostici rispetto alla piattaforma. Il paradigma \textbf{API-First} sancisce che l'interfaccia di programmazione (API) non è più un prodotto secondario dell'implementazione del backend, ma il contratto primario attorno a cui orbitano tutti i servizi.
+
+In questo scenario, il server non si occupa più di generare il codice HTML per il browser (come avviene nel Server-Side Rendering), ma espone unicamente dati grezzi, tipicamente in formato JSON. Questo permette a client eterogenei (Web, Mobile, IoT) di consumare la medesima logica di business in modo indipendente.
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[
+    node distance=1.5cm,
+    client/.style={rectangle, draw, rounded corners, fill=blue!5, minimum width=2.5cm, minimum height=1cm, align=center, font=\small},
+    server/.style={rectangle, draw, rounded corners, fill=primary!20, minimum width=3.5cm, minimum height=1.5cm, align=center, font=\bfseries},
+    database/.style={cylinder, draw, rotate=90, fill=gray!10, minimum width=1.2cm, minimum height=1.5cm, align=center, font=\small}
+]
+    \node (web) [client] {SPA Client\\(React/Angular)};
+    \node (mobile) [client, below=of web] {Mobile Client\\(iOS/Android)};
+    \node (iot) [client, below=of mobile] {IoT/CLI\\(Python/Node)};
+    
+    \node (api) [server, right=3cm of mobile] {API Gateway /\\Backend Service};
+    \node (db) [database, right=2.5cm of api] {\rotatebox{-90}{Database}};
+
+    \draw [latex-latex, line width=1pt, primary] (web.east) -- node[above, black, scale=0.7, sloped] {HTTP/JSON} (api.west);
+    \draw [latex-latex, line width=1pt, primary] (mobile.east) -- node[above, black, scale=0.7] {HTTP/JSON} (api.west);
+    \draw [latex-latex, line width=1pt, primary] (iot.east) -- node[below, black, scale=0.7, sloped] {HTTP/JSON} (api.west);
+    \draw [dashed, line width=0.8pt] (api.east) -- (db.north);
+\end{tikzpicture}
+\caption{Modello architetturale API-First con disaccoppiamento tra client e server.}
+\label{fig:api_first}
+\end{figure}
+
+\section{Evoluzione Strutturale: Monoliti vs Microservizi}
+Il disaccoppiamento non riguarda solo il rapporto tra client e server, ma anche la struttura interna del backend stesso.
+
+\subsection{L'Approccio Monolitico}
+In un'architettura monolitica, tutte le componenti applicative (autenticazione, gestione utenti, logica di pagamento, notifiche) risiedono all'interno di un unico codebase e vengono eseguite come un singolo processo. Sebbene semplice da sviluppare e testare inizialmente, il monolito presenta limiti critici in termini di scalabilità (è necessario scalare l'intera applicazione anche se solo un modulo è sotto carico) e di manutenibilità (un bug in un modulo può compromettere l'intero sistema).
+
+\subsection{L'Architettura a Microservizi}
+I microservizi scompongono l'applicazione in piccoli servizi indipendenti, ciascuno responsabile di una specifica capacità di business. Questi servizi comunicano tra loro e con il mondo esterno esclusivamente tramite API. Questo approccio permette di:
+\begin{itemize}
+    \item \textbf{Scalabilità Orizzontale}: \`E possibile replicare solo i servizi che necessitano di più risorse.
+    \item \textbf{Deployment Indipendente}: Un aggiornamento al servizio di "Pagamento" non richiede il riavvio o il redeploy del servizio "Utenti".
+    \item \textbf{Isolamento dei Guasti}: Un crash in un servizio non trascina con s\'e l'intero sistema (se il sistema è progettato correttamente).
+\end{itemize}
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[
+    node distance=0.8cm and 1.5cm,
+    module/.style={rectangle, draw, fill=gray!5, minimum width=2.2cm, minimum height=0.8cm, font=\scriptsize, align=center},
+    service/.style={rectangle, draw, rounded corners, fill=primary!10, minimum width=2.5cm, minimum height=1cm, font=\small, align=center},
+    mono_container/.style={rectangle, draw, thick, dashed, inner sep=0.4cm, fill=gray!2, label=above:\textbf{Monolith}},
+    gateway/.style={trapezium, draw, trapezium left angle=120, trapezium right angle=120, fill=primary!20, minimum width=4cm, font=\small\bfseries, align=center}
+]
+    % Monolith side
+    \node (m1) [module] {Auth Module};
+    \node (m2) [module, below=of m1] {User Module};
+    \node (m3) [module, below=of m2] {Order Module};
+    \node (m4) [module, below=of m3] {Notify Module};
+    \node [mono_container, fit=(m1) (m4)] {};
+
+    % Microservices side
+    \node (gw) [gateway, right=5cm of m1, yshift=-1.5cm] {API Gateway};
+    \node (s1) [service, right=2cm of gw, yshift=1.5cm] {Auth Service};
+    \node (s2) [service, below=0.5cm of s1] {User Service};
+    \node (s3) [service, below=0.5cm of s2] {Order Service};
+    \node (s4) [service, below=0.5cm of s3] {Notify Service};
+
+    \draw [arrow, -latex] (gw.east) -- (s1.west);
+    \draw [arrow, -latex] (gw.east) -- (s2.west);
+    \draw [arrow, -latex] (gw.east) -- (s3.west);
+    \draw [arrow, -latex] (gw.east) -- (s4.west);
+    
+    \node at ($(m4.south)+(0,-1.5cm)$) [font=\itshape\small] {Singolo blocco deployabile};
+    \node at ($(s4.south)+(0,-0.5cm)$) [font=\itshape\small] {Servizi indipendenti e scalabili};
+\end{tikzpicture}
+\caption{Confronto strutturale: Architettura Monolitica vs Microservizi.}
+\label{fig:monolith_vs_micro}
+\end{figure}
+
+\section{Tassonomia delle Interfacce di Programmazione}
+Il termine API (\textit{Application Programming Interface}) è onnicomprensivo e descrive qualsiasi set di definizioni e protocolli che permette a diverse componenti software di interagire. \`E fondamentale distinguere tra le diverse tipologie di API in base al loro contesto di esecuzione e al layer di astrazione.
+
+\begin{itemize}[leftmargin=3em]
+    \item \textbf{Library/Framework APIs}: Operano nello stesso spazio di indirizzamento della memoria dell'applicazione. Sono le interfacce esposte da librerie (es. \texttt{pandas} in Python) o framework che permettono di riutilizzare codice pre-esistente tramite chiamate a funzioni o metodi.
+    \item \textbf{Browser (Web Storage/DOM) APIs}: Interfacce integrate nel runtime del browser (es. V8) che permettono a JavaScript di interagire con il sistema sottostante (es. manipolazione del DOM, accesso alla localizzazione, gestione dello storage locale).
+    \item \textbf{Web APIs (Network APIs)}: Interfacce accessibili tramite protocolli di rete (solitamente HTTP). A differenza delle precedenti, queste implicano una comunicazione tra processi distinti (Client e Server) situati potenzialmente su nodi geograficamente distanti.
+\end{itemize}
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[
+    layer/.style={rectangle, draw, thick, minimum width=8cm, minimum height=1.2cm, align=center, font=\small\bfseries},
+    arrow/.style={-latex, line width=1pt, primary}
+]
+    \node (web) [layer, fill=primary!20] {Web APIs (REST, GraphQL, RPC)\\ \normalfont\scriptsize Comunicazione via Rete (HTTP)};
+    \node (browser) [layer, fill=primary!10, below=0.5cm of web] {Browser APIs (DOM, Fetch, Canvas)\\ \normalfont\scriptsize Runtime del Client};
+    \node (lib) [layer, fill=gray!10, below=0.5cm of browser] {Library APIs (Standard Library, SDKs)\\ \normalfont\scriptsize Spazio di Memoria Locale};
+
+    \draw [arrow] (browser.north) -- (web.south);
+    \draw [arrow] (lib.north) -- (browser.south);
+
+    \node at ($(web.east)+(2.5cm,0)$) [align=left, font=\scriptsize] {Remoto /\\Distribuito};
+    \node at ($(lib.east)+(2.5cm,0)$) [align=left, font=\scriptsize] {Locale /\\In-Process};
+\end{tikzpicture}
+\caption{Gerarchia e contesti di esecuzione delle diverse tipologie di API.}
+\label{fig:api_taxonomy}
+\end{figure}
+
+\section{Definizione Tecnica di Web API}
+Una Web API è un'interfaccia esposta via rete che permette a due sistemi software di comunicare utilizzando il protocollo HTTP. A differenza delle API di sistema (es. POSIX) o di libreria, le Web API operano in un ambiente distribuito dove la latenza di rete e la sicurezza del canale sono fattori determinanti.
+
+\begin{itemize}
+    \item \textbf{Endpoint}: Un indirizzo URI univoco che identifica una risorsa o un'azione (es. \texttt{/api/v1/users}).
+    \item \textbf{Contratto}: La specifica che definisce quali dati il client deve inviare e cosa riceverà in risposta.
+    \item \textbf{Formato}: Il linguaggio comune per lo scambio dati (JSON è lo standard de facto).
+\end{itemize}
+
+% ==========================================
+% CAPITOLO 2
+% ==========================================
+\chapter{L'Architettura RESTful e lo Scambio di Dati}
+
+\section{Dal Documento al Dato: Il Paradigma REST}
+Il passaggio fondamentale nelle architetture moderne è il superamento del concetto di "pagina web" come unità di scambio. Nelle architetture tradizionali (SSR), il server inviava al browser un documento HTML completo, pronto per la visualizzazione. In un'architettura \textbf{RESTful} (Representational State Transfer), il server invia invece una \textbf{rappresentazione} dello stato della risorsa, tipicamente sotto forma di dati strutturati.
+
+Questa distinzione è cruciale: il server non si preoccupa di come il dato verrà visualizzato (estetica, layout), ma garantisce l'integrità e la disponibilità del dato stesso. La responsabilità della presentazione è interamente demandata al client, che può essere un'applicazione React, un'app mobile o uno script di automazione.
+
+\section{JSON: Lo Standard per l'Interscambio}
+JSON (\textit{JavaScript Object Notation}) è il formato di interscambio dati predominante grazie alla sua leggerezza e alla facilità di parsing in quasi tutti i linguaggi moderni.
+
+\begin{lstlisting}[language=json, caption=Esempio di risorsa rappresentata in JSON]
+{
+  "id": 42,
+  "title": "Introduzione alle API",
+  "author": {
+    "name": "Giuseppe Capasso",
+    "role": "Docente"
+  },
+  "tags": ["web", "api", "rest"],
+  "available": true
+}
+\end{lstlisting}
+
+\subsection{Serializzazione e Deserializzazione}
+Il processo di trasformazione di un oggetto in memoria (es. un dizionario Python) in una stringa JSON è detto \textbf{Serializzazione} (o \textit{Marshalling}). L'operazione inversa è la \textbf{Deserializzazione}.
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[
+    box/.style={rectangle, draw, rounded corners, minimum width=3cm, minimum height=1.2cm, align=center, font=\small},
+    arrow/.style={-latex, line width=1pt, primary}
+]
+    \node (mem) [box, fill=gray!10] {Oggetto in Memoria\\(Dizionario / Object)};
+    \node (wire) [box, fill=primary!10, right=4cm of mem] {Stringa JSON\\(Payload su Rete)};
+
+    \draw [arrow] ([yshift=0.2cm]mem.east) -- node[above, scale=0.7] {Serializzazione} ([yshift=0.2cm]wire.west);
+    \draw [arrow] ([yshift=-0.2cm]wire.west) -- node[below, scale=0.7] {Deserializzazione} ([yshift=-0.2cm]mem.east);
+
+    \node at ($(mem.south)+(0,-0.5cm)$) [font=\scriptsize] {Stato applicativo};
+    \node at ($(wire.south)+(0,-0.5cm)$) [font=\scriptsize] {Trasporto HTTP};
+\end{tikzpicture}
+\caption{Ciclo di vita del dato tra memoria e rete.}
+\label{fig:serialization}
+\end{figure}
+
+\section{Semantica dei Metodi HTTP in ambito REST}
+Nelle architetture REST, i metodi HTTP (spesso chiamati "verbi") non sono semplici istruzioni di trasporto, ma definiscono l'azione semantica da compiere sulla risorsa identificata dall'URI. Poich\'e conoscete già il protocollo HTTP, ci focalizzeremo sulle proprietà di \textbf{Sicurezza} ed \textbf{Idempotenza}, fondamentali per il design di API robuste.
+
+\begin{itemize}[leftmargin=3em]
+    \item \textbf{Sicurezza}: Un metodo è sicuro se la sua esecuzione non modifica lo stato della risorsa sul server (es. \texttt{GET}).
+    \item \textbf{Idempotenza}: Un metodo è idempotente se l'effetto di più richieste identiche è lo stesso di una singola richiesta (es. \texttt{PUT}, \texttt{DELETE}).
+\end{itemize}
+
+\begin{table}[ht]
+\centering
+\begin{tabular}{lccl}
+\toprule
+\textbf{Metodo} & \textbf{Sicuro} & \textbf{Idempotente} & \textbf{Utilizzo RESTful} \\
+\midrule
+\texttt{GET}    & Sì & Sì & Recupero della rappresentazione di una risorsa. \\
+\texttt{POST}   & No & No & Creazione di una nuova risorsa subordinata. \\
+\texttt{PUT}    & No & Sì & Sostituzione integrale di una risorsa esistente. \\
+\texttt{PATCH}  & No & No & Aggiornamento parziale di una risorsa. \\
+\texttt{DELETE} & No & Sì & Rimozione di una risorsa. \\
+\bottomrule
+\end{tabular}
+\caption{Proprietà semantiche dei principali metodi HTTP.}
+\label{tab:http_methods}
+\end{table}
+
+\section{Gestione degli Stati: HTTP Status Codes}
+L'esito di una chiamata API deve essere comunicato in modo univoco tramite gli status code. In un'architettura REST, il corpo della risposta (JSON) fornisce i dettagli, ma il codice numerico definisce la categoria dell'esito.
+
+\begin{itemize}[leftmargin=3em]
+    \item \textbf{2xx (Success)}:
+    \begin{itemize}
+        \item \texttt{200 OK}: Richiesta completata con successo.
+        \item \texttt{201 Created}: Risorsa creata (tipico di una \texttt{POST}).
+        \item \texttt{204 No Content}: Successo, ma non ci sono dati da restituire (tipico di una \texttt{DELETE}).
+    \end{itemize}
+    \item \textbf{4xx (Client Error)}:
+    \begin{itemize}
+        \item \texttt{400 Bad Request}: Il payload inviato dal client è sintatticamente errato.
+        \item \texttt{401 Unauthorized}: Mancano le credenziali di autenticazione.
+        \item \texttt{403 Forbidden}: Il client è autenticato ma non ha i permessi per quella risorsa.
+        \item \texttt{404 Not Found}: L'URI richiesto non corrisponde ad alcuna risorsa.
+    \end{itemize}
+    \item \textbf{5xx (Server Error)}:
+    \begin{itemize}
+        \item \texttt{500 Internal Server Error}: Errore non gestito nella logica del backend.
+    \end{itemize}
+\end{itemize}
+
+\section{Interazione JSON in Python}
+Python gestisce JSON nativamente tramite il modulo \texttt{json} e facilita le chiamate di rete con \texttt{requests}.
+
+\begin{lstlisting}[language=Python, caption=Gestione JSON e API in Python]
+import json
+import requests
+
+# 1. Parsing di una stringa JSON locale
+raw_data = '{"name": "Python", "type": "Backend"}'
+parsed = json.loads(raw_data)
+print(parsed["name"])  # Output: Python
+
+# 2. Consumo di una Web API reale
+response = requests.get("https://api.example.com/data")
+if response.status_code == 200:
+    data = response.json()  # Deserializzazione automatica
+    print(f"Ricevuto ID: {data['id']}")
+
+# 3. Invio di dati (Serializzazione)
+new_item = {"title": "Nuova Risorsa", "status": "active"}
+requests.post("https://api.example.com/items", json=new_item)
+\end{lstlisting}
+
+\section{Interazione JSON in JavaScript}
+In JavaScript, la gestione di JSON è integrata globalmente, e le chiamate di rete avvengono tramite la \texttt{Fetch API}.
+
+\begin{lstlisting}[language=Java, caption=Gestione JSON e API in JavaScript]
+// 1. Manipolazione locale
+const obj = { name: "JS", level: "Expert" };
+const jsonString = JSON.stringify(obj); // Serializzazione
+const backToObj = JSON.parse(jsonString); // Deserializzazione
+
+// 2. Consumo Web API con Fetch (Modello Asincrono)
+async function getData() {
+  const response = await fetch("https://api.example.com/data");
+  if (response.ok) {
+    const data = await response.json(); // Parsing asincrono
+    console.log(`Dato ricevuto: ${data.title}`);
+  }
+}
+
+// 3. Invio dati
+async function postData() {
+  await fetch("https://api.example.com/items", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ status: "done" })
+  });
+}
+\end{lstlisting}
+
+
+% ==========================================
+% CAPITOLO 3
+% ==========================================
+\chapter{Sicurezza delle API}
+
+\section{Il Modello AAA: Fondamenta della Protezione}
+La sicurezza di un'interfaccia programmabile non si limita alla semplice "password", ma si fonda sul modello \textbf{AAA}, che definisce tre fasi distinte e sequenziali:
+
+\begin{itemize}[leftmargin=3em]
+    \item \textbf{Authentication (Autenticazione)}: Verifica dell'identità del chiamante ("Chi sei?"). Può avvenire tramite API Key, Basic Auth o Token.
+    \item \textbf{Authorization (Autorizzazione)}: Verifica dei privilegi di accesso ("Cosa puoi fare?"). Un utente autenticato potrebbe non essere autorizzato a cancellare una risorsa.
+    \item \textbf{Accounting (Tracciamento)}: Registrazione delle operazioni effettuate ("Cosa hai fatto?"). Essenziale per il monitoraggio e l'auditing di sicurezza.
+\end{itemize}
+
+\section{Autenticazione Stateless e Token-Based}
+Nelle Web API moderne, l'uso delle "Sessioni" (cookie-based) è sconsigliato poich\'e viola il vincolo di \textit{statelessness} di REST. Si preferisce l'autenticazione tramite \textbf{Bearer Token}. Il client invia il token nell'header HTTP \texttt{Authorization}:
+
+\begin{lstlisting}[language=bash]
+Authorization: Bearer <vostro_token_qui>
+\end{lstlisting}
+
+\section{Fattori di Autenticazione}
+L'autenticazione si basa sulla verifica di uno o più fattori che confermano l'identità di un'entità. Tradizionalmente, questi fattori vengono classificati in tre categorie:
+
+\begin{itemize}[leftmargin=3em]
+    \item \textbf{Something you know} (Qualcosa che conosci): Informazioni mnemoniche come password, PIN o risposte a domande di sicurezza. \`E il fattore più comune ma anche il più vulnerabile a phishing e brute force.
+    \item \textbf{Something you have} (Qualcosa che hai): Oggetti fisici o digitali in possesso dell'utente, come token hardware, smart card, o uno smartphone su cui ricevere un codice via app (es. Google Authenticator).
+    \item \textbf{Something you are} (Qualcosa che sei): Caratteristiche biometriche univoche, come impronte digitali, scansione dell'iride o riconoscimento facciale.
+\end{itemize}
+
+Nelle API, l'uso del Multi-Factor Authentication (MFA) sta diventando uno standard, specialmente quando si accede a dati sensibili o si effettuano operazioni critiche.
+
+\section{Metodi di Autenticazione nelle API: Confronto}
+Non tutti i metodi di autenticazione sono adatti a ogni scenario. La scelta dipende dal livello di sicurezza richiesto e dal tipo di client.
+
+\begin{table}[ht]
+\centering
+\begin{tabular}{lp{4cm}p{5cm}}
+\toprule
+\textbf{Metodo} & \textbf{Meccanismo} & \textbf{Sicurezza / Caso d'uso} \\
+\midrule
+\textbf{API Key} & Stringa statica inviata nell'header o query string. & Bassa. Usata per identificare il client (non l'utente) e per rate limiting. \\
+\textbf{Basic Auth} & Username e Password codificati in Base64. & Molto Bassa. Da usare solo su HTTPS e per test interni. \\
+\textbf{Bearer Token} & Token (es. JWT) generato dopo il login. & Alta. Standard per architetture stateless e microservizi. \\
+\textbf{OAuth 2.0} & Protocollo di autorizzazione delegata. & Molta Alta. Standard per integrazioni di terze parti e app moderne. \\
+\bottomrule
+\end{tabular}
+\caption{Confronto tra i principali metodi di autenticazione per API.}
+\label{tab:auth_methods}
+\end{table}
+
+\section{JWT: JSON Web Tokens}
+Il JWT è lo standard per la creazione di token compatti e autodescrittivi. Un JWT è composto da tre parti separate da un punto (\texttt{.}): \textbf{Header}, \textbf{Payload} e \textbf{Signature}.
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[
+    node distance=0cm,
+    part/.style={rectangle, draw, minimum width=3cm, minimum height=1cm, align=center, font=\ttfamily\small, thick},
+    header_style/.style={fill=red!15},
+    payload_style/.style={fill=blue!15},
+    sig_style/.style={fill=green!15}
+]
+    \node (header) [part, header_style] {Header};
+    \node (p1) [right=0.2cm of header, font=\huge] {.};
+    \node (payload) [part, payload_style, right=0.2cm of p1] {Payload};
+    \node (p2) [right=0.2cm of payload, font=\huge] {.};
+    \node (sig) [part, sig_style, right=0.2cm of p2] {Signature};
+
+    \draw [decorate, decoration={brace, amplitude=8pt}, yshift=0.3cm] (header.north west) -- (sig.north east) node [black, midway, yshift=0.6cm, font=\small\bfseries] {Token Completo (Base64 Encoded)};
+
+    \node [below=0.2cm of header, font=\scriptsize, text=red!70!black] {Algoritmo \& Tipo};
+    \node [below=0.2cm of payload, font=\scriptsize, text=blue!70!black] {Dati Utente (Claims)};
+    \node [below=0.2cm of sig, font=\scriptsize, text=green!70!black] {Firma di Integrità};
+\end{tikzpicture}
+\caption{Struttura dettagliata di un JSON Web Token.}
+\label{fig:jwt_structure}
+\end{figure}
+
+\section{Autorizzazione Delegata con OAuth 2.0}
+OAuth 2.0 è il framework standard che permette a un'applicazione (Client) di ottenere un accesso limitato ai dati di un utente presso un altro servizio (Resource Server). Il flusso più sicuro e comune per le applicazioni web è l'\textbf{Authorization Code Flow}.
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[
+    node distance=1.5cm,
+    font=\sffamily\small,
+    line/.style={draw, -latex, thick, primary},
+    lifeline/.style={draw, dashed, thick, gray!50},
+    actor/.style={rectangle, draw, rounded corners, fill=primary!10, minimum width=2.5cm, minimum height=0.8cm, align=center, font=\bfseries\footnotesize}
+]
+    % Lifelines
+    \node (user) [actor] {User\\(Owner)};
+    \node (client) [actor, right=2.5cm of user] {App\\(Client)};
+    \node (auth) [actor, right=2.5cm of client] {Auth\\Server};
+    \node (api) [actor, right=2.5cm of auth] {Resource\\Server (API)};
+
+    \draw [lifeline] (user.south) -- ++(0,-8.5);
+    \draw [lifeline] (client.south) -- ++(0,-8.5);
+    \draw [lifeline] (auth.south) -- ++(0,-8.5);
+    \draw [lifeline] (api.south) -- ++(0,-8.5);
+
+    % Sequence steps
+    \draw [line] ($(user.south)-(0,1)$) -- node[above, scale=0.7] {1. Auth Request} ($(client.south)-(0,1)$);
+    \draw [line] ($(client.south)-(0,2)$) -- node[above, scale=0.7] {2. Redirect to Auth} ($(auth.south)-(0,2)$);
+    \draw [line, dashed] ($(auth.south)-(0,3)$) -- node[above, scale=0.7] {3. User Login/Grant} ($(user.south)-(0,3)$);
+    \draw [line] ($(auth.south)-(0,4)$) -- node[above, scale=0.7] {4. Auth Code (Redirect)} ($(client.south)-(0,4)$);
+    \draw [line] ($(client.south)-(0,5)$) -- node[above, scale=0.7] {5. Exchange Code + Secret} ($(auth.south)-(0,5)$);
+    \draw [line] ($(auth.south)-(0,6)$) -- node[above, scale=0.7] {6. Access Token} ($(client.south)-(0,6)$);
+    \draw [line] ($(client.south)-(0,7)$) -- node[above, scale=0.7] {7. Request + Token} ($(api.south)-(0,7)$);
+    \draw [line] ($(api.south)-(0,8)$) -- node[above, scale=0.7] {8. Protected Resource} ($(client.south)-(0,8)$);
+
+\end{tikzpicture}
+\caption{Diagramma di sequenza del flusso Authorization Code (OAuth 2.0).}
+\label{fig:oauth_flow}
+\end{figure}
+
+Il vantaggio di questo approccio è che l'\textbf{Access Token} viene scambiato direttamente tra il backend del Client e l'Authorization Server (passo 5 e 6), riducendo drasticamente il rischio di intercettazione da parte di malintenzionati che monitorano il browser dell'utente.
+
+\section{Best Practices di Sicurezza}
+\begin{itemize}[leftmargin=3em]
+    \item \textbf{Enforce HTTPS}: I token viaggiano in chiaro nell'header. Senza crittografia TLS, sono facilmente intercettabili (\textit{Man-in-the-Middle}).
+    \item \textbf{Rate Limiting}: Limitare il numero di richieste per IP o per utente per prevenire attacchi DoS o tentativi di Brute Force.
+    \item \textbf{Secret Management}: Non inserire mai API Keys o segreti nel codice sorgente (utilizzare variabili d'ambiente o Vault).
+\end{itemize}
+
+\section{Design Patterns Avanzati}
+Oltre alla sicurezza, la progettazione di un'API professionale richiede l'adozione di pattern che garantiscano la manutenibilità, la scalabilità e la facilità d'uso nel tempo.
+
+\subsection{Versioning delle API}
+Le API evolvono. Per evitare di rompere l'integrazione con i client esistenti (\textit{breaking changes}), è necessario gestire diverse versioni contemporaneamente.
+\begin{itemize}[leftmargin=3em]
+    \item \textbf{URI Versioning} (il più comune): La versione è parte del percorso (es. \texttt{/api/v1/users}). \`E esplicito e facile da testare.
+    \item \textbf{Header Versioning}: La versione viene passata in un header personalizzato (es. \texttt{X-API-Version: 2}). Mantiene gli URI puliti ma è meno visibile.
+\end{itemize}
+
+\subsection{Filtering e Sorting}
+Per evitare di sovraccaricare il network e il client, le API devono permettere di restringere i risultati.
+\begin{itemize}[leftmargin=3em]
+    \item \textbf{Filtering}: Uso di parametri di query per filtrare i dati (es. \texttt{GET /users?status=active\&role=admin}).
+    \item \textbf{Sorting}: Definizione dell'ordine dei risultati (es. \texttt{GET /orders?sort=created_at:desc}).
+\end{itemize}
+
+\subsection{Paginazione: Offset vs Cursor}
+Quando una risorsa contiene migliaia di record, è impossibile restituirli tutti in una singola risposta. Esistono due approcci principali:
+
+\begin{enumerate}
+    \item \textbf{Offset-based Pagination}: Usa parametri \texttt{limit} e \texttt{offset} (es. \texttt{?limit=10\&offset=20}). \`E semplice ma diventa inefficiente su grandi volumi di dati (il database deve saltare molti record).
+    \item \textbf{Cursor-based Pagination}: Il client riceve un \textit{pointer} (cursore) all'ultimo elemento della pagina precedente. \`E estremamente performante e gestisce meglio i dati che cambiano frequentemente (niente record saltati o duplicati se un nuovo elemento viene inserito durante la navigazione).
+\end{enumerate}
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[
+    record/.style={rectangle, draw, minimum width=0.8cm, minimum height=0.6cm, fill=gray!10},
+    active_record/.style={rectangle, draw, minimum width=0.8cm, minimum height=0.6cm, fill=primary!20, thick},
+    arrow/.style={-latex, line width=1pt, primary}
+]
+    % Offset representation
+    \node (o1) [record] {1};
+    \node (o2) [record, right=0.1cm of o1] {2};
+    \node (o3) [record, right=0.1cm of o2] {3};
+    \node (o4) [active_record, right=0.1cm of o3] {4};
+    \node (o5) [active_record, right=0.1cm of o4] {5};
+    \node (o6) [record, right=0.1cm of o5] {6};
+    
+    \draw [decorate, decoration={brace, amplitude=5pt}] (o1.north west) -- (o3.north east) node [black, midway, yshift=0.5cm, font=\scriptsize] {Offset (skip 3)};
+    \draw [decorate, decoration={brace, amplitude=5pt, mirror}] (o4.south west) -- (o5.south east) node [black, midway, yshift=-0.5cm, font=\scriptsize] {Limit (2)};
+
+    % Cursor representation
+    \begin{scope}[yshift=-2.5cm]
+        \node (c1) [record] {1};
+        \node (c2) [record, right=0.1cm of c1] {2};
+        \node (c3) [record, right=0.1cm of c2, label=below:{\scriptsize Cursor}] {3};
+        \node (c4) [active_record, right=0.1cm of c3] {4};
+        \node (c5) [active_record, right=0.1cm of c4] {5};
+        \node (c6) [record, right=0.1cm of c5] {6};
+        
+        \draw [arrow] (c3.north) -- ++(0,0.5) -- ++(0.9,0) -- (c4.north);
+        \node at ($(c3.north)!0.5!(c4.north)+(0,0.8cm)$) [font=\scriptsize] {Next Page starting from ID 3};
+    \end{scope}
+
+    \node at (-2,0) [font=\bfseries\small] {Offset};
+    \node at (-2,-2.5) [font=\bfseries\small] {Cursor};
+\end{tikzpicture}
+\caption{Confronto visivo tra paginazione basata su Offset e Cursore.}
+\label{fig:pagination}
+\end{figure}
+
+% ==========================================
+% CAPITOLO 6
+% ==========================================
+\chapter{Esercitazione Pratica: Consumare Web API}
+
+In questo capitolo metteremo in pratica i concetti teorici analizzati, utilizzando due degli ecosistemi più diffusi per lo sviluppo backend e l'automazione: \textbf{Python} e \textbf{Node.js}. Utilizzeremo l'API pubblica di test \textit{JSONPlaceholder} (\texttt{https://jsonplaceholder.typicode.com}), un servizio REST che simula un database di post, commenti e utenti.
+
+\section{Python: La Libreria \texttt{requests}}
+Python è il linguaggio d'elezione per l'interazione rapida con le API. La libreria standard per effettuare richieste HTTP è \texttt{requests}, nota per la sua sintassi "umana" e intuitiva.
+
+\subsection{Installazione}
+Assicuratevi di avere Python installato e installate la libreria tramite \texttt{pip}:
+\begin{lstlisting}[language=bash]
+pip install requests
+\end{lstlisting}
+
+\subsection{Implementazione}
+L'esempio seguente mostra come recuperare un post, verificare lo status code e deserializzare il JSON in un dizionario Python.
+
+\begin{lstlisting}[language=python]
+import requests
+
+# Endpoint dell'API
+url = "https://jsonplaceholder.typicode.com/posts/1"
+
+try:
+    # 1. Effettuiamo la richiesta GET
+    response = requests.get(url, timeout=5)
+    
+    # 2. Verifica dello status code (solleva eccezione se 4xx o 5xx)
+    response.raise_for_status()
+    
+    # 3. Deserializzazione automatica del JSON
+    data = response.json()
+    
+    print(f"Titolo: {data['title']}")
+    print(f"Contenuto: {data['body'][:50]}...")
+
+except requests.exceptions.HTTPError as err:
+    print(f"Errore HTTP: {err}")
+except Exception as e:
+    print(f"Errore generico: {e}")
+\end{lstlisting}
+
+\subsection{Come eseguire il codice Python}
+\begin{enumerate}
+    \item Salvare il codice in un file chiamato \texttt{client.py}.
+    \item Aprire il terminale nella cartella dove si trova il file.
+    \item Eseguire il comando: \texttt{python client.py}.
+\end{enumerate}
+
+\section{JavaScript: Node.js e l'API \texttt{fetch}}
+Node.js è un runtime JavaScript basato sul motore V8 di Chrome, che permette di eseguire codice JS lato server (fuori dal browser).
+
+\subsection{Setup dell'Ambiente e Requisiti}
+Per utilizzare l'API \texttt{fetch} nativa (senza installare librerie esterne come \textit{axios}), è necessario avere installato **Node.js versione 18 o superiore**.
+
+\begin{itemize}[leftmargin=3em]
+    \item \textbf{Verifica Versione}: Eseguite \texttt{node -v} nel terminale. Se la versione è inferiore alla 18, l'esempio non funzionerà.
+    \item \textbf{Installazione}: Scaricare la versione **LTS** (attualmente la 20 o superiore) dal sito ufficiale \texttt{nodejs.org}.
+\end{itemize}
+
+\subsection{Implementazione con \texttt{fetch}}
+L'API \texttt{fetch} in Node.js segue lo stesso standard del browser, rendendo il codice portabile.
+
+\begin{lstlisting}[language=javascript]
+// Esempio con async/await (standard moderno)
+async function getPost() {
+    const url = "https://jsonplaceholder.typicode.com/posts/1";
+
+    try {
+        const response = await fetch(url);
+
+        // Verifica se la risposta e nel range 200-299
+        if (!response.ok) {
+            throw new Error(`Errore HTTP: ${response.status}`);
+        }
+
+        // Deserializzazione asincrona del JSON
+        const data = await response.json();
+
+        console.log("--- Risultato API ---");
+        console.log("Titolo:", data.title);
+        console.log("Autore (User ID):", data.userId);
+
+    } catch (error) {
+        console.error("Si e verificato un errore:", error.message);
+    }
+}
+
+getPost();
+\end{lstlisting}
+
+\subsection{Come eseguire il codice JavaScript}
+A differenza del browser, Node.js non ha bisogno di un file HTML per eseguire JavaScript.
+\begin{enumerate}
+    \item Creare un file di testo chiamato \texttt{api\_test.js}.
+    \item Incollare il codice sopra e salvare.
+    \item Aprire il terminale e digitare: \texttt{node api\_test.js}.
+\end{enumerate}
+
+\section{Conclusioni}
+La progettazione di API è un'arte che bilancia semplicità, sicurezza e scalabilità. Dalla scelta del formato JSON alla gestione granulare dei token JWT e dei flussi OAuth2, ogni decisione tecnica impatta direttamente sulla robustezza dell'intero sistema distribuito. L'adozione di standard come OpenAPI e di solide pratiche di testing è ciò che distingue un semplice script da un'infrastruttura backend professionale.
+
+\end{document}
+
+
+

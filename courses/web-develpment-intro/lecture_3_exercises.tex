@@ -1,0 +1,121 @@
+\documentclass[11pt,a4paper]{article}
+
+% --- Pacchetti ---
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage[italian]{babel}
+\usepackage[margin=1in]{geometry}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage{hyperref}
+\usepackage{enumitem}
+
+% --- Colori ---
+\definecolor{primary}{RGB}{38, 66, 139}
+\definecolor{codebg}{RGB}{245, 245, 245}
+
+\hypersetup{colorlinks=true, linkcolor=primary, urlcolor=primary}
+
+% --- Configurazione Codice ---
+\lstset{
+    backgroundcolor=\color{codebg},
+    basicstyle=\ttfamily\small,
+    breaklines=true,
+    frame=single,
+    keywordstyle=\color{blue},
+    commentstyle=\color{green!50!black},
+    stringstyle=\color{red!70!black},
+    language=Python
+}
+
+\title{\textbf{\color{primary} Esercitazione: Creazione di un Bot Webex}}
+\author{Programmazione e Tecnologie Web - Lezione 3}
+\date{A.A. 2025/2026}
+
+\begin{document}
+
+\maketitle
+
+\section{Obiettivo}
+Mettere in pratica i concetti di \textbf{Web API RESTful} e \textbf{Bearer Token} creando un'applicazione Python capace di interagire con la piattaforma Cisco Webex.
+
+\section{Prerequisiti}
+\begin{itemize}
+    \item Python 3.x e libreria \texttt{requests} (\texttt{pip install requests}).
+    \item Account su \href{https://developer.webex.com/}{developer.webex.com}.
+\end{itemize}
+
+\section{Esercizio Preliminare: Esplorazione con Postman / VS Code}
+Prima di scrivere codice, è fondamentale testare le API manualmente utilizzando dei \textit{REST Clients}. Questo permette di visualizzare immediatamente gli header e la struttura JSON di risposta.
+
+\subsection{Utilizzo di Postman}
+\begin{enumerate}
+    \item Scaricare e aprire \textbf{Postman}.
+    \item Creare una nuova richiesta di tipo \texttt{GET} verso: \url{https://jsonplaceholder.typicode.com/posts/1}.
+    \item Cliccare su \textbf{Send} e osservare il corpo della risposta (JSON) e lo Status Code (\texttt{200 OK}).
+    \item Provare a inviare una richiesta verso un indirizzo errato (es. aggiungere \texttt{/xyz} alla fine) e osservare il \texttt{404 Not Found}.
+\end{enumerate}
+
+\subsection{Utilizzo di VS Code (Thunder Client / REST Client)}
+Se preferite rimanere all'interno dell'editor, potete installare un'estensione dedicata:
+\begin{itemize}
+    \item \textbf{Thunder Client}: Molto simile a Postman, permette di gestire collezioni di richieste tramite una GUI integrata in VS Code.
+    \item \textbf{REST Client}: Permette di scrivere le richieste in un semplice file con estensione \texttt{.http} (es. \texttt{test.http}).
+\end{itemize}
+
+\textbf{Task}: Effettuare una richiesta \texttt{GET} verso \texttt{/v1/people/me} delle API Webex (endpoint: \url{https://webexapis.com/v1/people/me}). 
+\begin{itemize}
+    \item Dovrete inserire il vostro \texttt{ACCESS\_TOKEN} nel tab \textbf{Authorization} selezionando il tipo \textbf{Bearer Token}.
+    \item Verificate che il server restituisca correttamente i vostri dati personali (nome, cognome, email).
+\end{itemize}
+
+\section{Step 1: Ottenere il Personal Access Token}
+Per autenticarsi presso le API di Webex, è necessario un token. 
+\begin{enumerate}
+    \item Effettuare il login su \url{https://developer.webex.com/}.
+    \item Navigare in \textbf{Documentation} $\rightarrow$ \textbf{APIs} $\rightarrow$ \textbf{Messages} $\rightarrow$ \textbf{Create a Message}.
+    \item Nella sezione "Try it" sulla destra, assicurarsi che "Personal Access Token" sia selezionato e copiare la stringa alfanumerica (\textit{Bearer Token}).
+\end{enumerate}
+
+\section{Step 2: Implementazione dello Script}
+Completare il seguente schema nel file \texttt{bot.py}:
+
+\begin{lstlisting}
+import requests
+
+# CONFIGURAZIONE
+ACCESS_TOKEN = "IL_TUO_TOKEN_QUI"
+DESTINATARIO = "email@esempio.com" 
+
+def invia_messaggio(testo):
+    url = "https://webexapis.com/v1/messages"
+    
+    headers = {
+        "Authorization": f"Bearer {ACCESS_TOKEN}",
+        "Content-Type": "application/json"
+    }
+    
+    payload = {
+        "toPersonEmail": DESTINATARIO,
+        "text": testo
+    }
+    
+    response = requests.post(url, headers=headers, json=payload)
+    
+    if response.status_code == 200:
+        print("Successo!")
+    else:
+        print(f"Errore: {response.status_code}")
+
+invia_messaggio("Hello from Python!")
+\end{lstlisting}
+
+\section{Esercizi Suggeriti}
+\begin{enumerate}
+    \item \textbf{Input Dinamico}: Modificare lo script affinché il testo del messaggio venga inserito dall'utente tramite terminale.
+    \item \textbf{Gestione Errori}: Utilizzare \texttt{response.raise\_for\_status()} e un blocco \texttt{try/except} per gestire eventuali problemi di rete o token scaduti.
+    \item \textbf{GET Request}: Creare una funzione \texttt{leggi\_messaggi()} che interroghi l'endpoint \texttt{GET /v1/messages} per stampare gli ultimi messaggi della chat.
+\end{enumerate}
+
+\end{document}

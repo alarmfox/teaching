@@ -1,0 +1,20 @@
+<!-- template.html -->
+<!-- Esempio di come il Server-Side Rendering (SSR) inietta i dati in Python/Django -->
+
+<h1>Benvenuto, {{ utente.nome }}!</h1>
+<p>Oggi hai {{ task_list|length }} impegni in agenda.</p>
+
+<ul class="todo-list">
+    {% for task in task_list %}
+        <li class="{% if task.completato %}done{% endif %}">
+            <strong>{{ task.titolo }}</strong> - 
+            Scadenza: {{ task.scadenza|date:"D d M" }}
+        </li>
+    {% empty %}
+        <li>Ottimo lavoro! Non hai task in sospeso.</li>
+    {% endfor %}
+</ul>
+
+<style>
+    .done { text-decoration: line-through; color: gray; }
+</style>

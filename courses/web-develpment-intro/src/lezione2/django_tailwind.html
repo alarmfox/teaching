@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Django + Tailwind SSR</title>
+    <!-- Includiamo TailwindCSS via CDN per semplicità -->
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 min-h-screen flex items-center justify-center">
+
+    <div class="max-w-md w-full bg-white shadow-lg rounded-lg p-8">
+        <h1 class="text-3xl font-bold text-blue-800 mb-6 text-center">Dashboard Django</h1>
+        
+        <p class="text-gray-600 mb-4 text-center">
+            Benvenuto, <span class="font-semibold text-gray-800">{{ user_name }}</span>!
+        </p>
+
+        <div class="space-y-4">
+            <h2 class="text-xl font-semibold border-b pb-2">I tuoi Task Assegnati</h2>
+            
+            {% if tasks %}
+                <ul class="divide-y divide-gray-200">
+                    {% for task in tasks %}
+                        <li class="py-3 flex justify-between items-center">
+                            <span class="{% if task.done %}line-through text-gray-400{% else %}text-gray-700{% endif %}">
+                                {{ task.title }}
+                            </span>
+                            <span class="text-xs px-2 py-1 rounded {% if task.priority == 'high' %}bg-red-100 text-red-600{% else %}bg-green-100 text-green-600{% endif %}">
+                                {{ task.priority|upper }}
+                            </span>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p class="italic text-gray-400 text-center">Nessun task per oggi. Rilassati!</p>
+            {% endif %}
+        </div>
+
+        <div class="mt-8 pt-6 border-t text-center text-xs text-gray-400">
+            Generato via Server-Side Rendering (SSR) alle {{ current_time|date:"H:i:s" }}
+        </div>
+    </div>
+
+</body>
+</html>

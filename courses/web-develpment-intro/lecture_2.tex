@@ -1,0 +1,356 @@
+\documentclass[11pt,a4paper]{report}
+
+% --- Pacchetti Fondamentali ---
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage[italian]{babel}
+\usepackage{etoolbox}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage{enumitem}
+\usepackage{titlesec}
+\usepackage{fancyhdr}
+\usepackage{hyperref}
+\usepackage{cleveref}
+
+\crefformat{section}{\S#2#1#3}
+\crefformat{subsection}{\S#2#1#3}
+\crefformat{subsubsection}{\S#2#1#3}
+\crefformat{figure}{#2Figura~#1#3}
+\crefformat{footnote}{#2\footnotemark[#1]#3}
+\crefformat{table}{#2Tabella~#1#3}
+
+% --- Configurazione Header e Footer ---
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small Programmazione e Tecnologie Web}
+\fancyhead[R]{\small Giuseppe Capasso}
+\fancyfoot[C]{\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta, positioning, shapes.geometric, decorations.pathreplacing}
+
+% --- Configurazione Colori e Link ---
+\definecolor{primary}{RGB}{38, 66, 139} % Blu scuro istituzionale
+\definecolor{codebg}{RGB}{245, 245, 245}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=primary,
+    urlcolor=primary,
+    citecolor=primary,
+}
+
+% --- Configurazione Formattazione Codice ---
+\lstset{
+    backgroundcolor=\color{codebg},
+    basicstyle=\ttfamily\small,
+    breaklines=true,
+    frame=single,
+    rulecolor=\color{lightgray},
+    captionpos=b,
+    xleftmargin=1em,
+    xrightmargin=1em
+}
+
+% --- Formattazione Titoli ---
+\titleformat{\chapter}[display]
+  {\normalfont\bfseries\color{primary}}{\huge Capitolo \thechapter}{1ex}{\Huge}
+\titlespacing*{\chapter}{0pt}{-20pt}{40pt}
+
+\begin{document}
+
+% --- Frontespizio ---
+\begin{titlepage}
+    \centering
+    \vspace*{4cm}
+    {\Huge \textbf{\color{primary} Programmazione e Tecnologie Web}} \\[1.5cm]
+    {\Large \textbf{Dispense del Corso - Lezione 2}} \\[0.5cm]
+    {\large Docente: Giuseppe Capasso} \\[1.5cm]
+    {\normalsize \textbf{Cloud Native Development \& Cybersecurity Specialist}} \\
+    {\normalsize Istituto Tecnico Superiore (ITS)} \\
+    \vfill
+    {\normalsize Anno Accademico 2025/2026}
+\end{titlepage}
+
+\newpage
+
+% ==========================================
+% INTRODUZIONE
+% ==========================================
+\chapter*{Il Web Statico vs Dinamico e la Logica Client-Side}
+\addcontentsline{toc}{chapter}{Il Web Statico vs Dinamico e la Logica Client-Side}
+
+\section*{Obiettivi della Lezione}
+In questa lezione esploreremo l'evoluzione delle architetture web, passando dalla semplicita' dei siti statici alla complessita' delle moderne applicazioni web dinamiche. Gli obiettivi principali sono:
+\begin{itemize}
+    \item \textbf{Distinguere tra Web Statico e Dinamico}: Comprendere quando utilizzare l'uno o l'altro approccio in base alle esigenze del progetto.
+    \item \textbf{Paradigmi di Rendering}: Analizzare le differenze tra Server-Side Rendering (SSR) e Client-Side Rendering (CSR).
+    \item \textbf{Generazione di Siti Statici (SSG)}: Imparare a utilizzare \textbf{Hugo} per creare siti veloci e sicuri.
+    \item \textbf{Persistenza dei Dati}: Gestire lo stato dell'applicazione direttamente nel browser utilizzando il \textbf{localStorage}.
+    \item \textbf{Esercitazione Pratica}: Implementare una Todo App completa seguendo il paradigma CRUD.
+\end{itemize}
+
+% ==========================================
+% CAPITOLO 1
+% ==========================================
+\chapter{Web Statico vs Web Dinamico}
+
+\section{Il Web Statico: Il Ritorno alle Origini}
+Un sito web si definisce \textbf{statico} quando il contenuto servito al client e' esattamente lo stesso memorizzato sul file system del server. Non vi e' alcuna elaborazione in tempo reale: il server web (come Apache o Nginx) agisce semplicemente come un distributore di file.
+
+Quando un utente richiede una pagina (es. \texttt{contatti.html}), il server cerca il file corrispondente e lo invia nel corpo della risposta HTTP.
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[node distance=4cm, every node/.style={rectangle, draw, rounded corners, minimum width=2.5cm, minimum height=1.2cm, align=center, line width=1pt}]
+    \node (client) [fill=primary!10] {\textbf{Client} \\ (Browser)};
+    \node (server) [right=of client, fill=primary!10] {\textbf{Server Web} \\ (Nginx/Apache)};
+    \node (disk) [below=1.5cm of server, shape=cylinder, aspect=0.5, rotate=90, minimum width=1.5cm, minimum height=2cm, fill=gray!20] {\rotatebox{-90}{File System}};
+
+    \draw [->, >=stealth, line width=1.2pt, primary] ([yshift=0.3cm]client.east) -- node[above, black, scale=0.8] {GET /index.html} ([yshift=0.3cm]server.west);
+    \draw [->, >=stealth, line width=1pt, dashed] (server.south) -- node[right, black, scale=0.8] {Leggi file} (disk.north);
+    \draw [<-, >=stealth, line width=1.2pt, primary] ([yshift=-0.3cm]client.east) -- node[below, black, scale=0.8] {200 OK (index.html)} ([yshift=-0.3cm]server.west);
+\end{tikzpicture}
+\caption{Architettura di un sito web statico.}
+\label{fig:static_web}
+\end{figure}
+
+\subsection{Vantaggi del Web Statico}
+Nonostante possa sembrare una tecnologia superata, il web statico sta vivendo una rinascita grazie a:
+\begin{itemize}
+    \item \textbf{Performance Estreme}: Poiche' non c'e' elaborazione lato server (nessuna query al database, nessuna esecuzione di codice PHP/Python), la risposta e' quasi istantanea.
+    \item \textbf{Sicurezza}: Senza un database o un backend attivo, la superficie d'attacco e' minima. Non e' possibile effettuare SQL Injection o altri attacchi comuni ai CMS dinamici come WordPress.
+    \item \textbf{Scalabilita'}: Servire file statici richiede pochissime risorse. Una CDN (Content Delivery Network) puo' replicare il sito in tutto il mondo con costi irrisori.
+\end{itemize}
+
+\subsection{Svantaggi e Limiti}
+Il limite principale e' la \textbf{gestione dei contenuti}. In un sito statico "puro", se vuoi cambiare il footer su 100 pagine, devi modificare manualmente 100 file HTML. Inoltre, non e' possibile avere contenuti personalizzati per l'utente (es. "Benvenuto Giuseppe") o gestire login e carrelli acquisti senza l'ausilio di servizi esterni o JavaScript.
+
+\section{Il Web Dinamico: Personalizzazione e Interazione}
+Un sito web e' \textbf{dinamico} quando il contenuto della pagina viene generato "al volo" dal server in risposta a una specifica richiesta. In questo modello, il server non si limita a leggere un file, ma esegue del codice (in PHP, Python, JavaScript, etc.) che spesso interagisce con un \textbf{Database}.
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[node distance=3cm, every node/.style={rectangle, draw, rounded corners, minimum width=2.2cm, minimum height=1cm, align=center, line width=1pt}]
+    \node (client) [fill=primary!10] {\textbf{Client}};
+    \node (server) [right=of client, fill=primary!20] {\textbf{App Server} \\ (Backend)};
+    \node (db) [right=of server, shape=cylinder, aspect=0.5, rotate=90, minimum width=1.2cm, minimum height=1.5cm, fill=primary!5] {\rotatebox{-90}{Database}};
+
+    \draw [->, >=stealth, line width=1.2pt, primary] ([yshift=0.2cm]client.east) -- node[above, black, scale=0.7] {Request} ([yshift=0.2cm]server.west);
+    \draw [<->, >=stealth, line width=1pt] (server.east) -- node[above, black, scale=0.7] {Query} (db.north);
+    \draw [<-, >=stealth, line width=1.2pt, primary] ([yshift=-0.2cm]client.east) -- node[below, black, scale=0.7] {HTML Generato} ([yshift=-0.2cm]server.west);
+\end{tikzpicture}
+\caption{Architettura di un sito web dinamico tradizionale.}
+\label{fig:dynamic_web}
+\end{figure}
+
+Il vantaggio principale e' la possibilita' di gestire enormi quantita' di dati e offrire un'esperienza utente su misura. Tuttavia, questo comporta una maggiore complessita' infrastrutturale e potenziali colli di bottiglia nelle prestazioni dovuti alle query al database.
+
+\section{Esempio Pratico: Hosting Gratuito con Cloudflare Pages}
+Per mettere in pratica i vantaggi del web statico, oggi esistono servizi che permettono di ospitare siti web in modo professionale e totalmente gratuito. Uno dei piu' famosi e' \textbf{Cloudflare Pages}.
+
+\subsection{Perche' usare una CDN (Content Delivery Network)?}
+In un modello tradizionale, il tuo sito vive su un unico server in una specifica posizione geografica (es. Milano). Se un utente da Tokyo cerca di accedere, i dati devono attraversare l'intero globo, introducendo latenza.
+
+Una \textbf{CDN} come Cloudflare risolve questo problema distribuendo copie del tuo sito statico su centinaia di server (chiamati \textit{Edge Nodes}) in tutto il mondo. L'utente verra' servito dal server fisicamente piu' vicino a lui.
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[node distance=1.5cm, every node/.style={align=center, font=\small}]
+    \node (origin) [rectangle, draw, fill=primary!20, minimum width=2.5cm, minimum height=1cm] {\textbf{Server Origine}};
+    
+    \node (edge1) [circle, draw, fill=primary!5, below left=1cm and 2cm of origin] {Edge\\Londra};
+    \node (edge2) [circle, draw, fill=primary!5, below=1.5cm of origin] {Edge\\Milano};
+    \node (edge3) [circle, draw, fill=primary!5, below right=1cm and 2cm of origin] {Edge\\Tokyo};
+
+    \draw [->, >=stealth, dashed] (origin) -- (edge1);
+    \draw [->, >=stealth, dashed] (origin) -- (edge2);
+    \draw [->, >=stealth, dashed] (origin) -- (edge3);
+
+    \node (user) [rectangle, draw, rounded corners, fill=green!10, below=1cm of edge3] {Utente Japan};
+    \draw [<->, >=stealth, primary, line width=1pt] (edge3) -- (user);
+\end{tikzpicture}
+\caption{Funzionamento di una CDN: i contenuti statici sono vicini all'utente.}
+\label{fig:cdn_working}
+\end{figure}
+
+\subsection{Workflow con Cloudflare Pages}
+Il "trucco" per ospitare un sito statico gratuitamente su Cloudflare Pages consiste nell'integrazione con Git:
+\begin{enumerate}
+    \item \textbf{Codice su GitHub}: Carichi i tuoi file HTML/CSS/JS su un repository GitHub.
+    \item \textbf{Collegamento}: Connetti il tuo account Cloudflare al repository.
+    \item \textbf{Deployment Automatico}: Ogni volta che fai un \texttt{git push}, Cloudflare rileva la modifica, preleva i file e li distribuisce sulla sua rete globale in pochi secondi.
+\end{enumerate}
+
+Questo approccio non solo e' gratuito per la maggior parte dei progetti personali, ma garantisce anche certificati SSL (HTTPS) automatici e una velocita' di caricamento imbattibile.
+
+\subsection{Mini-Tutorial: Pubblicare il tuo primo sito statico}
+Segui questi passaggi per rendere il tuo progetto accessibile a chiunque su Internet:
+
+\begin{enumerate}
+    \item \textbf{Prepara il codice}: Assicurati che il tuo progetto abbia un file chiamato \texttt{index.html} nella cartella principale.
+    \item \textbf{Carica su GitHub}:
+    \begin{itemize}
+        \item Vai su \url{https://github.com} e crea un nuovo repository (es. "mio-sito-statico").
+        \item Carica i tuoi file usando i comandi Git visti nella Lezione 1: \\
+        \texttt{git add .}, \texttt{git commit -m "Primo commit"}, \texttt{git push}.
+    \end{itemize}
+    \item \textbf{Configura Cloudflare}:
+    \begin{itemize}
+        \item Vai sulla dashboard di Cloudflare (\url{https://dash.cloudflare.com/sign-up}) e crea un account gratuito.
+        \item Nel menu laterale, clicca su \textbf{Workers \& Pages} e poi sul pulsante \textbf{Create application}.
+        \item Seleziona la scheda \textbf{Pages} e clicca su \textbf{Connect to Git}.
+    \end{itemize}
+    \item \textbf{Deployment}:
+    \begin{itemize}
+        \item Seleziona il tuo repository GitHub appena creato.
+        \item Nelle impostazioni di build, se il tuo sito e' in HTML semplice, puoi lasciare tutto invariato (Production branch: \texttt{main}, Build command: vuoto).
+        \item Clicca su \textbf{Save and Deploy}.
+    \end{itemize}
+\end{enumerate}
+
+Dopo pochi secondi, Cloudflare ti fornira' un indirizzo del tipo \texttt{mio-sito.pages.dev}. Da questo momento, ogni volta che modificherai il codice e farai un \texttt{push} su GitHub, il tuo sito si aggiornera' automaticamente in tutto il mondo!
+
+% ==========================================
+% CAPITOLO 2
+% ==========================================
+\chapter{Paradigmi di Rendering: SSR vs CSR}
+
+\section{Introduzione ai Modelli di Rendering}
+La differenza fondamentale tra i vari tipi di siti web risiede in \textbf{dove} viene costruito l'HTML che l'utente vede. Esistono due approcci principali:
+
+\begin{itemize}
+    \item \textbf{Server-Side Rendering (SSR)}: La pagina viene "assemblata" sul server. Il browser riceve un file HTML gia' completo di dati.
+    \item \textbf{Client-Side Rendering (CSR)}: Il server invia un file HTML quasi vuoto e un grosso file JavaScript. Il browser esegue il JavaScript, che scarica i dati e costruisce l'HTML direttamente nel browser.
+\end{itemize}
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[node distance=3.5cm, every node/.style={rectangle, draw, rounded corners, minimum width=2.5cm, minimum height=1cm, align=center, line width=1pt}]
+    % SSR
+    \node (s_server) [fill=primary!20] {\textbf{Server (SSR)}};
+    \node (s_client) [right=of s_server, fill=primary!10] {\textbf{Client}};
+    \draw [->, >=stealth, primary, line width=1.2pt] (s_server) -- node[above, black, scale=0.7] {HTML Completo\\(Dati inclusi)} (s_client);
+    \node at (s_server.north) [above=5pt, font=\bfseries] {Modello Tradizionale};
+
+    % CSR
+    \node (c_server) [below=1.5cm of s_server, fill=primary!20] {\textbf{Server (CSR)}};
+    \node (c_client) [right=of c_server, fill=primary!10] {\textbf{Client}};
+    \draw [->, >=stealth, primary, line width=1.2pt] ([yshift=0.2cm]c_server.east) -- node[above, black, scale=0.7] {HTML Vuoto + JS} ([yshift=0.2cm]c_client.west);
+    \draw [->, >=stealth, gray, dashed] ([yshift=-0.2cm]c_client.west) -- node[below, black, scale=0.7] {Richiesta Dati (JSON)} ([yshift=-0.2cm]c_server.east);
+    \node at (c_server.north) [above=5pt, font=\bfseries] {Modello Moderno (SPA)};
+\end{tikzpicture}
+\caption{Confronto tra Server-Side Rendering e Client-Side Rendering.}
+\label{fig:ssr_vs_csr}
+\end{figure}
+
+\section{SSR e il Motore di Templating}
+Nelle applicazioni SSR, utilizziamo un \textbf{Motore di Templating}. Si tratta di un sistema che permette di mescolare codice HTML statico con dei "segnaposto" (placeholder) che verranno sostituiti dai dati reali prima che la pagina venga inviata.
+
+\subsection{Esempio con Django (Python)}
+Django utilizza un linguaggio di template molto potente. Immaginiamo di voler mostrare una lista di task salvati in un database Python:
+
+\begin{lstlisting}[language=Python, caption=Esempio di Template Django]
+<!-- template.html -->
+<h1>Le tue Cose da Fare</h1>
+<ul>
+    {% for task in lista_todo %}
+        <li>
+            {{ task.titolo }} 
+            {% if task.completato %}
+                <span style="color: green;">(Fatto!)</span>
+            {% endif %}
+        </li>
+    {% empty %}
+        <li>Non hai ancora impegni.</li>
+    {% endfor %}
+</ul>
+\end{lstlisting}
+
+\textbf{Cosa succede?}: Il server Python legge questo file, esegue il ciclo \texttt{for}, inietta i nomi dei task e invia al browser un \texttt{<ul>} standard. Il browser non sapra' mai che quel file e' stato generato da Python!
+
+\section{Static Site Generation (SSG): Hugo}
+Un caso particolare di SSR e' lo \textbf{Static Site Generator}. Invece di generare la pagina ogni volta che un utente la richiede, la generiamo \textbf{una sola volta} durante la fase di sviluppo (build).
+
+\textbf{Hugo} e' uno degli strumenti piu' popolari per questo scopo. Scrivi i contenuti in \textbf{Markdown} (un formato di testo semplice) e Hugo li trasforma in un intero sito web statico in pochi millisecondi.
+
+\begin{lstlisting}[caption=Esempio di contenuto Hugo (Markdown)]
+---
+title: "Il mio primo post"
+date: 2026-05-14
+---
+# Benvenuti!
+Questo e' un esempio di contenuto che Hugo trasformera' in un file HTML statico utilizzando un template.
+\end{lstlisting}
+
+% ==========================================
+% CAPITOLO 3
+% ==========================================
+\chapter{Laboratorio: Todo App Client-Side}
+
+In questo laboratorio costruiremo una \textbf{Todo Application} funzionale che gira interamente nel browser. Useremo questo esercizio per comprendere come gestire i dati (\textbf{CRUD}) e come farli sopravvivere al ricaricamento della pagina.
+
+\section{Fase 1: Struttura e Stile (HTML/CSS)}
+Iniziamo creando un'interfaccia pulita. Useremo un campo di testo per inserire i task e una lista non ordinata per visualizzarli.
+
+\begin{lstlisting}[language=HTML, caption=Struttura base Todo App]
+<div class="container">
+    <h1>I miei Task</h1>
+    <div class="input-group">
+        <input type="text" id="todoInput" placeholder="Cosa devi fare?">
+        <button id="addBtn">Aggiungi</button>
+    </div>
+    <ul id="todoList">
+        <!-- I task appariranno qui -->
+    </ul>
+</div>
+\end{lstlisting}
+
+\section{Fase 2: Introduzione a jQuery}
+Sebbene JavaScript moderno (Vanilla JS) sia molto potente, per anni \textbf{jQuery} e' stato lo standard per manipolare il DOM in modo semplice e cross-browser. Lo useremo oggi per la sua sintassi concisa.
+
+Per includerlo, aggiungiamo questo tag prima della fine del \texttt{<body>}:
+\begin{lstlisting}[language=HTML]
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+\end{lstlisting}
+
+La sintassi di base e' \texttt{\$(selettore).azione()}. Ad esempio:
+\begin{lstlisting}[language=Java]
+// Cerca il bottone e aggiunge un evento click
+$('#addBtn').click(function() {
+    alert("Hai cliccato!");
+});
+\end{lstlisting}
+
+\section{Fase 3: Implementazione del Paradigma CRUD}
+Il CRUD rappresenta le quattro operazioni fondamentali:
+\begin{enumerate}
+    \item \textbf{Create}: Quando premiamo "Aggiungi", creiamo un nuovo oggetto task e lo aggiungiamo a un array.
+    \item \textbf{Read}: Leggiamo l'array e generiamo i tag \texttt{<li>} nel DOM.
+    \item \textbf{Update}: Cliccando su un task, cambiamo il suo stato (es. "completato: true").
+    \item \textbf{Delete}: Un tasto "X" per rimuovere il task dall'array e dalla vista.
+\end{enumerate}
+
+\section{Fase 4: Persistenza con localStorage}
+Il problema di JavaScript e' che se ricarichi la pagina, tutte le variabili vengono resettate. Per salvare i dati, usiamo il \textbf{localStorage}.
+
+Il \texttt{localStorage} puo' salvare solo \textbf{stringhe}. Per salvare oggetti complessi (come la nostra lista di task), dobbiamo convertirli in formato \textbf{JSON}.
+
+\begin{lstlisting}[language=Java, caption=Salvataggio e Caricamento dati]
+// Trasformiamo l'array in stringa e salviamo
+const datiString = JSON.stringify(miaListaTasks);
+localStorage.setItem('tasks', datiString);
+
+// Recuperiamo la stringa e la ritrasformiamo in oggetto JS
+const recuperati = localStorage.getItem('tasks');
+const listaOriginale = JSON.parse(recuperati);
+\end{lstlisting}
+
+\paragraph{Esercizio Pratico}
+Implementa la funzione di salvataggio ogni volta che un task viene aggiunto o rimosso. All'avvio della pagina, controlla se ci sono dati nel \texttt{localStorage} e, se presenti, popolala automaticamente.
+
+\end{document}

@@ -1,0 +1,210 @@
+\documentclass[11pt,a4paper]{report}
+
+% --- Pacchetti Fondamentali ---
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage[italian]{babel}
+\usepackage{etoolbox}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage{enumitem}
+\usepackage{titlesec}
+\usepackage{fancyhdr}
+\usepackage{cleveref}
+
+% --- Configurazione Header e Footer ---
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small Programmazione e Tecnologie Web}
+\fancyhead[R]{\small Esercitazione Guidata - Lezione 2}
+\fancyfoot[C]{\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+
+% --- Configurazione Colori ---
+\definecolor{primary}{RGB}{38, 66, 139}
+\definecolor{codebg}{RGB}{245, 245, 245}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=primary,
+    urlcolor=primary,
+}
+
+% --- Configurazione Formattazione Codice ---
+\lstset{
+    backgroundcolor=\color{codebg},
+    basicstyle=\ttfamily\small,
+    breaklines=true,
+    frame=single,
+    rulecolor=\color{lightgray},
+    captionpos=b,
+    xleftmargin=1em,
+    xrightmargin=1em
+}
+
+% --- Formattazione Titoli ---
+\titleformat{\chapter}[display]
+  {\normalfont\bfseries\color{primary}}{\huge Esercitazione \thechapter}{1ex}{\Huge}
+\titlespacing*{\chapter}{0pt}{-20pt}{40pt}
+
+\begin{document}
+
+% --- Frontespizio ---
+\begin{titlepage}
+    \centering
+    \vspace*{4cm}
+    {\Huge \textbf{\color{primary} Programmazione e Tecnologie Web}} \\[1.5cm]
+    {\Large \textbf{Esercitazione Guidata - Lezione 2}} \\[0.5cm]
+    {\large Docente: Giuseppe Capasso} \\[1.5cm]
+    {\normalsize \textbf{Pubblicazione Web, SSG (Hugo) e SSR (Django)}} \\
+    \vfill
+    {\normalsize Anno Accademico 2025/2026}
+\end{titlepage}
+
+\newpage
+
+% ==========================================
+% INTRODUZIONE
+% ==========================================
+\chapter*{Obiettivi dell'Esercitazione}
+In questa sessione pratica impareremo a:
+\begin{enumerate}
+    \item Configurare un ambiente di lavoro con \textbf{GitHub}.
+    \item Creare e pubblicare un sito statico professionale con \textbf{Hugo}.
+    \item Sviluppare una semplice applicazione dinamica con \textbf{Django} e \textbf{TailwindCSS}.
+    \item Utilizzare Git per gestire due progetti distinti.
+\end{enumerate}
+
+% ==========================================
+% PARTE 1
+% ==========================================
+\chapter{Setup Ambiente e GitHub}
+
+\section{Creazione Account GitHub}
+Se non ne possiedi gia' uno, vai su \url{https://github.com} e registrati. GitHub sara' il tuo "portfolio" online dove memorizzerai tutto il codice che scriverai durante il corso.
+
+\section{Configurazione Git}
+Apri il terminale e assicurati che Git sia configurato correttamente con i tuoi dati:
+\begin{lstlisting}[language=bash]
+git config --global user.name "Tuo Nome"
+git config --global user.email "tua@email.it"
+\end{lstlisting}
+
+% ==========================================
+% PARTE 2
+% ==========================================
+\chapter{Web Statico con Hugo}
+
+In questa parte creeremo un sito statico e lo pubblicheremo online.
+
+\section{Installazione di Hugo}
+Scarica Hugo per il tuo sistema operativo:
+\begin{itemize}
+    \item \textbf{Windows}: Scarica l'eseguibile da \url{https://gohugo.io/installation/windows/}.
+    \item \textbf{Mac/Linux}: Usa il gestore pacchetti (\texttt{brew install hugo} o \texttt{sudo apt install hugo}).
+\end{itemize}
+
+\section{Creazione del Progetto}
+Esegui i seguenti comandi nel terminale:
+\begin{lstlisting}[language=bash]
+# 1. Crea il sito
+hugo new site mio-sito-hugo
+cd mio-sito-hugo
+
+# 2. Scegli un tema (es. Ananke)
+git init
+git submodule add https://github.com/theNewDynamic/gohugo-theme-ananke.git themes/ananke
+echo "theme = 'ananke'" >> hugo.toml
+
+# 3. Crea il primo post
+hugo new posts/benvenuto.md
+\end{lstlisting}
+
+\section{Pubblicazione}
+Crea un nuovo repository su GitHub chiamato \textbf{mio-sito-hugo}, poi collega la tua cartella locale e fai il push:
+\begin{lstlisting}[language=bash]
+git add .
+git commit -m "Primo sito Hugo"
+git branch -M main
+git remote add origin https://github.com/TUO_UTENTE/mio-sito-hugo.git
+git push -u origin main
+\end{lstlisting}
+
+\textbf{Task}: Vai su Cloudflare Pages e collega questo repository per vedere il sito online!
+
+% ==========================================
+% PARTE 3
+% ==========================================
+\chapter{Web Dinamico con Django}
+
+Passiamo ora al Server-Side Rendering (SSR). Prima di installare Django, e' fondamentale creare un \textbf{Ambiente Virtuale (Virtual Env)}. Questo serve a isolare le librerie del progetto ed evitare conflitti tra diverse versioni di Python.
+
+\section{Creazione del Virtual Environment}
+Crea una cartella per il tuo progetto e, al suo interno, genera l'ambiente virtuale:
+
+\subsection{Per utenti Windows}
+Apri il terminale (PowerShell o Prompt dei comandi) e scrivi:
+\begin{lstlisting}[language=bash]
+# 1. Crea l'ambiente
+python -m venv venv
+
+# 2. Attivalo
+.\venv\Scripts\activate
+\end{lstlisting}
+
+\subsection{Per utenti macOS e Linux}
+Apri il terminale e scrivi:
+\begin{lstlisting}[language=bash]
+# 1. Crea l'ambiente
+python3 -m venv venv
+
+# 2. Attivalo
+source venv/bin/activate
+\end{lstlisting}
+
+\textbf{Nota}: Una volta attivato, vedrai la scritta \texttt{(venv)} all'inizio della riga del tuo terminale. Da questo momento in poi, ogni comando \texttt{pip} installera' i pacchetti solo per questo progetto.
+
+\section{Installazione Django}
+Con l'ambiente virtuale \textbf{attivato}, installa Django:
+\begin{lstlisting}[language=bash]
+pip install django
+\end{lstlisting}
+
+\section{Creazione Applicazione}
+Creeremo un progetto Django e una singola vista che inietta dati in un template TailwindCSS.
+\begin{lstlisting}[language=bash]
+# Crea il progetto
+django-admin startproject mio_progetto_django
+cd mio_progetto_django
+
+# Avvia il server locale
+python manage.py runserver
+\end{lstlisting}
+
+\section{Configurazione Template SSR}
+Crea una cartella \texttt{templates/} e inserisci il file \texttt{django\_tailwind.html} fornito dal docente. 
+
+\textbf{Esercizio}: Modifica il file \texttt{views.py} del tuo progetto (o creane uno) per passare un dizionario di dati (context) al template, includendo il tuo nome e una lista di "cose da fare".
+
+\begin{lstlisting}[language=Python]
+# Esempio di logica nella view
+from django.shortcuts import render
+
+def home(request):
+    context = {
+        'user_name': 'Giuseppe',
+        'tasks': [
+            {'title': 'Imparare Django', 'done': False, 'priority': 'high'},
+            {'title': 'Fare la spesa', 'done': True, 'priority': 'low'},
+        ]
+    }
+    return render(request, 'django_tailwind.html', context)
+\end{lstlisting}
+
+\section{Secondo Repository}
+Crea un secondo repository su GitHub chiamato \textbf{mio-progetto-django} e carica tutto il codice. Ricorda di creare un file \texttt{.gitignore} per non caricare la cartella \texttt{\_\_pycache\_\_}!
+
+\end{document}

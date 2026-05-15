@@ -1,0 +1,280 @@
+\documentclass[10pt]{beamer}
+
+% --- Configurazione Tema ---
+\usetheme{Madrid}
+\usecolortheme{default}
+
+% --- Pacchetti ---
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[italian]{babel}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta, positioning, shapes.geometric, decorations.pathreplacing}
+\usepackage{listings}
+\usepackage{xcolor}
+
+% --- Colori Personalizzati ---
+\definecolor{primary}{RGB}{38, 66, 139}
+\setbeamercolor{structure}{fg=primary}
+\setbeamercolor{title}{fg=white, bg=primary}
+
+% --- Configurazione Codice ---
+\lstset{
+    basicstyle=\ttfamily\scriptsize,
+    breaklines=true,
+    frame=single,
+    backgroundcolor=\color{gray!10},
+    keywordstyle=\color{blue},
+    commentstyle=\color{green!50!black},
+    stringstyle=\color{orange}
+}
+
+% --- Informazioni ---
+\title[Web Statico vs Dinamico]{Programmazione e Tecnologie Web}
+\subtitle{Lezione 2: Web Statico, Dinamico e Logica Client-Side}
+\author{Giuseppe Capasso}
+\institute[ITS]{Istituto Tecnico Superiore (ITS)}
+\date{A.A. 2025/2026}
+
+\begin{document}
+
+% --- Slide Titolo ---
+\begin{frame}
+    \titlepage
+\end{frame}
+
+% --- Obiettivi ---
+\begin{frame}{Obiettivi della Lezione}
+    \begin{itemize}
+        \item \textbf{Distinguere tra Web Statico e Dinamico}
+        \item \textbf{Paradigmi di Rendering}: SSR vs CSR
+        \item \textbf{Static Site Generation}: Focus su Hugo
+        \item \textbf{Deployment Moderno}: Cloudflare Pages e CDN
+        \item \textbf{Persistenza}: localStorage e paradigma CRUD
+        \item \textbf{Laboratorio}: Todo App con jQuery
+    \end{itemize}
+\end{frame}
+
+% --- Web Statico ---
+\section{Web Statico vs Dinamico}
+\begin{frame}{Il Web Statico: Caratteristiche}
+    \begin{columns}
+        \begin{column}{0.5\textwidth}
+            \textbf{Cos'è?}
+            \begin{itemize}
+                \item File pre-esistenti sul server.
+                \item Nessun database coinvolto.
+                \item Risposta istantanea.
+            \end{itemize}
+            \vspace{0.5cm}
+            \textbf{Vantaggi:}
+            \begin{itemize}
+                \item Performance estreme.
+                \item Massima sicurezza.
+                \item Costi di hosting minimi.
+            \end{itemize}
+        \end{column}
+        \begin{column}{0.5\textwidth}
+            \centering
+            \begin{tikzpicture}[scale=0.6, transform shape]
+                \node (client) [draw, rounded corners, fill=primary!10, minimum width=2cm] {Client};
+                \node (server) [draw, rounded corners, fill=primary!10, right=2cm of client, minimum width=2cm] {Server Web};
+                \node (disk) [draw, shape=cylinder, aspect=0.5, rotate=90, fill=gray!20, below=1cm of server] {\rotatebox{-90}{Files}};
+                \draw [->, >=stealth, primary] ([yshift=0.2cm]client.east) -- node[above] {GET} ([yshift=0.2cm]server.west);
+                \draw [<-, >=stealth, primary] ([yshift=-0.2cm]client.east) -- node[below] {HTML} ([yshift=-0.2cm]server.west);
+                \draw [->, dashed] (server.south) -- (disk.north);
+            \end{tikzpicture}
+        \end{column}
+    \end{columns}
+\end{frame}
+
+\begin{frame}{Il Web Dinamico}
+    \begin{itemize}
+        \item La pagina viene generata \textbf{"al volo"} dal server.
+        \item Coinvolge codice (Python, PHP, Node) e Database.
+    \end{itemize}
+    \centering
+    \begin{tikzpicture}[node distance=2cm, scale=0.8, transform shape]
+        \node (client) [draw, rounded corners, fill=primary!10, minimum width=2cm] {Client};
+        \node (server) [draw, rounded corners, fill=primary!20, right=of client, minimum width=2cm] {App Server};
+        \node (db) [draw, shape=cylinder, aspect=0.5, rotate=90, fill=primary!5, right=of server] {\rotatebox{-90}{DB}};
+        \draw [->, >=stealth, primary] ([yshift=0.2cm]client.east) -- (server.west);
+        \draw [<->] (server.east) -- (db.north);
+        \draw [<-, >=stealth, primary] ([yshift=-0.2cm]client.east) -- (server.west);
+    \end{tikzpicture}
+    \vspace{0.5cm}
+    \begin{itemize}
+        \item \textbf{Vantaggi:} Personalizzazione, autenticazione, dati in tempo reale.
+        \item \textbf{Svantaggi:} Complessità, latenza, sicurezza (SQL Injection).
+    \end{itemize}
+\end{frame}
+
+% --- CDN ---
+\begin{frame}{Cloudflare Pages e CDN}
+    \textbf{Perché una CDN?}
+    \begin{itemize}
+        \item Distribuisce il sito su centinaia di server globali (\textbf{Edge Nodes}).
+        \item L'utente scarica dal server fisicamente più vicino.
+    \end{itemize}
+    \centering
+    \begin{tikzpicture}[scale=0.7, transform shape]
+        \node (origin) [draw, fill=primary!20, minimum width=2cm] {Origine};
+        \node (e1) [circle, draw, fill=primary!5, below left=0.8cm and 1.5cm of origin] {UK};
+        \node (e2) [circle, draw, fill=primary!5, below=1cm of origin] {IT};
+        \node (e3) [circle, draw, fill=primary!5, below right=0.8cm and 1.5cm of origin] {JP};
+        \draw [->, dashed] (origin) -- (e1); \draw [->, dashed] (origin) -- (e2); \draw [->, dashed] (origin) -- (e3);
+        \node (u) [draw, rounded corners, fill=green!10, below=0.5cm of e3] {Utente};
+        \draw [<->, primary, line width=1pt] (e3) -- (u);
+    \end{tikzpicture}
+\end{frame}
+
+% --- Rendering ---
+\section{Rendering Paradigms}
+\begin{frame}{SSR vs CSR}
+    \centering
+    \begin{tikzpicture}[node distance=3cm, scale=0.8, transform shape]
+        \node (s_server) [draw, rounded corners, fill=primary!20, minimum width=2.5cm] {\textbf{SSR}};
+        \node (s_client) [draw, rounded corners, fill=primary!10, right=of s_server, minimum width=2.5cm] {HTML Completo};
+        \draw [->, >=stealth, primary] (s_server) -- (s_client);
+        
+        \node (c_server) [draw, rounded corners, fill=primary!20, below=1cm of s_server, minimum width=2.5cm] {\textbf{CSR}};
+        \node (c_client) [draw, rounded corners, fill=primary!10, right=of c_server, minimum width=2.5cm] {HTML Vuoto + JS};
+        \draw [->, >=stealth, primary] (c_server) -- (c_client);
+    \end{tikzpicture}
+    \vspace{0.5cm}
+    \begin{itemize}
+        \item \textbf{SSR (Server-Side)}: Meglio per SEO, caricamento iniziale veloce.
+        \item \textbf{CSR (Client-Side)}: Esperienza fluida (SPA), meno carico sul server dopo il primo avvio.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}{Focus SSR: Il Mondo Django}
+    \textbf{Perché Django (Python)?}
+    \begin{itemize}
+        \item Framework "Batteries Included": gestisce DB, Admin, e Sicurezza.
+        \item \textbf{Il Flusso SSR:}
+    \end{itemize}
+    \centering
+    \begin{tikzpicture}[node distance=1.5cm, scale=0.7, transform shape]
+        \node (user) [draw, fill=gray!10] {Richiesta URL};
+        \node (view) [draw, fill=primary!20, right=of user] {Vista (Python)};
+        \node (db) [draw, shape=cylinder, aspect=0.5, rotate=90, fill=primary!5, above=of view] {\rotatebox{-90}{DB}};
+        \node (temp) [draw, fill=primary!10, right=of view] {Template (HTML)};
+        \node (res) [draw, fill=green!10, below=of temp] {HTML Finale};
+        
+        \draw [->] (user) -- (view);
+        \draw [<->] (view) -- (db);
+        \draw [->] (view) -- (temp);
+        \draw [->] (temp) -- (res);
+    \end{tikzpicture}
+    \vspace{0.3cm}
+    \begin{itemize}
+        \item Il programmatore scrive logica in Python, il server "stampa" l'HTML.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Django: Logica nel Template}
+    \begin{lstlisting}[language=Python]
+<!-- template.html -->
+{% if task_list %}
+  <ul>
+    {% for task in task_list %}
+      <li class="{% if task.done %}completed{% endif %}">
+        {{ task.name|upper }}
+      </li>
+    {% endfor %}
+  </ul>
+{% else %}
+  <p>Nulla da fare oggi!</p>
+{% endif %}
+    \end{lstlisting}
+    \begin{itemize}
+        \item \textbf{Filtri}: \texttt{|upper} trasforma il testo.
+        \item \textbf{Tag}: \texttt{\{\% ... \%\}} per la logica (cicli e condizioni).
+        \item \textbf{Variabili}: \texttt{\{\{ ... \}\}} per i dati reali.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}{Focus SSG: La Velocità di Hugo}
+    \textbf{Hugo} è un "SSR eseguito in anticipo":
+    \begin{itemize}
+        \item \textbf{Zero Database}: I contenuti sono file di testo (Markdown).
+        \item \textbf{Build Step}: Hugo trasforma tutto in HTML fisso.
+    \end{itemize}
+    \vspace{0.3cm}
+    \centering
+    \begin{tikzpicture}[node distance=1.8cm, scale=0.8, transform shape]
+        \node (md) [draw, fill=gray!10] {Post.md};
+        \node (hugo) [draw, fill=orange!20, right=of md] {\textbf{HUGO (Build)}};
+        \node (html) [draw, fill=green!10, right=of hugo] {index.html};
+        
+        \draw [->, line width=1.5pt] (md) -- (hugo);
+        \draw [->, line width=1.5pt] (hugo) -- (html);
+    \end{tikzpicture}
+    \vspace{0.3cm}
+    \begin{itemize}
+        \item \textbf{Performance}: Genera 10.000 pagine in meno di 1 secondo.
+        \item \textbf{Deployment}: Perfetto per GitHub Pages o Cloudflare Pages.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Hugo: Markdown + Metadati}
+    \begin{lstlisting}
+---
+title: "Il mio nuovo post"
+date: 2026-05-14
+tags: ["tech", "web"]
+---
+# Benvenuti
+
+Oggi parliamo di Hugo. Ecco una lista:
+- Veloce
+- Sicuro
+- Gratuito
+    \end{lstlisting}
+    \begin{itemize}
+        \item La parte tra `---` è il \textbf{Frontmatter} (metadati YAML).
+        \item Il resto è \textbf{Markdown} (formattazione semplice).
+    \end{itemize}
+\end{frame}
+
+% --- Lab ---
+\section{Laboratorio}
+\begin{frame}{Laboratorio: Todo App}
+    \textbf{Le fasi del progetto:}
+    \begin{enumerate}
+        \item \textbf{Struttura (HTML)}: Form e lista.
+        \item \textbf{jQuery}: Manipolazione del DOM semplificata.
+        \item \textbf{CRUD}: Create, Read, Update, Delete.
+        \item \textbf{Persistenza}: Uso del \texttt{localStorage}.
+    \end{enumerate}
+    \vspace{0.3cm}
+    \textbf{Perché jQuery?}
+    \begin{itemize}
+        \item Sintassi concisa: \texttt{\$(selettore).azione()}.
+        \item Astrazione cross-browser.
+        \item Facilità di apprendimento per i concetti base.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Persistenza con localStorage}
+    \begin{lstlisting}[language=Java]
+// Salvare i dati (convertendo in stringa)
+localStorage.setItem('tasks', JSON.stringify(tasks));
+
+// Recuperare i dati (convertendo in oggetto)
+const data = JSON.parse(localStorage.getItem('tasks'));
+    \end{lstlisting}
+    \vspace{0.3cm}
+    \textbf{Nota:} Il localStorage sopravvive al ricaricamento della pagina e alla chiusura del browser!
+\end{frame}
+
+\begin{frame}
+    \centering
+    \Huge \textcolor{primary}{Iniziamo il Laboratorio!}
+    \vspace{1cm}
+    \normalsize
+    Aprite il file \texttt{index.html} nella cartella \texttt{src/lezione2/3.todo-vanilla}
+\end{frame}
+
+\end{document}

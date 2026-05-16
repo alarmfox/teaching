@@ -1,0 +1,123 @@
+\documentclass[11pt,a4paper]{article}
+
+% --- Pacchetti ---
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage[italian]{babel}
+\usepackage[margin=1in]{geometry}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage{hyperref}
+
+% --- Colori ---
+\definecolor{primary}{RGB}{38, 66, 139}
+\definecolor{codebg}{RGB}{245, 245, 245}
+\definecolor{keywordcolor}{RGB}{0, 0, 255}
+\definecolor{stringcolor}{RGB}{163, 21, 21}
+\definecolor{commentcolor}{RGB}{0, 128, 0}
+
+\hypersetup{colorlinks=true, linkcolor=primary, urlcolor=primary}
+
+% --- Configurazione Codice ---
+\lstdefinelanguage{javascript}{
+    keywords={async, await, break, case, catch, class, const, continue, debugger, default, delete, do, else, export, extends, false, finally, for, function, if, import, in, instanceof, new, null, return, super, switch, this, throw, true, try, typeof, var, void, while, with, yield, let},
+    morekeywords={console, log, Error, fetch, JSON, parse, stringify},
+    sensitive=true,
+    morecomment=[l]{//},
+    morecomment=[s]{/*}{*/},
+    morestring=[b]',
+    morestring=[b]",
+    morestring=[b]`,
+    keywordstyle=\color{primary}\bfseries,
+    commentstyle=\color{commentcolor}\itshape,
+    stringstyle=\color{stringcolor},
+    basicstyle=\ttfamily\small
+}
+
+\lstset{
+    backgroundcolor=\color{codebg},
+    basicstyle=\ttfamily\small,
+    breaklines=true,
+    frame=single,
+    keywordstyle=\color{blue},
+    commentstyle=\color{green!50!black},
+    stringstyle=\color{red!70!black},
+    language=JavaScript
+}
+
+\title{\textbf{\color{primary} Esercitazione: Migrazione Todo App a Full-Stack}}
+\author{Programmazione e Tecnologie Web - Lezione 4}
+\date{A.A. 2025/2026}
+
+\begin{document}
+
+\maketitle
+
+\section{Obiettivo}
+Trasformare la Todo App (client-only) in un'applicazione Full-Stack. Il backend, scritto in Node.js con Express o Python con Flask, gestirà la persistenza dei dati su file JSON e garantirà l'accesso protetto tramite Basic Authentication.
+
+\section{Setup del Progetto}
+\begin{enumerate}
+    \item Creare una cartella \texttt{src/lezione4/server}.
+    \item \textbf{Node.js}: Inizializzare con \texttt{npm init -y} e installare \texttt{express express-basic-auth}.
+    \item \textbf{Python}: Creare un ambiente virtuale e installare:
+    \begin{lstlisting}[language=bash]
+pip install flask flask-basicauth
+    \end{lstlisting}
+\end{enumerate}
+
+\section{Task 1: Backend}
+Implementare le rotte CRUD su \texttt{app.js} (Node) o \texttt{app.py} (Python) e proteggerle con il middleware di autenticazione.
+
+\section{Task 2: Frontend}
+Modificare la \texttt{index.html} (es. versione con Tailwind) per utilizzare \texttt{fetch} con header \texttt{Authorization}.
+
+\section{Task Bonus: Funzionalità Avanzate}
+\begin{enumerate}
+    \item \textbf{Gestione Priorità}: Aggiungere un menù a tendina nel form (es. Bassa, Media, Alta) e aggiornare il modello dei dati per includere il campo \texttt{priorità} nel task.
+    \item \textbf{Pulsante Backup}: Aggiungere un pulsante nell'interfaccia che, tramite una rotta dedicata (es. \texttt{POST /backup}), forza il salvataggio immediato dello stato corrente su un nuovo file (es. \texttt{backup.json}).
+\end{enumerate}
+
+\section{Codice Suggerito (Backend)}
+
+\subsection*{Node.js (Express)}
+\begin{lstlisting}[language=JavaScript]
+const express = require('express');
+const basicAuth = require('express-basic-auth');
+const fs = require('fs');
+
+const app = express();
+app.use(express.json());
+
+// Auth Middleware
+app.use(basicAuth({ users: { 'admin': 'secret' }, challenge: true }));
+
+app.post('/tasks', (req, res) => {
+    // Implementare lettura, aggiunta e scrittura su file
+});
+
+app.listen(3000, () => console.log('Server in ascolto su porta 3000'));
+\end{lstlisting}
+
+\subsection*{Python (Flask)}
+\begin{lstlisting}[language=Python]
+from flask import Flask, request, jsonify
+from flask_basicauth import BasicAuth
+
+app = Flask(__name__)
+app.config['BASIC_AUTH_USERNAME'] = 'admin'
+app.config['BASIC_AUTH_PASSWORD'] = 'secret'
+basic_auth = BasicAuth(app)
+
+@app.route('/tasks', methods=['GET'])
+@basic_auth.required
+def get_tasks():
+    # Implementare logica di lettura
+    return jsonify([])
+
+if __name__ == '__main__':
+    app.run(port=5000)
+\end{lstlisting}
+
+\end{document}

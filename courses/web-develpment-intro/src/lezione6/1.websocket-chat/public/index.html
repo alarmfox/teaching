@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <title>WebSocket Chat</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 p-8">
+    <div class="max-w-2xl mx-auto bg-white p-6 rounded shadow">
+        <h1 class="text-xl font-bold mb-4 text-blue-900">Chat WebSocket</h1>
+        <div id="messages" class="h-64 border p-4 mb-4 overflow-y-auto bg-gray-50"></div>
+        <div class="flex gap-2">
+            <input id="input" type="text" class="border p-2 flex-1 rounded" placeholder="Messaggio...">
+            <button id="send" class="bg-blue-900 text-white px-4 py-2 rounded">Invia</button>
+        </div>
+    </div>
+    <script>
+        const socket = new WebSocket('ws://' + window.location.host);
+        const messages = document.getElementById('messages');
+        const input = document.getElementById('input');
+
+        socket.onmessage = (e) => {
+            const p = document.createElement('p');
+            p.textContent = e.data;
+            messages.appendChild(p);
+        };
+
+        document.getElementById('send').onclick = () => {
+            socket.send(input.value);
+            input.value = '';
+        };
+    </script>
+</body>
+</html>

@@ -1,0 +1,35 @@
+\documentclass[11pt,a4paper]{report}
+\usepackage[utf8]{inputenc}
+\usepackage[italian]{babel}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{xcolor}
+
+\definecolor{primary}{RGB}{38, 66, 139}
+
+\begin{document}
+
+\chapter*{Esercizi Lezione 6: Real-time & WebRTC}
+
+\section*{Esercizio 1: WebSocket Chat}
+Implementa un server Express che utilizza la libreria \texttt{ws} per gestire una chat di gruppo.
+\begin{enumerate}
+    \item Il server deve mantenere una lista di client connessi.
+    \item Ogni messaggio ricevuto da un client deve essere inviato in broadcast a tutti gli altri.
+    \item Crea un client in Vanilla JS che permetta di inviare messaggi e visualizzare quelli ricevuti.
+\end{enumerate}
+
+\section*{Esercizio 2: WebRTC P2P Loopback}
+Basandoti sull'esempio in \texttt{src/lezione6/3.video-streaming/}:
+\begin{enumerate}
+    \item Aggiungi un pulsante per "Mute" dell'audio locale senza interrompere il video.
+    \item Modifica il codice per gestire l'evento di chiusura della connessione (\textit{onconnectionstatechange}) e pulire correttamente la UI.
+\end{enumerate}
+
+\section*{Esercizio 3: Analisi di Rete}
+\begin{itemize}
+    \item Utilizza gli Strumenti per Sviluppatori del browser (scheda \textit{Network}) per osservare l'handshake HTTP di una connessione WebSocket.
+    \item Identifica gli header \texttt{Upgrade: websocket} e \texttt{Connection: Upgrade}.
+\end{itemize}
+
+\end{document}

@@ -1,0 +1,340 @@
+\documentclass[11pt,a4paper]{report}
+
+% --- Pacchetti Fondamentali ---
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage[italian]{babel}
+\usepackage{etoolbox}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage{enumitem}
+\usepackage{titlesec}
+\usepackage{fancyhdr}
+\usepackage{cleveref}
+\usepackage{graphicx}
+\usepackage{longtable}
+\usepackage{booktabs}
+\usepackage{setspace}
+
+\crefformat{section}{\S#2#1#3}
+\crefformat{subsection}{\S#2#1#3}
+\crefformat{subsubsection}{\S#2#1#3}
+\crefformat{figure}{#2Figura~#1#3}
+\crefformat{footnote}{#2\footnotemark[#1]#3}
+\crefformat{table}{#2Tabella~#1#3}
+
+% --- Configurazione Header e Footer ---
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small Programmazione e Tecnologie Web}
+\fancyhead[R]{\small Giuseppe Capasso}
+\fancyfoot[C]{\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta, positioning, shapes.geometric, decorations.pathreplacing, calc, shadows, fit}
+
+% --- Configurazione Colori e Link ---
+\definecolor{primary}{RGB}{38, 66, 139}
+\definecolor{codebg}{RGB}{245, 245, 245}
+\definecolor{keywordcolor}{RGB}{0, 0, 255}
+\definecolor{stringcolor}{RGB}{163, 21, 21}
+\definecolor{commentcolor}{RGB}{0, 128, 0}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=primary,
+    urlcolor=primary,
+    citecolor=primary,
+}
+
+% --- Configurazione Formattazione Codice ---
+\lstdefinelanguage{javascript}{
+    keywords={async, await, break, case, catch, class, const, continue, debugger, default, delete, do, else, export, extends, false, finally, for, function, if, import, in, instanceof, new, null, return, super, switch, this, throw, true, try, typeof, var, void, while, with, yield, let},
+    morekeywords={console, log, Error, fetch, JSON, parse, stringify, require, module, exports, on, emit, send, WebSocket},
+    sensitive=true,
+    morecomment=[l]{//},
+    morecomment=[s]{/*}{*/},
+    morestring=[b]',
+    morestring=[b]",
+    morestring=[b]`,
+    keywordstyle=\color{primary}\bfseries,
+    commentstyle=\color{commentcolor}\itshape,
+    stringstyle=\color{stringcolor},
+    basicstyle=\ttfamily\small
+}
+
+\lstset{
+    backgroundcolor=\color{codebg},
+    basicstyle=\ttfamily\small,
+    breaklines=true,
+    frame=single,
+    rulecolor=\color{lightgray},
+    captionpos=b,
+    xleftmargin=1em,
+    xrightmargin=1em,
+    keywordstyle=\color{keywordcolor},
+    commentstyle=\color{commentcolor},
+    stringstyle=\color{stringcolor}
+}
+
+% --- Formattazione Titoli ---
+\titleformat{\chapter}[display]
+  {\normalfont\bfseries\color{primary}}{\huge Capitolo \thechapter}{1ex}{\Huge}
+\titlespacing*{\chapter}{0pt}{-20pt}{40pt}
+
+\onehalfspacing
+
+\begin{document}
+
+% --- Frontespizio ---
+\begin{titlepage}
+    \centering
+    \vspace*{4cm}
+    {\Huge \textbf{\color{primary} Programmazione e Tecnologie Web}} \\[1.5cm]
+    {\Large \textbf{Dispense del Corso - Lezione 6}} \\[0.5cm]
+    {\large Docente: Giuseppe Capasso} \\[1.5cm]
+    {\normalsize \textbf{Cloud Native Development \& Cybersecurity Specialist}} \\
+    {\normalsize Istituto Tecnico Superiore (ITS)} \\
+    \vfill
+    {\normalsize Anno Accademico 2025/2026}
+\end{titlepage}
+
+\newpage
+\tableofcontents
+\newpage
+
+% ==========================================
+% CAPITOLO 1
+% ==========================================
+\chapter{L'Evoluzione verso il Real-time}
+
+\section{Il Modello Request-Response e i suoi Limiti}
+Il World Wide Web è stato progettato originariamente per la consultazione di documenti statici tramite il protocollo HTTP. Questo modello prevede che ogni interazione sia atomica e isolata.
+
+\begin{itemize}
+    \item \textbf{Iniziativa del Client}: Il server non ha modo di "conoscere" l'indirizzo di rete del client a meno che quest'ultimo non apra una connessione.
+    \item \textbf{Overhead di Connessione}: Il protocollo TCP richiede un handshake a tre vie, seguito dalla negoziazione TLS (se HTTPS), prima che il primo byte di dati HTTP possa essere scambiato.
+\end{itemize}
+
+\section{Strategie di Sincronizzazione}
+Per superare la natura passiva del server, sono state implementate diverse tecniche di "polling", ognuna con un diverso impatto sulle risorse di rete.
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[
+    node distance=1cm,
+    line/.style={draw, thick, -latex},
+    label/.style={font=\tiny, align=center}
+]
+    % --- Short Polling ---
+    \node (c1) {Client};
+    \node (s1) [right=2.5cm of c1] {Server};
+    \draw [thick] (c1.south) -- +(0,-3.5cm);
+    \draw [thick] (s1.south) -- +(0,-3.5cm);
+    \node [above=0.1cm of c1, font=\bfseries\small] {Short Polling};
+
+    \draw [line] (c1.center |- 0,-0.7) -- node[label, above] {GET /data} (s1.center |- 0,-0.7);
+    \draw [line, gray, dashed] (s1.center |- 0,-1.4) -- node[label, below] {200 OK (No Data)} (c1.center |- 0,-1.4);
+    
+    \draw [line] (c1.center |- 0,-2.1) -- node[label, above] {GET /data} (s1.center |- 0,-2.1);
+    \draw [line, primary] (s1.center |- 0,-2.8) -- node[label, below] {200 OK (New Data)} (c1.center |- 0,-2.8);
+
+    % --- Long Polling ---
+    \begin{scope}[xshift=5.5cm]
+        \node (c2) {Client};
+        \node (s2) [right=2.5cm of c2] {Server};
+        \draw [thick] (c2.south) -- +(0,-3.5cm);
+        \draw [thick] (s2.south) -- +(0,-3.5cm);
+        \node [above=0.1cm of c2, font=\bfseries\small] {Long Polling};
+
+        \draw [line] (c2.center |- 0,-0.7) -- node[label, above] {GET /data} (s2.center |- 0,-0.7);
+        \draw [line, primary] (s2.center |- 0,-3.2) -- node[label, below] {200 OK (Event Triggered)} (c2.center |- 0,-3.2);
+        \node [label, right=0.1cm of s2, yshift=-1.8cm, primary] {Server in attesa...};
+    \end{scope}
+\end{tikzpicture}
+\caption{Confronto tra Short Polling e Long Polling (Lifeline corrette).}
+\label{fig:polling_comparison}
+\end{figure}
+
+\section{Server-Sent Events (SSE)}
+L'API SSE (\texttt{EventSource}) è una tecnologia standard che permette al server di inviare stream di dati unidirezionali al browser su HTTP. \`E ideale per scenari come quotazioni azionarie o notifiche push, dove non è richiesta un'interazione immediata del client sullo stesso canale.
+
+\newpage
+
+% ==========================================
+% CAPITOLO 2
+% ==========================================
+\chapter{WebSockets e Socket.io}
+
+\section{Il Protocollo WebSocket (RFC 6455)}
+A differenza di HTTP, WebSocket fornisce un canale di comunicazione bidirezionale persistente. 
+
+\subsection{L'Handshake Corretto}
+Per evitare sovrapposizioni visive e ambiguità, analizziamo il flusso di upgrade della connessione:
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[
+    node distance=2cm,
+    box/.style={rectangle, draw, rounded corners, minimum width=2.5cm, minimum height=0.8cm, align=center, font=\small, thick},
+    arrow/.style={-latex, thick}
+]
+    \node (client) [box, fill=blue!5] {Client\\(Browser)};
+    \node (server) [box, right=5cm of client, fill=gray!10] {Server\\(Node.js)};
+
+    % 1. Handshake Request
+    \draw [arrow, primary] ([yshift=8mm]client.east) -- node[above, black, font=\tiny, align=center] {GET /chat HTTP/1.1\\Upgrade: websocket\\Connection: Upgrade} ([yshift=8mm]server.west);
+
+    % 2. Handshake Response
+    \draw [arrow, gray, dashed] ([yshift=2mm]server.west) -- node[below, black, font=\tiny, align=center] {HTTP/1.1 101 Switching Protocols\\Upgrade: websocket} ([yshift=2mm]client.east);
+
+    % 3. Bidirectional Flow
+    \draw [latex-latex, ultra thick, primary] ([yshift=-1cm]client.east) -- node[above, black, font=\small] {Stream di Frame Binari/Testo} ([yshift=-1cm]server.west);
+    \draw [latex-latex, ultra thick, primary] ([yshift=-1.5cm]client.east) -- node[below, black, font=\tiny] {Bassa Latenza - Nessun Header HTTP} ([yshift=-1.5cm]server.west);
+
+\end{tikzpicture}
+\caption{Diagramma di sequenza dell'Upgrade del protocollo.}
+\label{fig:ws_handshake_fixed}
+\end{figure}
+
+\section{Integrazione Client-Side (Vanilla JS)}
+L'API \texttt{WebSocket} espone un'interfaccia basata su eventi per gestire il ciclo di vita della connessione.
+
+\subsection{Eventi Fondamentali}
+\begin{itemize}
+    \item \textbf{onopen}: Invocato quando la connessione viene stabilita con successo. \`E il momento ideale per inviare messaggi di autenticazione o sottoscrizione.
+    \item \textbf{onmessage}: Scatenato ogni volta che il server invia dati. Poich\'e i dati transitano come stringhe o buffer, \`E prassi comune utilizzare \texttt{JSON.parse()} per deserializzare gli oggetti.
+    \item \textbf{onerror}: Gestisce fallimenti di connessione o errori di protocollo.
+    \item \textbf{onclose}: Invocato quando la connessione viene terminata. Fondamentale per implementare logiche di riconnessione manuale.
+\end{itemize}
+
+\begin{lstlisting}[language=javascript, caption=Esempio Client WebSocket Completo]
+// Inizializzazione
+const socket = new WebSocket('ws://localhost:8080');
+
+// 1. Connessione aperta
+socket.onopen = () => {
+    const joinMsg = { type: 'system', text: 'Utente connesso' };
+    socket.send(JSON.stringify(joinMsg));
+};
+
+// 2. Ricezione dati dal server
+socket.onmessage = (event) => {
+    const data = JSON.parse(event.data);
+    updateUI(data.user, data.text);
+};
+
+// 3. Chiusura e Errori
+socket.onclose = (e) => console.log("Socket chiusa", e.code);
+socket.onerror = (err) => console.error("Errore fatale", err);
+\end{lstlisting}
+
+\section{Socket.io: Oltre lo Standard}
+Socket.io non è una semplice implementazione di WebSocket, ma un framework che offre funzionalità aggiuntive indispensabili in produzione:
+
+\begin{itemize}
+    \item \textbf{Fallback Automatico}: Se i WebSocket sono bloccati (es. da firewall aziendali), Socket.io ripiega su HTTP Long Polling.
+    \item \textbf{Auto-reconnect}: Gestisce automaticamente il ripristino della connessione in caso di micro-interruzioni di rete.
+    \item \textbf{Rooms e Namespaces}: Permette di segmentare i client in gruppi (es. stanze di chat separate) con un'API molto semplice.
+\end{itemize}
+
+\begin{lstlisting}[language=javascript, caption=Socket.io Server-side]
+const io = require('socket.io')(3000);
+
+io.on('connection', (socket) => {
+    // Invio a un singolo client
+    socket.emit('welcome', { id: socket.id });
+
+    // Ricezione ed evento personalizzato
+    socket.on('chat-message', (msg) => {
+        // Broadcast a tutti gli altri
+        socket.broadcast.emit('new-message', msg);
+    });
+});
+\end{lstlisting}
+
+\newpage
+
+% ==========================================
+% CAPITOLO 3
+% ==========================================
+\chapter{WebRTC e Multimedia}
+
+\section{Il Problema del NAT e l'Attraversamento}
+La maggior parte degli utenti internet non dispone di un indirizzo IP pubblico globale. I router domestici e aziendali utilizzano il **NAT (Network Address Translation)** per mappare più dispositivi locali su un singolo IP pubblico. Questo crea due ostacoli principali per WebRTC:
+\begin{enumerate}
+    \item I peer non conoscono il proprio IP pubblico e la porta mappata dal router.
+    \item I router/firewall bloccano solitamente il traffico UDP in entrata non sollecitato.
+\end{enumerate}
+
+\subsection{ICE, STUN e TURN}
+Per risolvere questi problemi, WebRTC utilizza il framework **ICE (Interactive Connectivity Establishment)**, che si appoggia a due tipi di server:
+\begin{itemize}
+    \item \textbf{STUN (Session Traversal Utilities for NAT)}: Il peer interroga un server STUN pubblico per scoprire il proprio IP pubblico e la porta assegnata dal NAT.
+    \item \textbf{TURN (Traversal Using Relays around NAT)}: Se la connessione diretta fallisce (es. NAT simmetrici), il traffico viene instradato attraverso un server di relè. Sebbene garantisca la connessione, introduce latenza e costi operativi significativi.
+\end{itemize}
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[
+    node distance=1.5cm,
+    peer/.style={draw, thick, fill=blue!5, minimum width=1.5cm, minimum height=1cm, align=center},
+    server/.style={draw, thick, fill=gray!10, minimum width=2cm, minimum height=0.8cm, align=center},
+    nat/.style={draw, thick, fill=red!10, chamfered rectangle, minimum width=1cm, align=center, font=\tiny},
+    arrow/.style={-latex, thick}
+]
+    % Peers
+    \node (p1) [peer] {Peer A\\(Locale)};
+    \node (n1) [nat, right=of p1] {NAT A};
+    \node (n2) [nat, right=4cm of n1] {NAT B};
+    \node (p2) [peer, right=of n2] {Peer B\\(Locale)};
+
+    % Infrastructure
+    \node (sig) [server, above=2.5cm of $(n1)!0.5!(n2)$] {Signaling Server\\(WebSocket)};
+    \node (stun) [server, above=1cm of sig, fill=yellow!10] {STUN / TURN};
+
+    % 1. STUN Discovery
+    \draw [arrow, dashed] (p1.north) -- ++(0,1.5cm) -| node[near end, left, font=\tiny] {1. Scoperta IP} (stun.west);
+    
+    % 2. Signaling
+    \draw [arrow, primary] (p1.north) -- ++(0,0.5cm) -| node[near start, above, font=\tiny] {2. Scambio SDP / ICE Candidates} (sig.west);
+    \draw [arrow, primary] (sig.east) |- ++(0.5cm,-2cm) -- (p2.north);
+
+    % 3. P2P Connection
+    \draw [latex-latex, ultra thick, green!50!black] (n1.east) -- node[above, font=\bfseries\small] {Connessione P2P} (n2.west);
+    \draw [arrow] (p1.east) -- (n1.west);
+    \draw [arrow] (p2.west) -- (n2.east);
+
+\end{tikzpicture}
+\caption{Architettura WebRTC: interazione tra Signaling, STUN e connessione P2P.}
+\label{fig:webrtc_infra}
+\end{figure}
+
+\section{Configurazione di una RTCPeerConnection}
+L'oggetto \texttt{RTCPeerConnection} è il cuore dell'API. Gestisce la negoziazione dei codec, il superamento dei NAT e la crittografia (DTLS/SRTP).
+
+\begin{lstlisting}[language=javascript, caption=Bootstrap di una connessione P2P]
+const configuration = { 
+    iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] 
+};
+const peerConnection = new RTCPeerConnection(configuration);
+
+// Aggiunta di stream multimediali
+localStream.getTracks().forEach(track => {
+    peerConnection.addTrack(track, localStream);
+});
+
+// Gestione dell'evento per ricevere stream remoti
+peerConnection.ontrack = (event) => {
+    const remoteVideo = document.getElementById('remoteVideo');
+    remoteVideo.srcObject = event.streams[0];
+};
+\end{lstlisting}
+
+\section{Conclusioni e Sfide Future}
+Lo sviluppo di applicazioni real-time richiede un cambio di paradigma: non ragioniamo più per singole transazioni, ma per flussi continui di eventi. La gestione dello stato diventa distribuita e la resilienza della rete deve essere gestita esplicitamente dal programmatore.
+
+\end{document}

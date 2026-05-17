@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebRTC Local Chat</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .primary-color { color: rgb(38, 66, 139); }
+        .bg-primary { background-color: rgb(38, 66, 139); }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen p-8">
+    <div class="max-w-4xl mx-auto bg-white rounded-xl shadow-lg overflow-hidden border border-gray-200">
+        <header class="bg-primary p-6 text-white text-center">
+            <h1 class="text-2xl font-bold">WebRTC P2P Local Chat</h1>
+            <p class="text-sm opacity-80 mt-1">Simulazione di connessione Peer-to-Peer su singola pagina</p>
+        </header>
+
+        <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Peer A -->
+            <div class="space-y-4">
+                <h2 class="text-xl font-semibold primary-color border-b pb-2">Peer A (Chiamante)</h2>
+                <div id="chatA" class="h-64 bg-gray-50 border rounded p-3 overflow-y-auto text-sm space-y-2">
+                    <p class="text-gray-400 italic">In attesa di connessione...</p>
+                </div>
+                <div class="flex gap-2">
+                    <input type="text" id="inputA" placeholder="Scrivi a Peer B..." class="flex-1 border p-2 rounded focus:ring-2 focus:ring-blue-500 outline-none" disabled>
+                    <button id="sendA" class="bg-primary text-white px-4 py-2 rounded hover:opacity-90 transition disabled:opacity-50" disabled>Invia</button>
+                </div>
+            </div>
+
+            <!-- Peer B -->
+            <div class="space-y-4">
+                <h2 class="text-xl font-semibold primary-color border-b pb-2">Peer B (Ricevente)</h2>
+                <div id="chatB" class="h-64 bg-gray-50 border rounded p-3 overflow-y-auto text-sm space-y-2">
+                    <p class="text-gray-400 italic">In attesa di connessione...</p>
+                </div>
+                <div class="flex gap-2">
+                    <input type="text" id="inputB" placeholder="Scrivi a Peer A..." class="flex-1 border p-2 rounded focus:ring-2 focus:ring-blue-500 outline-none" disabled>
+                    <button id="sendB" class="bg-primary text-white px-4 py-2 rounded hover:opacity-90 transition disabled:opacity-50" disabled>Invia</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-gray-50 p-6 border-t flex justify-center gap-4">
+            <button id="startBtn" class="bg-green-600 text-white px-8 py-3 rounded-full font-bold shadow-md hover:bg-green-700 transition">
+                Avvia Handshake P2P
+            </button>
+            <button id="resetBtn" class="bg-gray-400 text-white px-8 py-3 rounded-full font-bold shadow-md hover:bg-gray-500 transition">
+                Resetta
+            </button>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

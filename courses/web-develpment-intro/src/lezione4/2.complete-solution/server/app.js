@@ -8,33 +8,46 @@ app.use(express.json());
 
 const FILE_PATH = './tasks.json';
 
-// Inizializzazione file se non esiste
-if (!fs.existsSync(FILE_PATH)) {
+// Inizializzazione dati in memoria dal file
+let tasks = [];
+if (fs.existsSync(FILE_PATH)) {
+    tasks = JSON.parse(fs.readFileSync(FILE_PATH));
+} else {
     fs.writeFileSync(FILE_PATH, JSON.stringify([]));
 }
 
 // Auth Middleware
-app.use(basicAuth({ 
-    users: { 'admin': 'secret' }, 
-    challenge: true 
+app.use(basicAuth({
+    users: { 'admin': 'secret' },
+    challenge: true
 }));
 
-// Operazioni CRUD
-app.get('/tasks', (req, res) => {
-    const tasks = JSON.parse(fs.readFileSync(FILE_PATH));
+// Operazioni CRUD (In-Memory)
+app.get('/tasks', async (req, res) => {
+    // Simula latenza di rete (2 secondi)
+    await new Promise(resolve => setTimeout(resolve, 2000));
     res.json(tasks);
 });
 
 app.post('/tasks', (req, res) => {
-    const tasks = JSON.parse(fs.readFileSync(FILE_PATH));
     tasks.push(req.body);
     res.status(201).json({ status: "created" });
 });
 
 app.delete('/tasks/:id', (req, res) => {
-    let tasks = JSON.parse(fs.readFileSync(FILE_PATH));
     tasks.splice(req.params.id, 1);
     res.json({ status: "deleted" });
+});
+
+app.post('/save', (req, res) => {
+    fs.writeFileSync(FILE_PATH, JSON.stringify(tasks, null, 4));
+    res.json({ status: "saved" });
+});
+
+app.post('/reset', (req, res) => {
+    tasks = [];
+    fs.writeFileSync(FILE_PATH, JSON.stringify([]));
+    res.json({ status: "reset" });
 });
 
 app.use(express.static(path.join(__dirname, '..')));

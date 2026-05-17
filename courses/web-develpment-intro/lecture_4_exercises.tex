@@ -9,13 +9,11 @@
 \usepackage{xcolor}
 \usepackage{listings}
 \usepackage{hyperref}
+\usepackage{enumitem}
 
 % --- Colori ---
 \definecolor{primary}{RGB}{38, 66, 139}
 \definecolor{codebg}{RGB}{245, 245, 245}
-\definecolor{keywordcolor}{RGB}{0, 0, 255}
-\definecolor{stringcolor}{RGB}{163, 21, 21}
-\definecolor{commentcolor}{RGB}{0, 128, 0}
 
 \hypersetup{colorlinks=true, linkcolor=primary, urlcolor=primary}
 
@@ -30,8 +28,8 @@
     morestring=[b]",
     morestring=[b]`,
     keywordstyle=\color{primary}\bfseries,
-    commentstyle=\color{commentcolor}\itshape,
-    stringstyle=\color{stringcolor},
+    commentstyle=\color{green!50!black}\itshape,
+    stringstyle=\color{red!70!black},
     basicstyle=\ttfamily\small
 }
 
@@ -43,10 +41,10 @@
     keywordstyle=\color{blue},
     commentstyle=\color{green!50!black},
     stringstyle=\color{red!70!black},
-    language=JavaScript
+    language=javascript
 }
 
-\title{\textbf{\color{primary} Esercitazione: Migrazione Todo App a Full-Stack}}
+\title{\textbf{\color{primary} Esercitazione: Sviluppo di un'API REST Full-Stack}}
 \author{Programmazione e Tecnologie Web - Lezione 4}
 \date{A.A. 2025/2026}
 
@@ -55,69 +53,111 @@
 \maketitle
 
 \section{Obiettivo}
-Trasformare la Todo App (client-only) in un'applicazione Full-Stack. Il backend, scritto in Node.js con Express o Python con Flask, gestirà la persistenza dei dati su file JSON e garantirà l'accesso protetto tramite Basic Authentication.
+L'obiettivo di questa esercitazione è trasformare una Todo App statica in un sistema \textbf{Full-Stack} completo. Impareremo a gestire il ciclo di vita delle risorse su un server, implementare la persistenza dati e garantire la sicurezza tramite \textbf{Basic Authentication}.
 
-\section{Setup del Progetto}
+\section{Prerequisiti}
+\begin{itemize}
+    \item Ambiente di runtime: \textbf{Node.js} (v18+) o \textbf{Python} (3.10+).
+    \item Estensione VS Code: \textbf{Thunder Client} o \textbf{REST Client}.
+    \item Codice sorgente nella cartella \texttt{src/lezione4/1.basic-todo/}.
+\end{itemize}
+
+\section{Esercizio 0: Analisi e Setup}
+Esplorate il codice fornito nella cartella \texttt{1.basic-todo}. Noterete che il backend (\texttt{app.js} o \texttt{app.py}) carica i dati dal file \texttt{tasks.json} solo all'avvio.
+
+\textbf{Guida per lo studente}: 
 \begin{enumerate}
-    \item Creare una cartella \texttt{src/lezione4/server}.
-    \item \textbf{Node.js}: Inizializzare con \texttt{npm init -y} e installare \texttt{express express-basic-auth}.
-    \item \textbf{Python}: Creare un ambiente virtuale e installare:
-    \begin{lstlisting}[language=bash]
-pip install flask flask-basicauth
-    \end{lstlisting}
+    \item Aprite il terminale nella cartella \texttt{server/}.
+    \item Avviate il server:
+    \begin{itemize}
+        \item Node.js: \texttt{npm install && npx nodemon app.js}
+        \item Python: \texttt{python app.py}
+    \end{itemize}
+    \item Aprite l'app nel browser (es. tramite Live Server o via server backend su \texttt{http://localhost:3000}).
 \end{enumerate}
 
-\section{Task 1: Backend}
-Implementare le rotte CRUD su \texttt{app.js} (Node) o \texttt{app.py} (Python) e proteggerle con il middleware di autenticazione.
+\section{Esercizio 1: La Persistenza "Volatile"}
+Attualmente, se aggiungete un task, questo viene salvato solo nella memoria RAM del server.
+\begin{itemize}
+    \item \textbf{Test}: Aggiungete un task dall'interfaccia. Ricaricate la pagina: il task c'è ancora (perché è in memoria).
+    \item \textbf{Problema}: Riavviate il server (es. premete \texttt{Ctrl+C} e riavviate). Ricaricate la pagina: il task è sparito!
+\end{itemize}
 
-\section{Task 2: Frontend}
-Modificare la \texttt{index.html} (es. versione con Tailwind) per utilizzare \texttt{fetch} con header \texttt{Authorization}.
+\textbf{Task Live}: Identificate nel codice del server il punto in cui i dati vengono letti dal file e spiegate perché la funzione \texttt{add\_task} (o la rotta \texttt{POST}) non garantisce la persistenza a lungo termine.
 
-\section{Task Bonus: Funzionalità Avanzate}
+\section{Esercizio 2: Implementazione della Persistenza Reale}
+Vogliamo dare all'utente il controllo su quando salvare i dati sul disco.
+
+\subsection{Task Backend: Rotte /save e /reset}
+Aggiungete due nuovi endpoint al vostro server:
 \begin{enumerate}
-    \item \textbf{Gestione Priorità}: Aggiungere un menù a tendina nel form (es. Bassa, Media, Alta) e aggiornare il modello dei dati per includere il campo \texttt{priorità} nel task.
-    \item \textbf{Pulsante Backup}: Aggiungere un pulsante nell'interfaccia che, tramite una rotta dedicata (es. \texttt{POST /backup}), forza il salvataggio immediato dello stato corrente su un nuovo file (es. \texttt{backup.json}).
+    \item \texttt{POST /save}: Deve scrivere l'array corrente di task nel file \texttt{tasks.json}.
+    \item \texttt{POST /reset}: Deve svuotare l'array in memoria e sovrascrivere il file \texttt{tasks.json} con un array vuoto \texttt{[]}.
 \end{enumerate}
 
-\section{Codice Suggerito (Backend)}
-
-\subsection*{Node.js (Express)}
-\begin{lstlisting}[language=JavaScript]
-const express = require('express');
-const basicAuth = require('express-basic-auth');
-const fs = require('fs');
-
-const app = express();
-app.use(express.json());
-
-// Auth Middleware
-app.use(basicAuth({ users: { 'admin': 'secret' }, challenge: true }));
-
-app.post('/tasks', (req, res) => {
-    // Implementare lettura, aggiunta e scrittura su file
+\begin{lstlisting}[language=javascript, caption=Esempio Express]
+app.post('/save', (req, res) => {
+    fs.writeFileSync(FILE_PATH, JSON.stringify(tasks, null, 4));
+    res.json({ status: "saved" });
 });
-
-app.listen(3000, () => console.log('Server in ascolto su porta 3000'));
 \end{lstlisting}
 
-\subsection*{Python (Flask)}
-\begin{lstlisting}[language=Python]
-from flask import Flask, request, jsonify
-from flask_basicauth import BasicAuth
+\section{Esercizio 3: UI Interattiva}
+Modificate il file \texttt{index.html} per includere i comandi di gestione persistenza.
 
-app = Flask(__name__)
-app.config['BASIC_AUTH_USERNAME'] = 'admin'
-app.config['BASIC_AUTH_PASSWORD'] = 'secret'
-basic_auth = BasicAuth(app)
+\textbf{Task}:
+\begin{enumerate}
+    \item Aggiungete due pulsanti sotto la lista dei task: "Salva su Disco" e "Resetta Tutto".
+    \item Create due funzioni JavaScript \texttt{saveTasks()} e \texttt{resetTasks()} che utilizzano \texttt{fetch} per chiamare i nuovi endpoint.
+    \item Aggiornate la UI dopo il reset.
+\end{enumerate}
 
-@app.route('/tasks', methods=['GET'])
-@basic_auth.required
-def get_tasks():
-    # Implementare logica di lettura
-    return jsonify([])
-
-if __name__ == '__main__':
-    app.run(port=5000)
+\begin{lstlisting}[language=javascript]
+async function saveTasks() {
+    await fetchAPI('/save', 'POST');
+    alert('Dati salvati con successo!');
+}
 \end{lstlisting}
+
+\section{Esercizio 4: UX Feedback e Latenza Simulata}
+In una rete reale, le richieste API non sono istantanee. È fondamentale fornire un feedback visivo all'utente per evitare che l'interfaccia sembri "bloccata".
+
+\subsection{Task Backend: Simulare la lentezza}
+Per testare il caricamento, forziamo il server a rispondere dopo un ritardo (es. 2 secondi).
+
+\begin{lstlisting}[language=javascript, caption=Ritardo in Node.js]
+// Inserire all'inizio della rotta GET /tasks
+await new Promise(resolve => setTimeout(resolve, 2000));
+\end{lstlisting}
+
+\begin{lstlisting}[language=Python, caption=Ritardo in Python]
+import time
+# Inserire nella rotta get_tasks()
+time.sleep(2)
+\end{lstlisting}
+
+\subsection{Task Frontend: Lo Spinner di caricamento}
+\begin{enumerate}
+    \item Aggiungete nel file HTML un elemento \texttt{<span>} o un div (es. con ID \texttt{loader}) che contenga il testo "Caricamento in corso..." e uno spinner CSS.
+    \item Gestite la visibilità del loader nella funzione \texttt{render()}:
+    \begin{itemize}
+        \item Mostrate il loader appena inizia la funzione.
+        \item Nascondetelo subito dopo aver ricevuto i dati dal server.
+    \end{itemize}
+\end{enumerate}
+
+\begin{lstlisting}[language=javascript, caption=Gestione Stato nel Frontend]
+async function render() {
+    loader.classList.remove('hidden'); // Mostra
+    const tasks = await fetchAPI('/tasks');
+    loader.classList.add('hidden');    // Nascondi
+    // ... resto della logica di rendering
+}
+\end{lstlisting}
+\begin{enumerate}
+    \item \textbf{Gestione Errori}: Modificate la \texttt{fetchAPI} per mostrare un messaggio di errore all'utente se il server restituisce uno stato \texttt{500} o \texttt{401}.
+    \item \textbf{Audit Log}: Ogni volta che un task viene eliminato, stampate nel terminale del server il timestamp e il testo del task rimosso.
+    \item \textbf{Task Live (Avanzato)}: Implementate una rotta \texttt{GET /stats} che restituisca il numero totale di task e la lunghezza media del testo dei task. Visualizzate questi dati in un piccolo box nell'interfaccia.
+\end{enumerate}
 
 \end{document}

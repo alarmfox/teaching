@@ -9,17 +9,17 @@
 <body class="bg-slate-50 min-h-screen flex items-center justify-center p-4">
     <div class="w-full max-w-md bg-white rounded-2xl shadow-xl p-6">
         <h1 class="text-3xl font-extrabold text-slate-900 mb-6 tracking-tight">Le mie attività</h1>
-        
+
         <form id="todoForm" class="flex gap-2 mb-6">
-            <input 
-                type="text" 
-                id="taskInput" 
+            <input
+                type="text"
+                id="taskInput"
                 required
                 class="flex-grow px-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition" 
                 placeholder="Cosa devi fare?"
             >
-            <button 
-                type="submit" 
+            <button
+                type="submit"
                 class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg font-medium transition active:scale-95"
             >Aggiungi</button>
         </form>
@@ -46,7 +46,7 @@
 
         async function render() {
             const tasks = await fetchAPI('/tasks');
-            list.innerHTML = tasks.length > 0 
+            list.innerHTML = tasks.length > 0
                 ? tasks.map((t, i) => `
                     <li class="flex items-center justify-between p-3 bg-slate-50 rounded-lg border border-slate-100 hover:border-blue-200 transition">
                         <span class="text-slate-700 font-medium">${t.text}</span>
@@ -62,7 +62,7 @@
             e.preventDefault();
             const text = input.value.trim();
             if (!text) return;
-            
+
             await fetchAPI('/tasks', 'POST', { text });
             input.value = '';
             render();

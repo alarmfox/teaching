@@ -37,30 +37,45 @@
 
 \section{Architettura Backend}
 \begin{frame}{Il Ruolo del Server}
-    Il backend gestisce la logica di business e l'accesso alle risorse.
+    Il backend opera in un ambiente \textbf{Trusted} (fido) con privilegi elevati.
     \begin{itemize}
-        \item \textbf{Controllo}: Gestione del ciclo di vita delle risorse.
-        \item \textbf{Accesso}: Interfaccia diretta a file system e calcolo.
-        \item \textbf{API-First}: Il backend espone solo dati, non HTML.
+        \item \textbf{Runtime}: Accesso diretto al File System, Variabili d'Ambiente e Rete.
+        \item \textbf{Sicurezza}: Validazione centralizzata delle regole di business.
+        \item \textbf{Agnosticismo}: Esposizione di dati (JSON) per client eterogenei.
     \end{itemize}
     \vspace{0.2cm}
-    \textit{Strategia didattica: Persistenza su file JSON per concentrarsi sul protocollo HTTP.}
+    \textit{Strategia didattica: Persistenza su file JSON per focalizzarsi sui protocolli senza la complessità dei DBMS.}
+\end{frame}
+
+\begin{frame}{Runtime e Gestione Dipendenze}
+    Lo sviluppo backend si basa su ecosistemi di pacchetti gestiti.
+    \begin{itemize}
+        \item \textbf{Python}: Gestione tramite \texttt{pip} e \textit{Virtual Environments}.
+        \item \textbf{Node.js}: Gestione tramite \texttt{npm} e file \texttt{package.json}.
+    \end{itemize}
+    \vspace{0.3cm}
+    \textbf{Hot Reloading}:
+    \begin{itemize}
+        \item Consente il riavvio automatico del server ad ogni modifica.
+        \item Flask: \texttt{--debug} | Express: \texttt{nodemon}.
+    \end{itemize}
 \end{frame}
 
 \begin{frame}[fragile]{Handler Pattern}
     L'handler associa una rotta a una funzione di gestione.
     \begin{itemize}
-        \item Esegue il flusso: Validazione $\rightarrow$ Esecuzione $\rightarrow$ Risposta.
+        \item \textbf{Pipeline}: Validazione $\rightarrow$ Esecuzione $\rightarrow$ Risposta.
+        \item Gestione del ciclo di vita della richiesta (Request-Response Cycle).
     \end{itemize}
-    \vspace{0.5cm}
+    \vspace{0.3cm}
     \centering
     \begin{tikzpicture}[
         block/.style={rectangle, draw, fill=blue!10, minimum width=2.5cm, minimum height=0.8cm, align=center, font=\small},
         arrow/.style={-latex, thick, primary}
     ]
-        \node (v) [block] {Validazione};
-        \node (e) [block, right=0.8cm of v] {Esecuzione};
-        \node (r) [block, right=0.8cm of e] {Risposta};
+        \node (v) [block] {Validazione\\(400 Error)};
+        \node (e) [block, right=0.8cm of v] {Esecuzione\\(Logica)};
+        \node (r) [block, right=0.8cm of e] {Risposta\\(2xx/5xx)};
         \draw [arrow] (v) -- (e);
         \draw [arrow] (e) -- (r);
     \end{tikzpicture}
@@ -97,7 +112,7 @@
         \begin{verbatim}
 pip install flask
         \end{verbatim}
-        \item \textbf{Esecuzione (Debug Mode)}:
+        \item \textbf{Esecuzione (Hot Reloading)}:
         \begin{verbatim}
 export FLASK_APP=app.py
 flask run --debug
@@ -128,6 +143,7 @@ npm init -y
         \begin{verbatim}
 npm install express
         \end{verbatim}
+        \item \textbf{Sviluppo}: \texttt{npx nodemon index.js}
     \end{itemize}
 \end{frame}
 
@@ -136,6 +152,8 @@ npm install express
     \begin{verbatim}
 const express = require('express');
 const app = express();
+
+app.use(express.json()); // Middleware JSON obbligatorio
 
 app.get('/', (req, res) => {
     res.json({ message: "Server Express attivo!" });
@@ -146,49 +164,67 @@ app.listen(3000);
 \end{frame}
 
 \section{REST API}
+\begin{frame}{Modellazione delle Risorse}
+    L'API REST si basa sulla manipolazione di entità logiche.
+    \begin{itemize}
+        \item \textbf{Risorse}: Sostantivi al plurale (es. \texttt{/tasks}, \texttt{/users}).
+        \item \textbf{Verbi}: Metodi HTTP (es. \texttt{POST} per creare, \texttt{GET} per leggere).
+        \item \textbf{Contratto}: Definizione chiara di input e output (JSON).
+    \end{itemize}
+\end{frame}
+
 \begin{frame}{Todo App: Definizione Rotte}
     Esempio pratico: Gestione di una lista di attività (Task).
     \begin{itemize}
-        \item \textbf{Recupero}: \texttt{GET /tasks}
-        \item \textbf{Creazione}: \texttt{POST /tasks}
-        \item \textbf{Eliminazione}: \texttt{DELETE /tasks/<id>}
+        \item \textbf{Recupero Lista}: \texttt{GET /tasks} $\rightarrow$ \texttt{200 OK}
+        \item \textbf{Creazione}: \texttt{POST /tasks} $\rightarrow$ \texttt{201 Created}
+        \item \textbf{Eliminazione}: \texttt{DELETE /tasks/<id>} $\rightarrow$ \texttt{204 No Content}
     \end{itemize}
     \vspace{0.3cm}
     \textit{Il backend deve supportare il parsing del corpo della richiesta (JSON).}
 \end{frame}
 
-\begin{frame}{Semantica REST}
-    Uso corretto dei metodi HTTP:
-    \begin{itemize}
-        \item \texttt{GET}: Recupero dati (idempotente).
-        \item \texttt{POST}: Creazione dati.
-        \item \texttt{DELETE}: Eliminazione.
-    \end{itemize}
-    \vspace{0.3cm}
-    \textbf{Codici di Stato}:
-    \begin{itemize}
-        \item 201 (Created), 400 (Bad Request), 401 (Unauthorized).
-    \end{itemize}
+\begin{frame}{Semantica REST e Status Codes}
+    Corrispondenza tra operazioni ed esiti HTTP:
+    \vspace{0.2cm}
+    \centering
+    \begin{tabular}{lll}
+        \toprule
+        \textbf{Metodo} & \textbf{Esito OK} & \textbf{Significato} \\
+        \midrule
+        \texttt{GET} & 200 & Successo \\
+        \texttt{POST} & 201 & Risorsa Creata \\
+        \texttt{PUT} & 200/204 & Aggiornamento \\
+        \texttt{DELETE} & 204 & Cancellata \\
+        - & 400 & Bad Request (Validazione) \\
+        - & 404 & Not Found (Mancante) \\
+        \bottomrule
+    \end{tabular}
 \end{frame}
 
 \begin{frame}[fragile]{Implementazione REST (Flask)}
-    Gestione della rotta POST per aggiungere task.
+    Gestione della rotta POST con validazione minima.
     \begin{verbatim}
 @app.route('/tasks', methods=['POST'])
 def add_task():
     new_task = request.get_json()
+    if not new_task or 'title' not in new_task:
+        return jsonify({"error": "Bad Request"}), 400
     tasks.append(new_task)
     return jsonify({"status": "created"}), 201
     \end{verbatim}
 \end{frame}
 
 \begin{frame}[fragile]{Implementazione REST (Express)}
-    Gestione della rotta POST con middleware JSON.
+    Gestione della rotta POST con controllo campi obbligatori.
     \begin{verbatim}
 app.use(express.json());
 
 app.post('/tasks', (req, res) => {
     const newTask = req.body;
+    if (!newTask.title) {
+        return res.status(400).json({ error: "Required" });
+    }
     tasks.push(newTask);
     res.status(201).json({ status: "created" });
 });
@@ -197,82 +233,114 @@ app.post('/tasks', (req, res) => {
 
 \section{Persistenza}
 \begin{frame}{Strategie di Persistenza}
-    Mantenere i dati tra i riavvii del server.
+    Mantenere lo stato tra i riavvii del server.
     \begin{enumerate}
         \item \textbf{Lettura}: Caricamento del file JSON in memoria.
-        \item \textbf{Modifica}: Manipolazione della struttura dati (array/dict).
-        \item \textbf{Scrittura}: Salvataggio atomico su disco.
+        \item \textbf{Modifica}: Manipolazione della struttura dati.
+        \item \textbf{Scrittura}: Salvataggio su disco (operazione costosa).
     \end{enumerate}
     \vspace{0.2cm}
-    \textit{Vantaggio JSON: Leggibile dall'uomo e nativo per il web.}
+    \textbf{Problemi tecnici}:
+    \begin{itemize}
+        \item \textbf{Race Conditions}: Rischi di sovrascrittura con accessi concorrenti.
+        \item \textbf{Atomicità}: Mancanza di transazioni sicure su file piatti.
+    \end{itemize}
 \end{frame}
 
-\begin{frame}[fragile]{Persistenza JSON}
-    L'operazione deve essere atomica: Load $\rightarrow$ Modifica $\rightarrow$ Write.
+\begin{frame}{Evoluzione: Dal File al Database}
+    I database (RDBMS) risolvono i limiti della persistenza su file.
+    \begin{itemize}
+        \item \textbf{ACID}: Atomicità, Consistenza, Isolamento, Durabilità.
+        \item \textbf{Concorrenza}: Gestione sicura di migliaia di richieste simultanee.
+        \item \textbf{Esempi}: SQLite (lightweight), PostgreSQL (Enterprise).
+    \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Persistenza JSON (Python)}
     \begin{verbatim}
+def load_tasks():
+    if not os.path.exists('tasks.json'): return []
+    with open('tasks.json', 'r') as f:
+        return json.load(f)
+
 def save_tasks(tasks):
     with open('tasks.json', 'w') as f:
         json.dump(tasks, f, indent=4)
     \end{verbatim}
-    \textit{Nota: JSON è ottimo per didattica, ma occhio alla concorrenza.}
 \end{frame}
 
 \begin{frame}[fragile]{Persistenza JSON (Express)}
-    Utilizzo del modulo \texttt{fs} per la scrittura su file.
+    Utilizzo di versioni sincrone (\texttt{readFileSync}) per semplicità didattica.
     \begin{verbatim}
 const fs = require('fs');
 const FILE_PATH = './tasks.json';
 
+const loadTasks = () => {
+    if (!fs.existsSync(FILE_PATH)) return [];
+    return JSON.parse(fs.readFileSync(FILE_PATH));
+};
+
 const saveTasks = (tasks) => {
-    const data = JSON.stringify(tasks, null, 4);
-    fs.writeFileSync(FILE_PATH, data);
+    fs.writeFileSync(FILE_PATH, JSON.stringify(tasks, null, 4));
 };
     \end{verbatim}
 \end{frame}
 
 \section{Sicurezza}
-\begin{frame}[fragile]{Middleware di Sicurezza}
-    Filtrare le richieste prima dell'esecuzione logica.
+\begin{frame}{Middleware Pipeline}
+    I Middleware formano una catena di protezione sequenziale.
     \vspace{0.5cm}
     \centering
     \begin{tikzpicture}[
         node/.style={rectangle, draw, fill=red!10, minimum width=2cm, minimum height=0.8cm, align=center, font=\small},
         arrow/.style={-latex, thick, primary}
     ]
-        \node (auth) [node] {Autenticazione};
-        \node (val) [node, right=0.8cm of auth] {Validazione};
+        \node (auth) [node] {Auth\\(401)};
+        \node (val) [node, right=0.8cm of auth] {Validazione\\(400)};
+        \node (log) [node, right=0.8cm of val] {Business\\Logic};
         \draw [arrow] (auth) -- (val);
+        \draw [arrow] (val) -- (log);
     \end{tikzpicture}
     \begin{itemize}
-        \item \textbf{Basic Auth}: Header codificato Base64.
-        \item \textbf{Sanitizzazione}: Pulizia input obbligatoria.
+        \item \textbf{Sanitizzazione}: Pulizia input obbligatoria prima della logica.
+        \item \textbf{Isolamento}: Ogni middleware ha una sola responsabilità.
     \end{itemize}
+\end{frame}
+
+\begin{frame}{CORS: Cross-Origin Resource Sharing}
+    Meccanismo di sicurezza del browser per le richieste cross-origin.
+    \begin{itemize}
+        \item \textbf{Problema}: Il browser blocca richieste tra domini diversi (es. \texttt{localhost:5500} $\rightarrow$ \texttt{localhost:3000}).
+        \item \textbf{Soluzione}: Il server deve inviare header specifici per autorizzare l'origine.
+    \end{itemize}
+    \vspace{0.3cm}
+    \texttt{Access-Control-Allow-Origin: *}
 \end{frame}
 
 \begin{frame}{Validazione e Sanitizzazione}
     La regola aurea: \textbf{Mai fidarsi dell'input del client}.
     \begin{itemize}
-        \item \textbf{Validazione}: Verifica che i dati siano nel formato corretto (es. l'ID deve essere un numero).
-        \item \textbf{Sanitizzazione}: Rimozione di tag script o caratteri pericolosi per prevenire iniezioni.
+        \item \textbf{Validazione}: Verifica tipo e formato (es. email corretta).
+        \item \textbf{Sanitizzazione}: Rimozione tag HTML/Script per prevenire XSS.
     \end{itemize}
-    \textit{Questi processi avvengono prima di processare la business logic.}
 \end{frame}
 
 \begin{frame}[fragile]{Basic Auth (Flask)}
-    Proteggere un endpoint con credenziali.
     \begin{verbatim}
+def check_auth(user, password):
+    return user == 'admin' and password == 'secret'
+
 @app.route('/secure')
 def secure_endpoint():
     auth = request.authorization
-    if not auth or auth.password != 'secret':
-        return Response('Accesso negato', 401, 
+    if not auth or not check_auth(auth.username, auth.password):
+        return Response('Access denied', 401, 
            {'WWW-Authenticate': 'Basic realm="Login"'})
-    return "Dati protetti"
+    return "Sensitive Data"
     \end{verbatim}
 \end{frame}
 
 \begin{frame}[fragile]{Basic Auth (Express)}
-    Utilizzo di middleware per la protezione globale o locale.
     \begin{verbatim}
 const basicAuth = require('express-basic-auth');
 
@@ -280,41 +348,62 @@ app.use(basicAuth({
     users: { 'admin': 'secret' },
     challenge: true
 }));
+
+app.get('/secure', (req, res) => {
+    res.send("Sensitive Data");
+});
     \end{verbatim}
 \end{frame}
 
 \section{Frontend}
-\begin{frame}[fragile]{Fetch API Standard}
-    Eseguire richieste asincrone senza autenticazione.
+\begin{frame}[fragile]{Fetch API: Pattern Moderno}
+    Gestione asincrona tramite \texttt{async/await} per leggibilità.
     \begin{verbatim}
-fetch('/tasks')
-    .then(response => response.json())
-    .then(data => console.log(data))
-    .catch(error => console.error('Errore:', error));
+async function getTasks() {
+    try {
+        const response = await fetch('/tasks');
+        if (!response.ok) throw new Error('HTTP Error');
+        const data = await response.json();
+        renderTasks(data);
+    } catch (err) {
+        console.error('Request failed:', err);
+    }
+}
     \end{verbatim}
 \end{frame}
 
-\begin{frame}[fragile]{Integrazione: Fetch API}
-    Consumare le API asincronamente.
+\begin{frame}{UX e Gestione degli Stati}
+    L'integrazione richiede feedback costante per l'utente.
+    \begin{itemize}
+        \item \textbf{Loading}: Visualizzazione spinner durante la latenza.
+        \item \textbf{Error}: Messaggi chiari in caso di fallimento (\texttt{4xx/5xx}).
+        \item \textbf{Success}: Conferma visiva (Toast/Alert) dopo una \texttt{POST}.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Integrazione con Auth}
     \begin{verbatim}
-// Autenticazione dinamica via Prompt
-const creds = btoa(`${prompt('User:')}:${prompt('Pass:')}`);
-fetch('/secure', {
-    headers: { 'Authorization': 'Basic ' + creds }
-})
-.then(r => r.json());
+const creds = btoa(`${username}:${password}`);
+
+const response = await fetch('/secure', {
+    headers: { 'Authorization': `Basic ${creds}` }
+});
+
+if (response.status === 401) alert('Forbidden');
+const data = await response.text();
     \end{verbatim}
 \end{frame}
 
 \begin{frame}{Conclusioni ed Esercizi}
     \textbf{Obiettivi Raggiunti}:
     \begin{itemize}
-        \item Creazione di un server Web (Flask/Express).
-        \item Progettazione di API RESTful.
-        \item Persistenza dati su JSON.
+        \item Architettura Backend e Trusted Environment.
+        \item Implementazione API RESTful e Middleware.
+        \item Persistenza dati e sicurezza (CORS/Auth).
     \end{itemize}
     \vspace{0.3cm}
     \textbf{Esercizio}: Implementare la cancellazione di un task (\texttt{DELETE /tasks/<id>}) aggiornando il file JSON.
 \end{frame}
+
 
 \end{document}

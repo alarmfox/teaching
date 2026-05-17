@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <title>Todo App Professionale</title>
+</head>
+<body class="bg-slate-50 min-h-screen flex items-center justify-center p-4">
+    <div class="w-full max-w-md bg-white rounded-2xl shadow-xl p-6">
+        <h1 class="text-3xl font-extrabold text-slate-900 mb-6 tracking-tight">Le mie attività</h1>
+
+        <div id="loader" class="hidden flex items-center gap-2 mb-4 text-blue-600 font-medium">
+            <svg class="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            <span>Caricamento in corso...</span>
+        </div>
+
+        <form id="todoForm" class="flex gap-2 mb-6">
+            <input
+                type="text"
+                id="taskInput"
+                required
+                class="flex-grow px-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition" 
+                placeholder="Cosa devi fare?"
+            >
+            <button
+                type="submit"
+                class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg font-medium transition active:scale-95"
+            >Aggiungi</button>
+        </form>
+
+        <ul id="taskList" class="space-y-3 mb-6">
+            <!-- I task verranno iniettati qui -->
+        </ul>
+
+        <div class="flex gap-2 pt-4 border-t border-slate-100">
+            <button
+                onclick="saveTasks()"
+                class="flex-1 bg-slate-800 hover:bg-slate-900 text-white px-4 py-2 rounded-lg text-sm font-semibold transition"
+            >Salva su Disco</button>
+            <button
+                onclick="resetTasks()"
+                class="flex-1 bg-white hover:bg-red-50 text-red-600 border border-red-100 px-4 py-2 rounded-lg text-sm font-semibold transition"
+            >Resetta Tutto</button>
+        </div>
+    </div>
+
+    <script>
+        const AUTH = btoa("admin:secret");
+        const form = document.getElementById('todoForm');
+        const input = document.getElementById('taskInput');
+        const list = document.getElementById('taskList');
+        const loader = document.getElementById('loader');
+
+        async function fetchAPI(url, method = 'GET', body = null) {
+            const res = await fetch(url, {
+                method,
+                headers: { 'Authorization': 'Basic ' + AUTH, 'Content-Type': 'application/json' },
+                body: body ? JSON.stringify(body) : null
+            });
+            return res.json();
+        }
+
+        async function render() {
+            loader.classList.remove('hidden');
+            const tasks = await fetchAPI('/tasks');
+            loader.classList.add('hidden');
+
+            list.innerHTML = tasks.length > 0
+                ? tasks.map((t, i) => `
+                    <li class="flex items-center justify-between p-3 bg-slate-50 rounded-lg border border-slate-100 hover:border-blue-200 transition">
+                        <span class="text-slate-700 font-medium">${t.text}</span>
+                        <button onclick="del(${i})" class="text-slate-400 hover:text-red-500 transition">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" /></svg>
+                        </button>
+                    </li>
+                `).join('')
+                : '<li class="text-center text-slate-400 italic py-4">Nessun task per ora.</li>';
+        }
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const text = input.value.trim();
+            if (!text) return;
+
+            await fetchAPI('/tasks', 'POST', { text });
+            input.value = '';
+            render();
+        });
+
+        async function del(i) {
+            await fetchAPI('/tasks/'+i, 'DELETE');
+            render();
+        }
+
+        async function saveTasks() {
+            await fetchAPI('/save', 'POST');
+            alert('Dati salvati con successo sul server!');
+        }
+
+        async function resetTasks() {
+            if (confirm('Sei sicuro di voler cancellare tutto?')) {
+                await fetchAPI('/reset', 'POST');
+                render();
+            }
+        }
+
+        render();
+    </script>
+</body>
+</html>

@@ -5,23 +5,26 @@
 \usepackage[T1]{fontenc}
 \usepackage{lmodern}
 \usepackage[italian]{babel}
+\usepackage{etoolbox}
 \usepackage[margin=1in]{geometry}
 \usepackage{hyperref}
 \usepackage{xcolor}
 \usepackage{listings}
+\usepackage{enumitem}
 \usepackage{titlesec}
 \usepackage{fancyhdr}
-\usepackage{tikz}
+\usepackage{cleveref}
+\usepackage{graphicx}
+\usepackage{longtable}
+\usepackage{booktabs}
 \usepackage{setspace}
 
-\usetikzlibrary{arrows.meta, positioning, shapes.geometric, calc, fit}
-
-% --- Configurazione Colori ---
-\definecolor{primary}{RGB}{38, 66, 139}
-\definecolor{codebg}{RGB}{245, 245, 245}
-\definecolor{keywordcolor}{RGB}{0, 0, 255}
-\definecolor{stringcolor}{RGB}{163, 21, 21}
-\definecolor{commentcolor}{RGB}{0, 128, 0}
+\crefformat{section}{\S#2#1#3}
+\crefformat{subsection}{\S#2#1#3}
+\crefformat{subsubsection}{\S#2#1#3}
+\crefformat{figure}{#2Figura~#1#3}
+\crefformat{footnote}{#2\footnotemark[#1]#3}
+\crefformat{table}{#2Tabella~#1#3}
 
 % --- Configurazione Header e Footer ---
 \pagestyle{fancy}
@@ -29,19 +32,41 @@
 \fancyhead[L]{\small Programmazione e Tecnologie Web}
 \fancyhead[R]{\small Giuseppe Capasso}
 \fancyfoot[C]{\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta, positioning, shapes.geometric, decorations.pathreplacing, calc, shadows, fit}
 
-% --- Configurazione Formattazione Codice ---
-\lstset{
-    backgroundcolor=\color{codebg},
-    basicstyle=\ttfamily\small,
-    breaklines=true,
-    frame=single,
-    keywordstyle=\color{keywordcolor},
-    commentstyle=\color{commentcolor},
-    stringstyle=\color{stringcolor}
+% --- Configurazione Colori e Link ---
+\definecolor{primary}{RGB}{38, 66, 139}
+\definecolor{codebg}{RGB}{245, 245, 245}
+\definecolor{keywordcolor}{RGB}{0, 0, 255}
+\definecolor{stringcolor}{RGB}{163, 21, 21}
+\definecolor{commentcolor}{RGB}{0, 128, 0}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=primary,
+    urlcolor=primary,
+    citecolor=primary,
 }
 
-\onehalfspacing
+% --- Configurazione Formattazione Codice ---
+\lstdefinelanguage{json}{
+    basicstyle=\ttfamily\small,
+    numbers=left,
+    numberstyle=\scriptsize,
+    stepnumber=1,
+    numbersep=8pt,
+    showstringspaces=false,
+    breaklines=true,
+    frame=lines,
+    backgroundcolor=\color{codebg},
+    string=[s]{"}{"},
+    comment=[l]{//},
+    morecomment=[s]{/*}{*/},
+    stringstyle=\color{stringcolor},
+    keywordstyle=\color{keywordcolor},
+}
 
 \lstdefinelanguage{javascript}{
     keywords={async, await, break, case, catch, class, const, continue, debugger, default, delete, do, else, export, extends, false, finally, for, function, if, import, in, instanceof, new, null, return, super, switch, this, throw, true, try, typeof, var, void, while, with, yield, let},
@@ -58,14 +83,38 @@
     basicstyle=\ttfamily\small
 }
 
+\lstset{
+    backgroundcolor=\color{codebg},
+    basicstyle=\ttfamily\small,
+    breaklines=true,
+    frame=single,
+    rulecolor=\color{lightgray},
+    captionpos=b,
+    xleftmargin=1em,
+    xrightmargin=1em,
+    keywordstyle=\color{keywordcolor},
+    commentstyle=\color{commentcolor},
+    stringstyle=\color{stringcolor}
+}
+
+% --- Formattazione Titoli ---
+\titleformat{\chapter}[display]
+  {\normalfont\bfseries\color{primary}}{\huge Capitolo \thechapter}{1ex}{\Huge}
+\titlespacing*{\chapter}{0pt}{-20pt}{40pt}
+
+\onehalfspacing
+
 \begin{document}
 
+% --- Frontespizio ---
 \begin{titlepage}
     \centering
     \vspace*{4cm}
     {\Huge \textbf{\color{primary} Programmazione e Tecnologie Web}} \\[1.5cm]
     {\Large \textbf{Dispense del Corso - Lezione 4}} \\[0.5cm]
     {\large Docente: Giuseppe Capasso} \\[1.5cm]
+    {\normalsize \textbf{Cloud Native Development \& Cybersecurity Specialist}} \\
+    {\normalsize Istituto Tecnico Superiore (ITS)} \\
     \vfill
     {\normalsize Anno Accademico 2025/2026}
 \end{titlepage}
@@ -80,12 +129,22 @@
 \chapter{Architetture Backend}
 
 \section{Il Ruolo del Server nello Stack Web}
-In un'architettura web moderna, il server agisce come nodo centrale per la gestione del ciclo di vita delle risorse. A differenza del frontend, che risiede nel contesto limitato del browser, il backend opera in un ambiente server-side dove ha accesso diretto alle risorse di calcolo, al file system e alle logiche di validazione dei dati. La sua funzione primaria è quella di esporre interfacce (API) che permettano di interagire con le risorse applicative in modo sicuro e strutturato.
+In un'architettura web moderna, il server agisce come nodo centrale per la gestione del ciclo di vita delle risorse. A differenza del frontend, che risiede nel contesto limitato e spesso insicuro del browser, il backend opera in un ambiente \textbf{Trusted} (fido). 
+
+Il server-side ha accesso diretto alle risorse di calcolo, al file system e alle logiche di validazione dei dati che non possono essere delegate al client per motivi di sicurezza e integrità. La sua funzione primaria è quella di esporre interfacce (API) che permettano di interagire con le risorse applicative in modo sicuro, garantendo che le regole di business siano applicate uniformemente a tutti i client.
+
+\subsection{L'Ambiente di Esecuzione (Runtime)}
+Mentre il codice frontend viene eseguito nell'interprete JavaScript del browser (V8, SpiderMonkey), il backend vive in un sistema operativo (Linux, Windows, macOS). Questo comporta:
+\begin{itemize}
+    \item \textbf{Accesso alle Variabili d'Ambiente}: Gestione di segreti e configurazioni tramite file \texttt{.env}.
+    \item \textbf{Persistenza}: Capacità di scrivere e leggere permanentemente su disco.
+    \item \textbf{Networking}: Possibilità di contattare altri server, database o servizi esterni (es. gateway di pagamento).
+\end{itemize}
 
 \subsection*{Nota Metodologica: Persistenza su File e Focalizzazione Didattica}
 Per le finalità di questo corso, che mira a fornire una solida comprensione delle dinamiche Web e dei protocolli di integrazione, abbiamo adottato una strategia di persistenza basata su file JSON. Questa scelta didattica evita l'introduzione precoce di sistemi complessi di gestione database (DBMS), permettendoci di dedicare l'intero carico didattico alla progettazione delle API, alla gestione del flusso HTTP e all'architettura dei sistemi distribuiti.
 
-\section{Architettura degli Handler}
+\section{Architettura degli Handler e Ciclo della Richiesta}
 Il flusso di controllo nel backend è regolato dagli \textbf{Handler}. Un handler è una funzione che associa una determinata rotta (endpoint) a un metodo HTTP. Il server delega all'handler la logica necessaria per processare la richiesta, validare l'input ed eseguire l'operazione richiesta sulla risorsa.
 
 \begin{figure}[ht]
@@ -128,10 +187,10 @@ Oltre al routing, l'handler gestisce internamente il ciclo di vita della richies
 \caption{Ciclo di vita di una richiesta all'interno di un Handler.}
 \end{figure}
 
-\begin{itemize}
-    \item \textbf{Validazione}: Verifica che l'input ricevuto dal client sia conforme al contratto dell'API (es. presenza campi obbligatori).
-    \item \textbf{Esecuzione}: Esecuzione delle operazioni logiche (es. modifica file, calcoli).
-    \item \textbf{Risposta}: Costruzione del payload di risposta e definizione del codice di stato HTTP.
+\begin{itemize}[leftmargin=3em]
+    \item \textbf{Validazione}: Verifica che l'input ricevuto dal client sia conforme al contratto dell'API (es. presenza campi obbligatori, tipi di dato corretti). Se la validazione fallisce, il ciclo si interrompe immediatamente restituendo un errore \texttt{400 Bad Request}.
+    \item \textbf{Esecuzione}: Esecuzione delle operazioni logiche (es. modifica file, calcoli, interrogazione di altri servizi).
+    \item \textbf{Risposta}: Costruzione del payload di risposta (solitamente in JSON) e definizione del codice di stato HTTP appropriato (\texttt{200}, \texttt{201}, ecc.).
 \end{itemize}
 
 
@@ -140,22 +199,29 @@ Oltre al routing, l'handler gestisce internamente il ciclo di vita della richies
 % ==========================================
 \chapter{Setup del Server}
 
+\section{Gestione delle Dipendenze}
+Nello sviluppo backend moderno, non si scrive tutto da zero. Ci si appoggia a framework e librerie gestite tramite \textbf{Package Manager}.
+\begin{itemize}
+    \item \textbf{Python}: Utilizza \texttt{pip} e i file \texttt{requirements.txt} (o \texttt{Poetry/Pyproject.toml}). \`E fondamentale l'uso di \textit{Virtual Environments} per isolare le dipendenze del progetto.
+    \item \textbf{Node.js}: Utilizza \texttt{npm} o \texttt{yarn} e il file \texttt{package.json}. La cartella \texttt{node\_modules} contiene tutte le librerie installate.
+\end{itemize}
+
 \section{Python: Server con Flask}
 Flask è un micro-framework Python estremamente popolare per la sua semplicità e la curva di apprendimento dolce. È ideale per prototipare rapidamente API REST.
 
-\subsection*{Installazione ed Esecuzione}
+\subsection{Installazione ed Esecuzione}
 Assicuratevi di avere un ambiente virtuale attivo e installate Flask:
 \begin{lstlisting}[language=bash]
 pip install flask
 \end{lstlisting}
 
-Per avviare l'applicazione in modalità sviluppo, utilizzate il comando integrato:
+Per avviare l'applicazione in modalità sviluppo, utilizzate il comando integrato. L'opzione \texttt{--debug} abilita l'\textbf{Hot Reloading}: il server si riavvia automaticamente ad ogni modifica del codice.
 \begin{lstlisting}[language=bash]
 export FLASK_APP=app.py
 flask run --debug
 \end{lstlisting}
 
-\subsection*{Codice Base}
+\subsection{Codice Base}
 Il seguente esempio inizializza un'applicazione Flask.
 
 \begin{lstlisting}[language=python, caption=app.py (Flask)]
@@ -171,14 +237,20 @@ def index():
 \section{Node.js: Server con Express.js}
 Express.js è lo standard de facto per le applicazioni web in Node.js. Offre un sistema di middleware flessibile che semplifica enormemente la gestione delle richieste.
 
-\subsection*{Setup del Progetto}
+\subsection{Setup del Progetto}
 Inizializzate il progetto e installate Express:
 \begin{lstlisting}[language=bash]
 npm init -y
 npm install express
 \end{lstlisting}
 
-\subsection*{Codice Base}
+\subsection{Sviluppo e Hot Reloading}
+In ambito Node.js, si utilizza spesso \texttt{nodemon} per evitare di riavviare manualmente il server:
+\begin{lstlisting}[language=bash]
+npx nodemon index.js
+\end{lstlisting}
+
+\subsection{Codice Base}
 Creiamo un server che esegue le stesse operazioni dell'esempio Flask.
 
 \begin{lstlisting}[language=javascript, caption=index.js (Express)]
@@ -200,16 +272,32 @@ app.listen(port, () => {
 % ==========================================
 \chapter{Implementazione API REST}
 
-\section{Definizione delle Rotte e Metodi HTTP}
-Le API RESTful si basano sull'utilizzo semantico dei metodi HTTP. Per una Todo App, definiremo le seguenti operazioni:
-\begin{itemize}
-    \item \texttt{GET /tasks}: Recupera la lista dei task.
-    \item \texttt{POST /tasks}: Crea un nuovo task.
-    \item \texttt{DELETE /tasks/<id>}: Elimina un task specifico.
-\end{itemize}
+\section{Modellazione delle Risorse}
+In un'API REST, tutto ruota attorno alle \textbf{Risorse}. Una risorsa è un'entità logica identificata da un URI (Uniform Resource Identifier). La modellazione corretta prevede che gli URI utilizzino sostantivi al plurale (es. \texttt{/tasks}) e che i verbi siano espressi unicamente dai metodi HTTP.
+
+\section{Semantica dei Metodi e Codici di Stato}
+\`E fondamentale che il server risponda con il codice di stato più appropriato per descrivere l'esito dell'operazione. Questo permette al client di gestire correttamente i diversi scenari (successo, errore di validazione, risorsa mancante).
+
+\begin{table}[ht]
+\centering
+\begin{tabular}{lcl}
+\toprule
+\textbf{Operazione} & \textbf{Metodo} & \textbf{Codice di Stato Tipico} \\
+\midrule
+Lettura Lista       & \texttt{GET}    & \texttt{200 OK} \\
+Creazione Risorsa   & \texttt{POST}   & \texttt{201 Created} \\
+Aggiornamento       & \texttt{PUT}    & \texttt{200 OK} o \texttt{204 No Content} \\
+Cancellazione       & \texttt{DELETE} & \texttt{200 OK} o \texttt{204 No Content} \\
+Errore Validazione  & -               & \texttt{400 Bad Request} \\
+Risorsa Inesistente & -               & \texttt{404 Not Found} \\
+\bottomrule
+\end{tabular}
+\caption{Corrispondenza tra operazioni REST e codici di stato HTTP.}
+\label{tab:rest_status_codes}
+\end{table}
 
 \section{Implementazione in Flask}
-Flask utilizza il decoratore \texttt{@app.route} per mappare URL e metodi.
+Flask utilizza il decoratore \texttt{@app.route} per mappare URL e metodi. Notate l'uso di \texttt{request.get\_json()} per estrarre il payload inviato dal client.
 
 \begin{lstlisting}[language=python, caption=Implementazione REST in Flask]
 from flask import Flask, request, jsonify
@@ -225,16 +313,22 @@ def get_tasks():
 @app.route('/tasks', methods=['POST'])
 def add_task():
     new_task = request.get_json()
+    # Esempio di validazione minima
+    if not new_task or 'title' not in new_task:
+        return jsonify({"error": "Dati mancanti"}), 400
+    
     tasks.append(new_task)
     return jsonify({"status": "created"}), 201
 \end{lstlisting}
 
 \section{Implementazione in Express.js}
-In Express, i metodi sono direttamente accessibili tramite l'istanza \texttt{app}.
+In Express, i metodi sono direttamente accessibili tramite l'istanza \texttt{app}. \`E necessario abilitare il middleware \texttt{express.json()} per permettere al server di interpretare il corpo delle richieste in formato JSON.
 
 \begin{lstlisting}[language=javascript, caption=Implementazione REST in Express]
 const express = require('express');
 const app = express();
+
+// Middleware fondamentale per il parsing del body JSON
 app.use(express.json());
 
 let tasks = [];
@@ -245,6 +339,11 @@ app.get('/tasks', (req, res) => {
 
 app.post('/tasks', (req, res) => {
     const newTask = req.body;
+    
+    if (!newTask.title) {
+        return res.status(400).json({ error: "Titolo richiesto" });
+    }
+    
     tasks.push(newTask);
     res.status(201).json({ status: "created" });
 });
@@ -259,20 +358,33 @@ app.post('/tasks', (req, res) => {
 \section{Strategie di Lettura e Scrittura}
 Per mantenere lo stato delle risorse tra un riavvio del server e l'altro, persistiamo i dati in formato JSON. L'operazione di persistenza richiede una gestione cautelativa:
 \begin{enumerate}
-    \item \textbf{Lettura}: Caricamento del file in memoria all'avvio o alla richiesta.
+    \item \textbf{Lettura}: Caricamento del file in memoria all'avvio o alla ricezione di una richiesta.
     \item \textbf{Modifica}: Manipolazione del dato in memoria (es. \texttt{append} a un array).
-    \item \textbf{Scrittura}: Serializzazione e salvataggio sul disco in modo atomico.
+    \item \textbf{Scrittura}: Serializzazione e salvataggio sul disco.
 \end{enumerate}
 
+\section{Sfide Tecniche: Atomicità e Concorrenza}
+L'uso di file piatti (\textit{flat files}) per la persistenza introduce problemi critici in ambienti di produzione:
+\begin{itemize}
+    \item \textbf{Race Conditions}: Se due client inviano una \texttt{POST} simultaneamente, il server potrebbe leggere lo stesso stato del file, aggiungere entrambi i task in memoria, ma la seconda scrittura sovrascriverebbe la prima, causando la perdita di un dato.
+    \item \textbf{Performance}: Ogni operazione richiede la ri-scrittura dell'intero file, il che diventa inefficiente con migliaia di record.
+\end{itemize}
+
+\subsection*{Verso il Database (DBMS)}
+Per risolvere questi limiti, le applicazioni reali utilizzano i \textbf{Database} (come SQLite, PostgreSQL o MongoDB). I database garantiscono le proprietà \textbf{ACID} (Atomicità, Consistenza, Isolamento, Durabilità), permettendo accessi concorrenti sicuri e performance ottimizzate tramite indici.
+
 \section{Persistenza in Flask}
-Utilizziamo il modulo standard \texttt{json} di Python.
+Utilizziamo il modulo standard \texttt{json} di Python. \`E buona norma gestire le eccezioni (es. file non trovato).
 
 \begin{lstlisting}[language=python, caption=Gestione JSON in Flask]
 import json
+import os
 
 FILE_PATH = 'tasks.json'
 
 def load_tasks():
+    if not os.path.exists(FILE_PATH):
+        return []
     with open(FILE_PATH, 'r') as f:
         return json.load(f)
 
@@ -282,15 +394,20 @@ def save_tasks(tasks):
 \end{lstlisting}
 
 \section{Persistenza in Express.js}
-Utilizziamo il modulo \texttt{fs} di Node.js, preferendo le versioni sincrone per semplicità didattica.
+Utilizziamo il modulo \texttt{fs} di Node.js. In contesti didattici preferiamo le versioni sincrone (\texttt{readFileSync}), ma in produzione si utilizzano sempre le versioni asincrone per non bloccare il loop degli eventi.
 
 \begin{lstlisting}[language=javascript, caption=Gestione JSON in Express]
 const fs = require('fs');
 const FILE_PATH = './tasks.json';
 
 const loadTasks = () => {
-    const data = fs.readFileSync(FILE_PATH);
-    return JSON.parse(data);
+    try {
+        if (!fs.existsSync(FILE_PATH)) return [];
+        const data = fs.readFileSync(FILE_PATH);
+        return JSON.parse(data);
+    } catch (err) {
+        return [];
+    }
 };
 
 const saveTasks = (tasks) => {
@@ -305,7 +422,14 @@ const saveTasks = (tasks) => {
 \chapter{Sicurezza Applicativa}
 
 \section{Validazione e Sanitizzazione}
-La regola aurea dello sviluppo backend è \textbf{non fidarsi mai dell'input del client}. Ogni dato inviato dal client deve essere validato e sanitizzato tramite \textbf{Middleware}: componenti che intercettano la richiesta prima che raggiunga l'handler finale.
+Nello sviluppo backend, l'input del client deve essere considerato intrinsecamente non sicuro. La protezione delle risorse si basa su due pilastri:
+\begin{itemize}[leftmargin=3em]
+    \item \textbf{Validazione}: Verifica della conformità del dato rispetto allo schema atteso (tipo di dato, lunghezza, presenza di campi obbligatori).
+    \item \textbf{Sanitizzazione}: Rimozione o codifica di caratteri potenzialmente dannosi per prevenire attacchi di tipo Injection (es. XSS o SQL Injection).
+\end{itemize}
+
+\section{Il Middleware come Pipeline di Sicurezza}
+Nelle architetture modulari, il \textbf{Middleware} funge da strato intermedio tra la ricezione della richiesta e l'esecuzione della logica di business. Questo approccio a "pipeline" permette di isolare le responsabilità di sicurezza, garantendo che ogni richiesta superi controlli sequenziali prima di accedere alle risorse.
 
 \begin{figure}[ht]
 \centering
@@ -324,22 +448,23 @@ La regola aurea dello sviluppo backend è \textbf{non fidarsi mai dell'input del
     \draw [arrow] (m1) -- (m2);
     \draw [arrow] (m2) -- (h);
 \end{tikzpicture}
-\caption{Il Middleware come filtro di sicurezza nel ciclo di vita della richiesta.}
+\caption{Architettura a Middleware: pipeline di filtraggio e validazione.}
 \end{figure}
 
-\begin{itemize}
-    \item \textbf{Validazione}: Verifica il formato e il tipo di dato.
-    \item \textbf{Sanitizzazione}: Rimozione di caratteri pericolosi per prevenire iniezioni.
-\end{itemize}
+\section{CORS: Cross-Origin Resource Sharing}
+Il \textbf{CORS} è un meccanismo di sicurezza implementato dai browser per limitare le richieste cross-origin. Senza un'esplicita autorizzazione del server tramite header HTTP specifici, un frontend servito da un'origine (es. \texttt{localhost:5500}) non può interagire con un backend situato su un'altra origine (es. \texttt{localhost:3000}).
 
-\section{Autenticazione di Base}
-L'autenticazione HTTP Basic è un meccanismo semplice per restringere l'accesso. Il client invia le credenziali codificate nell'header \texttt{Authorization}.
+Il server deve esporre l'header \texttt{Access-Control-Allow-Origin} per definire quali client sono autorizzati a consumare le API.
+
+\section{Autenticazione HTTP Basic}
+L'autenticazione Basic è un protocollo standard per la trasmissione di credenziali. Il client invia lo username e la password codificati in Base64 all'interno dell'header \texttt{Authorization}.
 
 \subsection*{Implementazione in Flask}
 \begin{lstlisting}[language=python, caption=Basic Auth in Flask]
 from flask import request, Response
 
 def check_auth(username, password):
+    # In produzione, utilizzare variabili d'ambiente o database
     return username == 'admin' and password == 'secret'
 
 @app.route('/secure')
@@ -371,23 +496,36 @@ app.get('/secure', (req, res) => {
 % ==========================================
 \chapter{Integrazione Frontend-Backend}
 
-\section{Consumare le API con Fetch}
-La \texttt{fetch} API è il metodo standard per effettuare richieste HTTP asincrone dal browser. È basata su \textit{Promise}, rendendo il flusso di codice pulito e leggibile.
+\section{Gestione Asincrona con Fetch API}
+L'interazione con il backend avviene tramite la \texttt{fetch} API, che implementa il modello delle \textit{Promise}. L'utilizzo di \texttt{async/await} permette una gestione lineare e leggibile del ciclo di vita della richiesta.
 
-\begin{lstlisting}[language=javascript, caption=Fetch API (senza autenticazione)]
-fetch('http://localhost:3000/tasks')
-    .then(response => response.json())
-    .then(data => console.log('Tasks ricevuti:', data))
-    .catch(error => console.error('Errore:', error));
+\begin{lstlisting}[language=javascript, caption=Pattern di consumo API asincrono]
+async function getTasks() {
+    try {
+        const response = await fetch('http://localhost:3000/tasks');
+        
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+        
+        const data = await response.json();
+        console.log('Data received:', data);
+    } catch (error) {
+        console.error('Request failed:', error);
+    }
+}
 \end{lstlisting}
 
-\section{Autenticazione lato Frontend}
-Per accedere ad endpoint protetti con Basic Auth, è necessario richiedere le credenziali all'utente e includerle nell'header \texttt{Authorization} previa codifica in Base64.
+\section{UX e Gestione degli Stati della Richiesta}
+Un'integrazione robusta deve comunicare lo stato dell'operazione all'utente finale per garantire una User Experience (UX) coerente.
+\begin{itemize}[leftmargin=3em]
+    \item \textbf{Loading State}: Gestione visiva dell'attesa durante la latenza di rete.
+    \item \textbf{Error Handling}: Comunicazione chiara di eventuali fallimenti (es. \texttt{401 Unauthorized} o \texttt{500 Server Error}).
+    \item \textbf{Success Feedback}: Conferma esplicita dell'avvenuto aggiornamento dello stato sul server.
+\end{itemize}
+
+\section{Autenticazione lato Client}
+Il client deve gestire la codifica delle credenziali prima della trasmissione. La funzione \texttt{btoa()} è lo standard browser per la codifica Base64.
 
 \begin{lstlisting}[language=javascript, caption=Fetch con Basic Auth dinamica]
-const username = prompt('Inserisci username:');
-const password = prompt('Inserisci password:');
-
 const base64Credentials = btoa(`${username}:${password}`);
 
 fetch('http://localhost:3000/secure', {
@@ -397,11 +535,14 @@ fetch('http://localhost:3000/secure', {
     }
 })
 .then(response => {
-    if (response.status === 401) throw new Error('Credenziali errate');
+    if (response.status === 401) throw new Error('Unauthorized');
     return response.text();
 })
-.then(data => console.log('Risposta:', data))
-.catch(err => console.error('Errore:', err));
+.then(data => console.log('Success:', data))
+.catch(err => alert('Auth failed: ' + err.message));
 \end{lstlisting}
+
+\section{Conclusioni}
+La progettazione di sistemi web moderni richiede una comprensione profonda del disaccoppiamento tra presentazione (Frontend) e logica di business (Backend). La robustezza di un'applicazione risiede nella capacità del backend di garantire l'integrità dei dati e nella capacità del frontend di gestire correttamente il flusso asincrono e la comunicazione degli stati. L'adozione di standard come REST e protocolli di sicurezza consolidati è fondamentale per la scalabilità e la manutenibilità del software.
 
 \end{document}

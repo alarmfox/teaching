@@ -1,0 +1,338 @@
+\documentclass[11pt,a4paper]{report}
+
+% --- Pacchetti Fondamentali ---
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage[italian]{babel}
+\usepackage{etoolbox}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage{enumitem}
+\usepackage{titlesec}
+\usepackage{fancyhdr}
+\usepackage{cleveref}
+\usepackage{graphicx}
+\usepackage{longtable}
+\usepackage{booktabs}
+\usepackage{setspace}
+
+\crefformat{section}{\S#2#1#3}
+\crefformat{subsection}{\S#2#1#3}
+\crefformat{subsubsection}{\S#2#1#3}
+\crefformat{figure}{#2Figura~#1#3}
+\crefformat{footnote}{#2\footnotemark[#1]#3}
+\crefformat{table}{#2Tabella~#1#3}
+
+% --- Configurazione Header e Footer ---
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small Programmazione e Tecnologie Web}
+\fancyhead[R]{\small Giuseppe Capasso}
+\fancyfoot[C]{\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta, positioning, shapes.geometric, decorations.pathreplacing, calc, shadows, fit}
+
+% --- Configurazione Colori e Link ---
+\definecolor{primary}{RGB}{38, 66, 139}
+\definecolor{codebg}{RGB}{245, 245, 245}
+\definecolor{keywordcolor}{RGB}{0, 0, 255}
+\definecolor{stringcolor}{RGB}{163, 21, 21}
+\definecolor{commentcolor}{RGB}{0, 128, 0}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=primary,
+    urlcolor=primary,
+    citecolor=primary,
+}
+
+% --- Configurazione Formattazione Codice ---
+\lstdefinelanguage{json}{
+    basicstyle=\ttfamily\small,
+    numbers=left,
+    numberstyle=\scriptsize,
+    stepnumber=1,
+    numbersep=8pt,
+    showstringspaces=false,
+    breaklines=true,
+    frame=lines,
+    backgroundcolor=\color{codebg},
+    string=[s]{"}{"},
+    comment=[l]{//},
+    morecomment=[s]{/*}{*/},
+    stringstyle=\color{stringcolor},
+    keywordstyle=\color{keywordcolor},
+}
+
+\lstdefinelanguage{javascript}{
+    keywords={async, await, break, case, catch, class, const, continue, debugger, default, delete, do, else, export, extends, false, finally, for, function, if, import, in, instanceof, new, null, return, super, switch, this, throw, true, try, typeof, var, void, while, with, yield, let},
+    morekeywords={console, log, Error, fetch, JSON, parse, stringify, useState, useEffect, useCallback, useMemo},
+    sensitive=true,
+    morecomment=[l]{//},
+    morecomment=[s]{/*}{*/},
+    morestring=[b]',
+    morestring=[b]",
+    morestring=[b]`,
+    keywordstyle=\color{primary}\bfseries,
+    commentstyle=\color{commentcolor}\itshape,
+    stringstyle=\color{stringcolor},
+    basicstyle=\ttfamily\small
+}
+
+\lstset{
+    backgroundcolor=\color{codebg},
+    basicstyle=\ttfamily\small,
+    breaklines=true,
+    frame=single,
+    rulecolor=\color{lightgray},
+    captionpos=b,
+    xleftmargin=1em,
+    xrightmargin=1em,
+    keywordstyle=\color{keywordcolor},
+    commentstyle=\color{commentcolor},
+    stringstyle=\color{stringcolor}
+}
+
+% --- Formattazione Titoli ---
+\titleformat{\chapter}[display]
+  {\normalfont\bfseries\color{primary}}{\huge Capitolo \thechapter}{1ex}{\Huge}
+\titlespacing*{\chapter}{0pt}{-20pt}{40pt}
+
+\onehalfspacing
+
+\begin{document}
+
+% --- Frontespizio ---
+\begin{titlepage}
+    \centering
+    \vspace*{4cm}
+    {\Huge \textbf{\color{primary} Programmazione e Tecnologie Web}} \\[1.5cm]
+    {\Large \textbf{Dispense del Corso - Lezione 5}} \\[0.5cm]
+    {\large Docente: Giuseppe Capasso} \\[1.5cm]
+    {\normalsize \textbf{Cloud Native Development \& Cybersecurity Specialist}} \\
+    {\normalsize Istituto Tecnico Superiore (ITS)} \\
+    \vfill
+    {\normalsize Anno Accademico 2025/2026}
+\end{titlepage}
+
+\newpage
+\tableofcontents
+\newpage
+
+% ==========================================
+% CAPITOLO 1
+% ==========================================
+\chapter{CSR e la Necessità di un Framework}
+
+\section{Oltre la Manipolazione del DOM}
+Nelle lezioni precedenti abbiamo visto come JavaScript possa essere utilizzato per modificare dinamicamente il contenuto di una pagina. Tuttavia, in applicazioni complesse, la gestione manuale del DOM presenta limiti strutturali.
+
+\begin{itemize}
+    \item \textbf{Imperativo vs Dichiarativo}: Nello stile imperativo (Vanilla JS), istruiamo il browser passo dopo passo su cosa fare. Nello stile dichiarativo (React), descriviamo \textit{cosa} vogliamo vedere in base allo stato attuale.
+    \item \textbf{Sincronizzazione dello Stato}: Gestire manualmente la coerenza tra i dati (es. un array di task) e gli elementi HTML (es. tag \texttt{<li>}) porta inevitabilmente a bug di sincronizzazione.
+\end{itemize}
+
+\section{Il Concetto di Virtual DOM}
+React non aggiorna l'intera pagina ad ogni cambiamento. Utilizza una tecnica chiamata \textbf{Reconciliation} basata sul \textbf{Virtual DOM}:
+\begin{enumerate}
+    \item Una copia leggera del DOM reale viene mantenuta in memoria.
+    \item Quando i dati cambiano, viene generato un nuovo Virtual DOM.
+    \item React calcola la differenza (\textit{Diffing}) tra la vecchia e la nuova versione.
+    \item Solo i nodi effettivamente cambiati vengono aggiornati nel browser reale.
+\end{enumerate}
+
+\section{Client-Side Rendering (CSR)}
+In un'applicazione CSR, il server non invia HTML pronto per la visualizzazione. Invia un file HTML minimo (un "guscio") e un bundle JavaScript. \`E il browser a farsi carico della logica di visualizzazione.
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[
+    node distance=1.5cm,
+    box/.style={rectangle, draw, rounded corners, minimum width=3cm, minimum height=1.2cm, align=center, font=\small},
+    arrow/.style={-latex, thick, primary}
+]
+    \node (browser) [box, fill=blue!5] {Browser\\(Orchestratore)};
+    \node (static) [box, fill=gray!10, right=3.5cm of browser] {Static Host / CDN\\(Next.js Bundle)};
+    \node (api) [box, fill=primary!20, below=2cm of browser] {Backend API\\(Lezione 4)};
+
+    \draw [arrow] ([yshift=0.2cm]browser.east) -- node[above, scale=0.7] {1. Richiesta Bundle} ([yshift=0.2cm]static.west);
+    \draw [arrow] ([yshift=-0.2cm]static.west) -- node[below, scale=0.7] {2. Esecuzione JS} ([yshift=-0.2cm]browser.east);
+    
+    \draw [arrow] ([xshift=-0.2cm]browser.south) -- node[left, scale=0.7] {3. Fetch JSON} ([xshift=-0.2cm]api.north);
+    \draw [arrow] ([xshift=0.2cm]api.north) -- node[right, scale=0.7] {4. Renderizza Dati} ([xshift=0.2cm]browser.south);
+
+    \node at ($(browser.north)+(0,0.5cm)$) [font=\bfseries\scriptsize, primary] {Hydration \& Reattività};
+\end{tikzpicture}
+\caption{Ciclo di vita CSR: il browser agisce come hub centrale per risorse e dati.}
+\label{fig:csr_flow}
+\end{figure}
+
+\newpage
+
+% ==========================================
+% CAPITOLO 2 (NUOVO)
+% ==========================================
+\chapter{Sicurezza e Comunicazione: CORS e Cookie}
+
+\section{La Same-Origin Policy (SOP)}
+Il browser implementa una restrizione di sicurezza fondamentale chiamata \textbf{Same-Origin Policy}. Essa impedisce a uno script caricato da un'origine (es. \texttt{http://localhost:3000}) di interagire con risorse di un'altra origine (es. \texttt{http://localhost:5000}).
+Due URL hanno la stessa origine se condividono esattamente: \textbf{Protocollo}, \textbf{Dominio} e \textbf{Porta}.
+
+\section{CORS: Cross-Origin Resource Sharing}
+Quando sviluppiamo un frontend React (porta 3000) che interroga un backend Flask (porta 5000), violiamo la SOP. Il meccanismo **CORS** permette al server di "autorizzare" esplicitamente il browser a leggere la risposta.
+
+\subsection{Il Preflight Request (OPTIONS)}
+Per richieste potenzialmente pericolose (es. con header personalizzati o metodi come DELETE), il browser invia prima una richiesta automatica \textbf{OPTIONS}. Se il server risponde con gli header corretti, la richiesta reale viene inviata.
+
+\begin{itemize}
+    \item \texttt{Access-Control-Allow-Origin}: Specifica quali domini possono accedere.
+    \item \texttt{Access-Control-Allow-Methods}: Metodi consentiti (GET, POST, ecc).
+\end{itemize}
+
+\section{Cookie e Gestione dello Stato}
+I cookie sono piccoli frammenti di dati che il server invia al browser e che il browser memorizza, rispedendoli automaticamente al server ad ogni richiesta successiva verso quel dominio.
+
+\subsection{Attributi di Sicurezza}
+\begin{itemize}
+    \item \textbf{HttpOnly}: Impedisce a JavaScript di leggere il cookie (protezione contro XSS).
+    \item \textbf{Secure}: Il cookie viene inviato solo su connessioni HTTPS.
+    \item \textbf{SameSite}: Controlla se il cookie deve essere inviato durante richieste cross-site (Lax, Strict, None).
+\end{itemize}
+
+\newpage
+
+% ==========================================
+% CAPITOLO 3
+% ==========================================
+\chapter{Approccio Monolitico in React}
+
+\section{Il Componente "Tutto-in-Uno"}
+Per comprendere i vantaggi di React, iniziamo costruendo la Todo App in un singolo file. Questo approccio è utile per piccoli prototipi, ma mostra rapidamente i suoi limiti di leggibilità.
+
+\begin{lstlisting}[language=javascript, caption=Todo App Monolitica (app/page.js)]
+"use client";
+import { useState, useEffect } from "react";
+
+export default function MonolithicTodo() {
+  const [tasks, setTasks] = useState([]);
+  const [search, setSearch] = useState("");
+
+  // 1. Data Fetching all'avvio
+  useEffect(() => {
+    fetch("http://localhost:3000/tasks")
+      .then(res => res.json())
+      .then(data => setTasks(data));
+  }, []);
+
+  // 2. Stato derivato per il filtraggio
+  const filteredTasks = tasks.filter(t => 
+    t.text.toLowerCase().includes(search.toLowerCase())
+  );
+
+  return (
+    <main className="p-10">
+      <input 
+        value={search} 
+        onChange={(e) => setSearch(e.target.value)}
+        placeholder="Filtra task..."
+        className="border p-2 w-full mb-4"
+      />
+      <ul className="space-y-2">
+        {filteredTasks.map((t, index) => (
+          <li key={index} className="p-2 bg-white shadow rounded flex justify-between">
+            {t.text}
+            <button onClick={() => setTasks(tasks.filter((_, i) => i !== index))}>
+              X
+            </button>
+          </li>
+        ))}
+      </ul>
+    </main>
+  );
+}
+\end{lstlisting}
+
+\section{Il Ciclo di Vita di un Componente}
+Il componente attraversa diverse fasi. Comprendere dove si collocano \texttt{useState} e \texttt{useEffect} è fondamentale.
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[
+    node distance=1cm,
+    phase/.style={rectangle, draw, rounded corners, minimum width=3.5cm, minimum height=1cm, align=center, font=\small},
+    arrow/.style={-latex, thick, primary}
+]
+    \node (mount) [phase, fill=green!10] {\textbf{Mounting}\\(Nascita)};
+    \node (render) [phase, below=of mount, fill=blue!5] {Render\\(JSX -> VDOM)};
+    \node (effect) [phase, right=2cm of render, fill=yellow!10] {Effect\\(API, Timer, ecc)};
+    \node (update) [phase, below=of render, fill=orange!10] {\textbf{Updating}\\(Cambiamento Stato)};
+    \node (unmount) [phase, below=of update, fill=red!10] {\textbf{Unmounting}\\(Morte)};
+
+    \draw [arrow] (mount) -- (render);
+    \draw [arrow] (render) -- node[above, scale=0.7] {Completato} (effect);
+    \draw [arrow] (effect) -- ++(1cm,0) |- node[near start, right, scale=0.7] {Cleanup} (update);
+    \draw [arrow] (update) -- (render);
+    \draw [arrow] (update) -- (unmount);
+\end{tikzpicture}
+\caption{Diagramma del ciclo di vita: l'effetto viene eseguito dopo il rendering visuale.}
+\label{fig:react_lifecycle}
+\end{figure}
+
+\newpage
+
+% ==========================================
+% CAPITOLO 4
+% ==========================================
+\chapter{Rifattorizzazione e Best Practices}
+
+\section{Astrazione in Componenti}
+Man mano che l'app cresce, il file monolitico diventa difficile da gestire. Applichiamo il principio di singola responsabilità scomponendo la UI.
+
+\begin{lstlisting}[language=javascript, caption=Componenti separati]
+// Sotto-componente atomico
+const TaskItem = ({ text, onDelete }) => (
+  <li className="flex justify-between p-2 border-b">
+    <span>{text}</span>
+    <button onClick={onDelete} className="text-red-500">Elimina</button>
+  </li>
+);
+
+// Componente di visualizzazione lista
+const TodoList = ({ data, onItemDelete }) => (
+  <ul className="mt-4">
+    {data.map((t, i) => (
+      <TaskItem key={i} text={t.text} onDelete={() => onItemDelete(i)} />
+    ))}
+  </ul>
+);
+\end{lstlisting}
+
+\section{Ottimizzazione con \texttt{useCallback}}
+Quando passiamo funzioni ai figli (\textit{Props Drilling}), queste vengono ricreate ad ogni render del genitore. Usiamo \texttt{useCallback} per memorizzarle.
+
+\begin{lstlisting}[language=javascript]
+const removeTask = useCallback((index) => {
+  setTasks(prev => prev.filter((_, i) => i !== index));
+}, []); // La funzione non viene mai ricreata
+\end{lstlisting}
+
+\section{API Routes: Verso l'Unified Full-Stack}
+Next.js permette di scrivere logica backend in file \texttt{route.js}. Questo elimina i problemi di CORS poich\'e frontend e backend condividono la stessa origine.
+
+\begin{lstlisting}[language=javascript, caption=Esempio API Route (app/api/stats/route.js)]
+export async function GET() {
+  return Response.json({ 
+    serverTime: new Date().toISOString(),
+    status: "online" 
+  });
+}
+\end{lstlisting}
+
+\section{Conclusioni}
+Siamo passati da un componente disordinato a una struttura professionale, scalabile e performante. React ci insegna che il codice pulito nasce dalla corretta gestione dei dati e dalla scomposizione logica dell'interfaccia.
+
+\end{document}

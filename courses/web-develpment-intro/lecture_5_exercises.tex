@@ -1,0 +1,108 @@
+\documentclass[11pt,a4paper]{article}
+
+% --- Pacchetti ---
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage[italian]{babel}
+\usepackage[margin=1in]{geometry}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage{hyperref}
+\usepackage{enumitem}
+
+% --- Colori ---
+\definecolor{primary}{RGB}{38, 66, 139}
+\definecolor{codebg}{RGB}{245, 245, 245}
+
+\hypersetup{colorlinks=true, linkcolor=primary, urlcolor=primary}
+
+% --- Configurazione Codice ---
+\lstdefinelanguage{javascript}{
+    keywords={async, await, break, case, catch, class, const, continue, debugger, default, delete, do, else, export, extends, false, finally, for, function, if, import, in, instanceof, new, null, return, super, switch, this, throw, true, try, typeof, var, void, while, with, yield, let},
+    morekeywords={console, log, Error, fetch, JSON, parse, stringify, useState, useEffect},
+    sensitive=true,
+    morecomment=[l]{//},
+    morecomment=[s]{/*}{*/},
+    morestring=[b]',
+    morestring=[b]",
+    morestring=[b]`,
+    keywordstyle=\color{primary}\bfseries,
+    commentstyle=\color{green!50!black}\itshape,
+    stringstyle=\color{red!70!black},
+    basicstyle=\ttfamily\small
+}
+
+\lstset{
+    backgroundcolor=\color{codebg},
+    basicstyle=\ttfamily\small,
+    breaklines=true,
+    frame=single,
+    language=javascript
+}
+
+\title{\textbf{\color{primary} Esercitazione: Todo App con Next.js e React}}
+\author{Programmazione e Tecnologie Web - Lezione 5}
+\date{A.A. 2025/2026}
+
+\begin{document}
+
+\maketitle
+
+\section{Obiettivo}
+L'obiettivo di questa esercitazione è riscrivere il frontend della Todo App utilizzando **Next.js**. Passeremo dalla manipolazione diretta del DOM ad un approccio dichiarativo basato su componenti e stato reattivo.
+
+\section{Esercizio 1: Setup del Progetto}
+Utilizzeremo la CLI di Next.js per inizializzare l'ambiente.
+
+\textbf{Task Live}:
+\begin{enumerate}
+    \item Aprire il terminale e digitare:
+    \begin{lstlisting}[language=bash]
+npx create-next-app@latest my-todo-react
+    \end{lstlisting}
+    \item Selezionare le opzioni: App Router (Yes), Tailwind CSS (Yes), TypeScript (No).
+    \item Avviare il server di sviluppo con \texttt{npm run dev} e verificare che la pagina "Hello World" sia visibile su \texttt{http://localhost:3000}.
+\end{enumerate}
+
+\section{Esercizio 2: Componente Reattivo e Stato Locale}
+Nel file \texttt{app/page.js}, implementate una lista di task utilizzando dati iniziali hardcoded.
+
+\begin{lstlisting}[language=javascript]
+"use client";
+import { useState } from "react";
+
+export default function Home() {
+  const [tasks, setTasks] = useState([
+    { id: 1, text: "Imparare React", done: false },
+    { id: 2, text: "Configurare Next.js", done: true }
+  ]);
+
+  return (
+    <main className="p-10">
+      <h1 className="text-2xl font-bold">Todo List</h1>
+      {/* Mappare i task qui */}
+    </main>
+  );
+}
+\end{lstlisting}
+
+\section{Esercizio 3: Ricerca e Filtraggio (Stato Derivato)}
+Aggiungete una barra di ricerca. La lista dei task visualizzati deve aggiornarsi in tempo reale mentre l'utente scrive.
+
+\textbf{Task}:
+\begin{enumerate}
+    \item Creare una variabile di stato \texttt{search} per gestire l'input.
+    \item Creare una variabile \texttt{filteredTasks} calcolata durante il render (non uno state!).
+    \item Utilizzare \texttt{.filter()} e \texttt{.map()} per visualizzare i risultati.
+\end{enumerate}
+
+\section{Esercizio 4: Connessione al Backend Reale}
+Utilizzate l'hook \texttt{useEffect} per scaricare i task dal server backend della Lezione 4.
+
+\textbf{Nota}: Ricordate di abilitare il CORS nel server Flask o Express, oppure utilizzate le API Routes di Next.js per fare da proxy.
+
+\section{Task Bonus (Avanzato)}
+Implementate una **API Route** in \texttt{app/api/stats/route.js} che restituisca un JSON con il numero di task completati e quelli ancora da fare. Consumate questa API nel frontend.
+
+\end{document}

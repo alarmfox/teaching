@@ -1,0 +1,243 @@
+\documentclass[10pt]{beamer}
+
+\usetheme{Madrid}
+\usecolortheme{whale}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[italian]{babel}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta, positioning, shapes.geometric, calc, fit}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{booktabs}
+
+% --- Configurazione Colori e Link ---
+\definecolor{primary}{RGB}{38, 66, 139}
+\definecolor{codebg}{RGB}{245, 245, 245}
+\definecolor{keywordcolor}{RGB}{0, 0, 255}
+\definecolor{stringcolor}{RGB}{163, 21, 21}
+\definecolor{commentcolor}{RGB}{0, 128, 0}
+
+\lstdefinelanguage{javascript}{
+    keywords={async, await, break, case, catch, class, const, continue, debugger, default, delete, do, else, export, extends, false, finally, for, function, if, import, in, instanceof, new, null, return, super, switch, this, throw, true, try, typeof, var, void, while, with, yield, let},
+    morekeywords={console, log, Error, fetch, JSON, parse, stringify},
+    sensitive=true,
+    morecomment=[l]{//},
+    morecomment=[s]{/*}{*/},
+    morestring=[b]',
+    morestring=[b]",
+    morestring=[b]`,
+    keywordstyle=\color{primary}\bfseries,
+    commentstyle=\color{commentcolor}\itshape,
+    stringstyle=\color{stringcolor},
+    basicstyle=\ttfamily\small
+}
+
+\lstset{
+    backgroundcolor=\color{codebg},
+    basicstyle=\ttfamily\small,
+    breaklines=true,
+    frame=single,
+    showstringspaces=false,
+    keywordstyle=\color{blue},
+    commentstyle=\color{green!50!black},
+    stringstyle=\color{red!70!black}
+}
+
+\title[Lezione 5]{Programmazione e Tecnologie Web}
+\subtitle{I Framework Frontend Moderni (CSR vs SSR)}
+\author{Giuseppe Capasso}
+\date{2025/2026}
+
+\begin{document}
+
+\begin{frame}
+    \titlepage
+\end{frame}
+
+\section{Evoluzione del Frontend}
+\begin{frame}{Dal DOM Imperativo a React}
+    Perché abbiamo smesso di manipolare il DOM direttamente?
+    \begin{itemize}
+        \item \textbf{Stato Frammentato}: Difficoltà nel sincronizzare dati e UI.
+        \item \textbf{Performance}: Le operazioni sul DOM reale sono lente.
+        \item \textbf{Manutenibilità}: Codice difficile da leggere e testare ("Spaghetti Code").
+    \end{itemize}
+    \vspace{0.3cm}
+    \textbf{La Soluzione Dichiarativa}:
+    \textit{"Descrivi COSA vuoi vedere, non COME farlo."}
+\end{frame}
+
+\begin{frame}{Il Virtual DOM}
+    \centering
+    \begin{tikzpicture}[
+        node distance=1cm,
+        box/.style={rectangle, draw, fill=blue!10, minimum width=2.5cm, minimum height=0.8cm, align=center, font=\small},
+        arrow/.style={-latex, thick, primary}
+    ]
+        \node (state) [box, fill=yellow!10] {Stato\\(Dati)};
+        \node (vdom) [box, right=1.5cm of state] {Virtual DOM\\(Memoria)};
+        \node (realdom) [box, right=1.5cm of vdom, fill=green!10] {DOM Reale\\(Browser)};
+
+        \draw [arrow] (state) -- node[above, scale=0.7] {Render} (vdom);
+        \draw [arrow] (vdom) -- node[above, scale=0.7] {Diffing} (realdom);
+    \end{tikzpicture}
+    \begin{itemize}
+        \item React calcola solo le differenze minime.
+        \item Aggiornamenti chirurgici e ultra-veloci.
+    \end{itemize}
+\end{frame}
+
+\section{Next.js Basics}
+\begin{frame}[fragile]{Setup e Struttura}
+    Next.js è il framework standard per applicazioni React professionali.
+    \begin{itemize}
+        \item \textbf{Installazione}: \texttt{npx create-next-app@latest}
+        \item \textbf{App Router}: La cartella \texttt{app/} gestisce il routing.
+    \end{itemize}
+    \begin{block}{File Fondamentali}
+        \begin{itemize}
+            \item \texttt{page.js}: Il contenuto della pagina.
+            \item \texttt{layout.js}: Elementi comuni (navbar, footer).
+            \item \texttt{globals.css}: Stili globali e Tailwind.
+        \end{itemize}
+    \end{block}
+\end{frame}
+
+\begin{frame}[fragile]{Sintassi JSX}
+    JSX permette di scrivere strutture simili ad HTML in JavaScript.
+    \begin{lstlisting}[language=javascript]
+export default function Home() {
+  const user = "Giuseppe";
+  return (
+    <div className="p-4">
+      <h1 className="text-xl">Ciao, {user}!</h1>
+      {user === "Giuseppe" && <p>Docente</p>}
+    </div>
+  );
+}
+\end{lstlisting}
+\end{frame}
+
+\section{State Management}
+\begin{frame}[fragile]{Gestione dello Stato: useState}
+    Il componente reagisce ai cambiamenti dei dati.
+    \begin{lstlisting}[language=javascript]
+"use client";
+import { useState } from "react";
+
+const [search, setSearch] = useState("");
+
+return (
+  <input
+    value={search}
+    onChange={(e) => setSearch(e.target.value)}
+  />
+);
+\end{lstlisting}
+\end{frame}
+
+\begin{frame}[fragile]{Stato Derivato e Filtraggio}
+    Non creare stati inutili! Calcola i dati durante il rendering.
+    \begin{lstlisting}[language=javascript]
+// tasks e search sono variabili di stato
+const filteredTasks = tasks.filter(t =>
+  t.text.includes(search)
+);
+
+return (
+  <ul>
+    {filteredTasks.map(t => <li key={t.id}>{t.text}</li>)}
+  </ul>
+);
+\end{lstlisting}
+\end{frame}
+
+\section{Sicurezza e Comunicazione}
+\begin{frame}{Same-Origin Policy (SOP)}
+    Il pilastro della sicurezza web nel browser.
+    \begin{itemize}
+        \item \textbf{Definizione}: Uno script può accedere a risorse solo se hanno la stessa \textit{Origine}.
+        \item \textbf{Cosa definisce l'Origine?}
+        \begin{enumerate}
+            \item Protocollo (http vs https)
+            \item Dominio (localhost vs google.com)
+            \item Porta (3000 vs 5000)
+        \end{enumerate}
+    \end{itemize}
+    \vspace{0.3cm}
+    \begin{exampleblock}{Esempio di violazione}
+        Frontend su \texttt{:3000} prova a chiamare API su \texttt{:5000}.
+    \end{exampleblock}
+\end{frame}
+
+\begin{frame}{CORS: Cross-Origin Resource Sharing}
+    Come "bypassare" la SOP in modo sicuro.
+    \begin{itemize}
+        \item Il server deve inviare l'header: \\ \texttt{Access-Control-Allow-Origin: *}
+        \item \textbf{Preflight Request}: Per metodi "pericolosi" (POST, DELETE, ecc.), il browser invia prima una richiesta \textbf{OPTIONS}.
+    \end{itemize}
+    \centering
+    \begin{tikzpicture}[
+        node distance=3cm, 
+        font=\tiny,
+        box/.style={rectangle, draw, rounded corners, minimum width=2cm, minimum height=0.8cm, align=center, thick},
+        arrow/.style={-latex, thick}
+    ]
+        \node (br) [box, fill=blue!10] {Browser\\(Client)};
+        \node (srv) [box, right=of br, fill=green!10] {Server API\\(Backend)};
+
+        % 1. Preflight
+        \draw[arrow, primary] ([yshift=3mm]br.east) -- node[above, black] {1. OPTIONS (Preflight)} ([yshift=3mm]srv.west);
+        \draw[arrow, gray, dashed] ([yshift=1mm]srv.west) -- node[below, black] {2. OK (CORS Headers)} ([yshift=1mm]br.east);
+
+        % 2. Actual Request
+        \draw[arrow, primary] ([yshift=-2mm]br.east) -- node[above, black] {3. Richiesta Reale (POST/PUT)} ([yshift=-2mm]srv.west);
+        \draw[arrow, gray, dashed] ([yshift=-4mm]srv.west) -- node[below, black] {4. Risposta (Dati JSON)} ([yshift=-4mm]br.east);
+    \end{tikzpicture}
+\end{frame}
+
+\begin{frame}{I Cookie e la Sicurezza}
+    Memorizzazione dati lato client inviata automaticamente.
+    \begin{itemize}
+        \item \textbf{HttpOnly}: Protegge da attacchi XSS (JavaScript non può leggerlo).
+        \item \textbf{Secure}: Inviato solo su HTTPS.
+        \item \textbf{SameSite}: Protegge da attacchi CSRF (Lax, Strict, None).
+    \end{itemize}
+    \vspace{0.3cm}
+    \textit{Importante: Next.js API Routes eliminano spesso i problemi di CORS perché frontend e backend condividono la stessa origine!}
+\end{frame}
+
+\section{Integrazione}
+\begin{frame}[fragile]{Connessione al Backend}
+    Usiamo \texttt{useEffect} per il data fetching all'avvio.
+    \begin{lstlisting}[language=javascript]
+useEffect(() => {
+  fetch("http://localhost:3000/tasks")
+    .then(res => res.json())
+    .then(data => setTasks(data));
+}, []);
+\end{lstlisting}
+    \textit{Nota: Assicurati che il backend della Lezione 4 supporti il CORS!}
+\end{frame}
+
+\begin{frame}{Visione Full-Stack: API Routes}
+    Next.js può ospitare anche la logica backend.
+    \begin{itemize}
+        \item Cartella \texttt{app/api/}: Definisce endpoint HTTP.
+        \item Un'unica applicazione per Frontend e Backend.
+        \item Niente più problemi di CORS!
+    \end{itemize}
+    \vspace{0.3cm}
+    \centering
+    \begin{tikzpicture}
+        \node (app) [draw, thick, rounded corners, minimum width=4cm, minimum height=1.5cm, fill=primary!20] {\textbf{Unified Next.js App}};
+        \node (fe) [draw, below=0.5cm of app, xshift=-1cm, fill=white] {Frontend};
+        \node (be) [draw, below=0.5cm of app, xshift=1cm, fill=white] {API Routes};
+        \draw [dashed] (app.south) -- (fe.north);
+        \draw [dashed] (app.south) -- (be.north);
+    \end{tikzpicture}
+\end{frame}
+
+\end{document}

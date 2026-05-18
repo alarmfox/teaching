@@ -5,29 +5,93 @@
     <title>WebSocket Chat</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-gray-100 p-8">
-    <div class="max-w-2xl mx-auto bg-white p-6 rounded shadow">
-        <h1 class="text-xl font-bold mb-4 text-blue-900">Chat WebSocket</h1>
-        <div id="messages" class="h-64 border p-4 mb-4 overflow-y-auto bg-gray-50"></div>
-        <div class="flex gap-2">
-            <input id="input" type="text" class="border p-2 flex-1 rounded" placeholder="Messaggio...">
-            <button id="send" class="bg-blue-900 text-white px-4 py-2 rounded">Invia</button>
+<body class="bg-gray-100 p-8 min-h-screen">
+    <div class="max-w-2xl mx-auto bg-white rounded-xl shadow-lg overflow-hidden border border-gray-200">
+        <header class="bg-[rgb(38,66,139)] p-6 text-white text-center">
+            <h1 class="text-2xl font-bold">WebSocket Chat</h1>
+            <p class="text-sm opacity-80 mt-1">Comunicazione bi-direzionale in tempo reale</p>
+        </header>
+
+        <div class="p-6">
+            <div id="messages" class="h-80 border rounded-lg p-4 mb-4 overflow-y-auto bg-gray-50 flex flex-col gap-2">
+                <!-- I messaggi appariranno qui -->
+            </div>
+            
+            <div class="flex gap-2">
+                <input id="input" type="text" 
+                    class="border p-2 flex-1 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" 
+                    placeholder="Scrivi un messaggio...">
+                <button id="send" 
+                    class="bg-[rgb(38,66,139)] text-white px-6 py-2 rounded-lg font-semibold hover:opacity-90 transition">
+                    Invia
+                </button>
+            </div>
         </div>
     </div>
+
     <script>
+        // Genera un ID unico per questo client per distinguere i propri messaggi
+        const clientId = Math.random().toString(36).substring(2, 9);
         const socket = new WebSocket('ws://' + window.location.host);
         const messages = document.getElementById('messages');
         const input = document.getElementById('input');
+        const sendBtn = document.getElementById('send');
+
+        function appendMessage(data) {
+            let msg;
+            try {
+                msg = JSON.parse(data);
+            } catch (e) {
+                // Fallback per messaggi non JSON
+                msg = { text: data, sender: 'unknown' };
+            }
+
+            const isMe = msg.sender === clientId;
+            
+            const wrapper = document.createElement('div');
+            wrapper.className = `flex w-full ${isMe ? 'justify-end' : 'justify-start'}`;
+
+            const div = document.createElement('div');
+            div.className = `p-3 rounded-lg shadow-sm max-w-[80%] ${
+                isMe 
+                ? 'bg-[rgb(38,66,139)] text-white rounded-tr-none' 
+                : 'bg-white text-gray-800 border border-gray-100 rounded-tl-none'
+            }`;
+            
+            const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            div.innerHTML = `
+                <div class="text-[10px] ${isMe ? 'text-blue-100' : 'text-gray-400'} font-mono mb-1">${time}</div>
+                <div class="text-sm break-words">${msg.text}</div>
+            `;
+            
+            wrapper.appendChild(div);
+            messages.appendChild(wrapper);
+            messages.scrollTop = messages.scrollHeight;
+        }
 
         socket.onmessage = (e) => {
-            const p = document.createElement('p');
-            p.textContent = e.data;
-            messages.appendChild(p);
+            appendMessage(e.data);
         };
 
-        document.getElementById('send').onclick = () => {
-            socket.send(input.value);
-            input.value = '';
+        socket.onopen = () => {
+            console.log('Connesso al server WebSocket come: ' + clientId);
+        };
+
+        const sendMessage = () => {
+            const val = input.value.trim();
+            if (val && socket.readyState === WebSocket.OPEN) {
+                const payload = JSON.stringify({
+                    text: val,
+                    sender: clientId
+                });
+                socket.send(payload);
+                input.value = '';
+            }
+        };
+
+        sendBtn.onclick = sendMessage;
+        input.onkeypress = (e) => {
+            if (e.key === 'Enter') sendMessage();
         };
     </script>
 </body>

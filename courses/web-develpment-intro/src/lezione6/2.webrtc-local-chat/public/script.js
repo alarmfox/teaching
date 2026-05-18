@@ -16,6 +16,17 @@ const inputB = document.getElementById('inputB');
 const sendA = document.getElementById('sendA');
 const sendB = document.getElementById('sendB');
 
+// Funzione per gestire i candidati ICE in modo sicuro
+async function handleIceCandidate(peer, candidate) {
+    try {
+        if (candidate && peer.remoteDescription) {
+            await peer.addIceCandidate(candidate);
+        }
+    } catch (err) {
+        console.error("Errore nell'aggiunta del candidato ICE:", err);
+    }
+}
+
 // Funzione per avviare la connessione P2P
 async function startConnection() {
     startBtn.disabled = true;
@@ -36,24 +47,57 @@ async function startConnection() {
     };
 
     // 4. Scambio ICE Candidates (Simulazione Signaling locale)
-    peerA.onicecandidate = (e) => e.candidate && peerB.addIceCandidate(e.candidate);
-    peerB.onicecandidate = (e) => e.candidate && peerA.addIceCandidate(e.candidate);
+    // Usiamo un array per bufferizzare i candidati se arrivano prima della RemoteDescription
+    const iceCandidatesA = [];
+    const iceCandidatesB = [];
+
+    peerA.onicecandidate = (e) => {
+        if (!e.candidate) return;
+        if (peerB.remoteDescription) {
+            peerB.addIceCandidate(e.candidate).catch(console.error);
+        } else {
+            iceCandidatesA.push(e.candidate);
+        }
+    };
+
+    peerB.onicecandidate = (e) => {
+        if (!e.candidate) return;
+        if (peerA.remoteDescription) {
+            peerA.addIceCandidate(e.candidate).catch(console.error);
+        } else {
+            iceCandidatesB.push(e.candidate);
+        }
+    };
 
     // 5. Handshake: Offer & Answer
     try {
         const offer = await peerA.createOffer();
         await peerA.setLocalDescription(offer);
-        console.log("Peer A: Offer creata");
+        console.log("Peer A: Offer creata e LocalDescription impostata");
 
         await peerB.setRemoteDescription(offer);
+        // Ora che peerB ha la remote description, aggiungiamo i candidati bufferizzati di A
+        while (iceCandidatesA.length > 0) {
+            await peerB.addIceCandidate(iceCandidatesA.shift());
+        }
+
         const answer = await peerB.createAnswer();
         await peerB.setLocalDescription(answer);
-        console.log("Peer B: Answer creata");
+        console.log("Peer B: Answer creata e LocalDescription impostata");
 
         await peerA.setRemoteDescription(answer);
+        // Ora che peerA ha la remote description, aggiungiamo i candidati bufferizzati di B
+        while (iceCandidatesB.length > 0) {
+            await peerA.addIceCandidate(iceCandidatesB.shift());
+        }
+
         console.log("P2P Handshake Completato");
+        startBtn.innerText = "P2P Connesso";
+        startBtn.classList.replace('bg-green-600', 'bg-blue-800');
     } catch (err) {
         console.error("Errore durante l'handshake:", err);
+        startBtn.innerText = "Errore Connessione";
+        startBtn.classList.replace('bg-green-600', 'bg-red-600');
     }
 }
 
@@ -67,9 +111,17 @@ function setupDataChannel(channel, peerName, displayArea, inputElement, sendButt
 
     channel.onmessage = (e) => {
         const msg = JSON.parse(e.data);
-        const p = document.createElement('p');
-        p.innerHTML = `<span class="font-bold text-blue-800">${msg.sender}:</span> ${msg.text}`;
-        displayArea.appendChild(p);
+        
+        // Visualizza messaggio ricevuto (Allineato a sinistra)
+        const wrapper = document.createElement('div');
+        wrapper.className = "flex w-full justify-start";
+        
+        const div = document.createElement('div');
+        div.className = "bg-white border border-gray-200 text-gray-800 p-2 rounded-lg shadow-sm text-xs max-w-[80%] rounded-tl-none";
+        div.innerHTML = `<span class="font-bold text-blue-800">${msg.sender}:</span><br>${msg.text}`;
+        
+        wrapper.appendChild(div);
+        displayArea.appendChild(wrapper);
         displayArea.scrollTop = displayArea.scrollHeight;
     };
 
@@ -79,10 +131,16 @@ function setupDataChannel(channel, peerName, displayArea, inputElement, sendButt
             const payload = { sender: peerName, text: text };
             channel.send(JSON.stringify(payload));
             
-            // Visualizza localmente
-            const p = document.createElement('p');
-            p.innerHTML = `<span class="font-bold text-gray-600">Tu:</span> ${text}`;
-            displayArea.appendChild(p);
+            // Visualizza localmente (Allineato a destra)
+            const wrapper = document.createElement('div');
+            wrapper.className = "flex w-full justify-end";
+            
+            const div = document.createElement('div');
+            div.className = "bg-[rgb(38,66,139)] text-white p-2 rounded-lg shadow-sm text-xs max-w-[80%] rounded-tr-none";
+            div.innerHTML = `<span class="font-bold opacity-75">Tu:</span><br>${text}`;
+            
+            wrapper.appendChild(div);
+            displayArea.appendChild(wrapper);
             displayArea.scrollTop = displayArea.scrollHeight;
             
             inputElement.value = "";

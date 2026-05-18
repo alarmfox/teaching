@@ -53,9 +53,27 @@ callBtn.onclick = async () => {
     pc1 = new RTCPeerConnection();
     pc2 = new RTCPeerConnection();
 
-    // Gestione dei candidati ICE
-    pc1.onicecandidate = e => e.candidate && pc2.addIceCandidate(e.candidate);
-    pc2.onicecandidate = e => e.candidate && pc1.addIceCandidate(e.candidate);
+    // Gestione dei candidati ICE (con buffering per evitare race conditions)
+    const iceCandidates1 = [];
+    const iceCandidates2 = [];
+
+    pc1.onicecandidate = e => {
+        if (!e.candidate) return;
+        if (pc2.remoteDescription) {
+            pc2.addIceCandidate(e.candidate).catch(err => log(`Errore ICE pc2: ${err.message}`));
+        } else {
+            iceCandidates1.push(e.candidate);
+        }
+    };
+
+    pc2.onicecandidate = e => {
+        if (!e.candidate) return;
+        if (pc1.remoteDescription) {
+            pc1.addIceCandidate(e.candidate).catch(err => log(`Errore ICE pc1: ${err.message}`));
+        } else {
+            iceCandidates2.push(e.candidate);
+        }
+    };
 
     // Gestione dell'arrivo dello stream remoto su Peer 2
     pc2.ontrack = e => {
@@ -76,14 +94,24 @@ callBtn.onclick = async () => {
     try {
         const offer = await pc1.createOffer();
         await pc1.setLocalDescription(offer);
-        log("Peer 1: Offer inviata.");
+        log("Peer 1: Offer creata.");
 
         await pc2.setRemoteDescription(offer);
+        // Aggiunta candidati bufferizzati di pc1 a pc2
+        while (iceCandidates1.length > 0) {
+            await pc2.addIceCandidate(iceCandidates1.shift());
+        }
+
         const answer = await pc2.createAnswer();
         await pc2.setLocalDescription(answer);
-        log("Peer 2: Answer inviata.");
+        log("Peer 2: Answer creata.");
 
         await pc1.setRemoteDescription(answer);
+        // Aggiunta candidati bufferizzati di pc2 a pc1
+        while (iceCandidates2.length > 0) {
+            await pc1.addIceCandidate(iceCandidates2.shift());
+        }
+
         log("Connessione P2P stabilita.");
     } catch (err) {
         log(`Errore handshake: ${err.message}`);

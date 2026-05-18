@@ -1,0 +1,266 @@
+\documentclass[11pt,a4paper]{article}
+
+% --- Pacchetti Fondamentali ---
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage[italian]{babel}
+\usepackage[margin=.75in]{geometry}
+\usepackage[table]{xcolor}
+\usepackage{enumitem}
+\usepackage{fancyhdr}
+\usepackage{tabularx}
+\usepackage{booktabs}
+
+% --- Configurazione Colori ---
+\definecolor{primary}{RGB}{38, 66, 139}
+
+% --- Configurazione Header e Footer ---
+\setlength{\headheight}{14pt}
+\addtolength{\topmargin}{-2pt}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\textbf{Nome:} \underline{\hspace{5cm}}}
+\fancyhead[C]{\textbf{Data:} \underline{\hspace{2.5cm}}}
+\fancyhead[R]{\textbf{Punteggio:} \underline{\hspace{1cm}} / 20}
+\fancyfoot[C]{\thepage}
+\renewcommand{\headrulewidth}{0pt}
+
+\begin{document}
+
+\begin{center}
+    {\Large \textbf{\color{primary} Test Finale di Valutazione}} \\
+    \textit{Programmazione e Tecnologie Web}
+\end{center}
+
+\vspace{0.5cm}
+
+\begin{enumerate}[label=\textbf{\arabic*.}, leftmargin=1.5em, itemsep=1.5em]
+
+    % Lezione 1: Architettura e HTTP
+    \item \textbf{Quale parte di un URL viene gestita esclusivamente dal browser e non viene inviata al server?}
+    \begin{enumerate}[label=\alph*)]
+        \item La Query String.
+        \item Il Percorso (Path).
+        \item Il Frammento (Fragment).
+        \item Lo Schema (Protocollo).
+    \end{enumerate}
+
+    \item \textbf{In quale versione di HTTP è stato introdotto il concetto di "connessione persistente" (Keep-Alive) per ottimizzare le performance?}
+    \begin{enumerate}[label=\alph*)]
+        \item HTTP/0.9
+        \item HTTP/1.0
+        \item HTTP/1.1
+        \item HTTP/3
+    \end{enumerate}
+
+    \item \textbf{Perché un'operazione "Sincrona" è problematica nel Main Thread del browser?}
+    \begin{enumerate}[label=\alph*)]
+        \item Perché consuma troppa batteria.
+        \item Perché blocca sia l'esecuzione del codice che il rendering della pagina (UI).
+        \item Perché richiede obbligatoriamente l'uso di una CDN.
+        \item Perché non può comunicare con i server HTTPS.
+    \end{enumerate}
+
+    % Lezione 2: Statico vs Dinamico
+    \item \textbf{Qual è la caratteristica principale di uno Static Site Generator (SSG) come Hugo?}
+    \begin{enumerate}[label=\alph*)]
+        \item Genera la pagina ogni volta che un utente la richiede.
+        \item Genera l'intero sito una sola volta durante la fase di "build".
+        \item Richiede un database relazionale attivo in produzione.
+        \item Non permette l'uso di CSS.
+    \end{enumerate}
+
+    \item \textbf{Cosa succede nel modello Client-Side Rendering (CSR)?}
+    \begin{enumerate}[label=\alph*)]
+        \item Il server invia un HTML completo di tutti i dati.
+        \item Il server invia un "guscio" HTML vuoto e il browser costruisce la UI via JavaScript.
+        \item Il browser non esegue codice JavaScript.
+        \item I dati vengono salvati permanentemente sul server tramite il file system del client.
+    \end{enumerate}
+
+    \item \textbf{Qual è il limite principale del \textit{localStorage}?}
+    \begin{enumerate}[label=\alph*)]
+        \item Può memorizzare solo stringhe di testo.
+        \item I dati vengono cancellati alla chiusura del browser.
+        \item Richiede una connessione internet attiva per funzionare.
+        \item Non è accessibile da JavaScript.
+    \end{enumerate}
+
+    % Lezione 3: API e JSON
+    \item \textbf{In un'architettura a Microservizi, qual è uno dei vantaggi principali rispetto al Monolito?}
+    \begin{enumerate}[label=\alph*)]
+        \item Tutto il codice risiede in un unico processo.
+        \item \`E possibile scalare orizzontalmente solo i singoli servizi che ne hanno bisogno.
+        \item La sicurezza è garantita dall'assenza di API.
+        \item \`E più semplice da testare inizialmente.
+    \end{enumerate}
+
+    \item \textbf{Cosa si intende per "Serializzazione" in ambito Web API?}
+    \begin{enumerate}[label=\alph*)]
+        \item La trasformazione di un oggetto in memoria in una stringa (es. JSON) per il trasporto.
+        \item Il processo di crittografia dei dati.
+        \item L'invio di più richieste HTTP in sequenza.
+        \item La compressione di un'immagine.
+    \end{enumerate}
+
+    \item \textbf{Nel modello AAA della sicurezza, cosa verifica la fase di "Authorization"?}
+    \begin{enumerate}[label=\alph*)]
+        \item L'identità del chiamante ("Chi sei?").
+        \item I privilegi di accesso alla risorsa ("Cosa puoi fare?").
+        \item La registrazione delle operazioni effettuate ("Cosa hai fatto?").
+        \item La validità dell'indirizzo IP.
+    \end{enumerate}
+
+    % Lezione 4: Backend
+    \item \textbf{Perché il Backend è considerato un ambiente "Trusted" (Fido)?}
+    \begin{enumerate}[label=\alph*)]
+        \item Perché lo sviluppatore ha il controllo totale su calcolo, file system e segreti.
+        \item Perché è impossibile da hackerare.
+        \item Perché i browser non possono vedere il codice sorgente.
+        \item Perché utilizza solo linguaggi di programmazione sicuri come Python.
+    \end{enumerate}
+
+    \item \textbf{A cosa serve il middleware \texttt{express.json()} (o simili) in un server?}
+    \begin{enumerate}[label=\alph*)]
+        \item A connettersi al database.
+        \item A interpretare il corpo delle richieste (body) in formato JSON.
+        \item A velocizzare il caricamento delle immagini statiche.
+        \item A gestire l'interfaccia grafica del server.
+    \end{enumerate}
+
+    \item \textbf{Cosa significa che un metodo HTTP è "Sicuro" in ambito REST?}
+    \begin{enumerate}[label=\alph*)]
+        \item Che cripta i dati durante il trasporto.
+        \item Che la sua esecuzione non modifica lo stato della risorsa sul server (es. \texttt{GET}).
+        \item Che richiede obbligatoriamente un Bearer Token.
+        \item Che non può essere intercettato da un attacco Man-in-the-Middle.
+    \end{enumerate}
+
+    \item \textbf{Qual è la differenza fondamentale tra una Promise e l'uso di async/await in JavaScript?}
+    \begin{enumerate}[label=\alph*)]
+        \item \texttt{async/await} è "zucchero sintattico" per scrivere codice asincrono in modo più leggibile e lineare.
+        \item Le Promise sono più veloci di \texttt{async/await}.
+        \item \texttt{async/await} non può gestire gli errori tramite \texttt{try/catch}.
+        \item Le Promise funzionano solo nel browser, \texttt{async/await} solo lato server.
+    \end{enumerate}
+
+    % Lezione 5: React
+    \item \textbf{Perché si usa l'hook \texttt{useCallback} in React?}
+    \begin{enumerate}[label=\alph*)]
+        \item Per caricare i dati dal server.
+        \item Per memorizzare una funzione ed evitare che venga ricreata inutilmente ad ogni render.
+        \item Per cambiare il colore di sfondo di un componente.
+        \item Per gestire il login dell'utente.
+    \end{enumerate}
+
+    \item \textbf{Cosa indica l'attributo \textit{HttpOnly} in un Cookie?}
+    \begin{enumerate}[label=\alph*)]
+        \item Che il cookie può essere inviato solo via HTTPS.
+        \item Che il cookie non è accessibile via JavaScript (protezione XSS).
+        \item Che il cookie scade dopo un'ora.
+        \item Che il cookie può essere usato solo dal server HTTP.
+    \end{enumerate}
+
+    % Lezione 6: Real-time
+    \item \textbf{Qual è la differenza fondamentale tra WebSocket e HTTP?}
+    \begin{enumerate}[label=\alph*)]
+        \item WebSocket è unidirezionale, HTTP è bidirezionale.
+        \item WebSocket mantiene una connessione persistente e Full-Duplex.
+        \item HTTP è più veloce per lo streaming video.
+        \item WebSocket non richiede un server.
+    \end{enumerate}
+
+    \item \textbf{In WebRTC, quale stato della connessione indica che è stato trovato un percorso valido?}
+    \begin{enumerate}[label=\alph*)]
+        \item \texttt{new}
+        \item \texttt{checking}
+        \item \texttt{connected}
+        \item \texttt{failed}
+    \end{enumerate}
+
+    \item \textbf{Quando è necessario utilizzare un server TURN in WebRTC?}
+    \begin{enumerate}[label=\alph*)]
+        \item Sempre, per ogni connessione.
+        \item Quando la connessione P2P diretta è bloccata da NAT simmetrici o firewall.
+        \item Solo per registrare le chiamate.
+        \item Solo per scambiare messaggi di testo.
+    \end{enumerate}
+
+    % REST & Async
+    \item \textbf{Cosa restituisce la funzione \texttt{fetch()} di JavaScript?}
+    \begin{enumerate}[label=\alph*)]
+        \item Direttamente l'oggetto JSON richiesto.
+        \item Una stringa HTML.
+        \item Una Promise che si risolve in un oggetto Response.
+        \item Un errore immediato se il server risponde con status 404.
+    \end{enumerate}
+
+    \item \textbf{In un'API REST, quale metodo è considerato "Idempotente" per la sostituzione integrale di una risorsa?}
+    \begin{enumerate}[label=\alph*)]
+        \item \texttt{POST}
+        \item \texttt{GET}
+        \item \texttt{PUT}
+        \item \texttt{PATCH}
+    \end{enumerate}
+
+\end{enumerate}
+
+\vspace{1cm}
+\begin{center}
+\begin{tabular}{|l|l|}
+\hline
+\textbf{Punteggio Totale (su 20)} & \hspace{3cm} / 20 \\ \hline
+\textbf{Valutazione Finale} & \hspace{3cm} \\ \hline
+\end{tabular}
+\end{center}
+
+\newpage
+\fancyhead[L]{Griglia di Valutazione}
+\fancyhead[R]{Riservato al Docente}
+
+\vspace*{1cm}
+
+\begin{center}
+    {\Large \textbf{Griglia di Valutazione e Correzione}}
+\end{center}
+
+\vspace{1cm}
+
+\begin{table}[ht]
+\centering
+\begin{tabularx}{\textwidth}{@{}|l|X|l|@{}}
+\hline
+\rowcolor{gray!20} \textbf{Domanda} & \textbf{Argomento} & \textbf{Risposta Corretta} \\ \hline
+1 & Struttura URL (Frammento) & c \\ \hline
+2 & Evoluzione HTTP (1.1) & c \\ \hline
+3 & Sincronia e Blocking & b \\ \hline
+4 & SSG (Hugo) & b \\ \hline
+5 & CSR vs SSR & b \\ \hline
+6 & LocalStorage & a \\ \hline
+7 & Microservizi & b \\ \hline
+8 & Serializzazione JSON & a \\ \hline
+9 & Modello AAA (Authorization) & b \\ \hline
+10 & Trusted Environment & a \\ \hline
+11 & Middleware JSON & b \\ \hline
+12 & REST (Metodi Sicuri) & b \\ \hline
+13 & Async/Await vs Promise & a \\ \hline
+14 & React Hooks (useCallback) & b \\ \hline
+15 & Cookie Security (HttpOnly) & b \\ \hline
+16 & WebSocket vs HTTP & b \\ \hline
+17 & Stati WebRTC (connected) & c \\ \hline
+18 & WebRTC (TURN) & b \\ \hline
+19 & Fetch API (Promise) & c \\ \hline
+20 & Idempotenza REST (PUT) & c \\ \hline
+\end{tabularx}
+\end{table}
+
+\vspace{1cm}
+\textbf{Criteri di Valutazione:}
+\begin{itemize}
+    \item 1 punto per ogni risposta corretta.
+    \item 0 punti per risposta errata o non data.
+    \item \textbf{Soglia di sufficienza:} 12/20 (60\%).
+\end{itemize}
+
+\end{document}

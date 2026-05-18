@@ -7,12 +7,13 @@
 \usepackage[T1]{fontenc}
 \usepackage[italian]{babel}
 \usepackage{tikz}
-\usetikzlibrary{arrows.meta, positioning, shapes.geometric, calc, fit, shapes.misc}
+\usetikzlibrary{arrows.meta, positioning, shapes.geometric, calc, fit, shapes.misc, shadows}
 \usepackage{listings}
 \usepackage{xcolor}
 
 % --- Configurazione Colori e Link ---
 \definecolor{primary}{RGB}{38, 66, 139}
+\definecolor{secondary}{RGB}{200, 50, 50}
 \definecolor{codebg}{RGB}{245, 245, 245}
 \definecolor{keywordcolor}{RGB}{0, 0, 255}
 \definecolor{stringcolor}{RGB}{163, 21, 21}
@@ -20,7 +21,7 @@
 
 \lstdefinelanguage{javascript}{
     keywords={async, await, break, case, catch, class, const, continue, debugger, default, delete, do, else, export, extends, false, finally, for, function, if, import, in, instanceof, new, null, return, super, switch, this, throw, true, try, typeof, var, void, while, with, yield, let},
-    morekeywords={console, log, Error, fetch, JSON, parse, stringify},
+    morekeywords={console, log, Error, fetch, JSON, parse, stringify, WebSocket, on, send, RTCPeerConnection, addTrack, ontrack, createOffer, setLocalDescription, setRemoteDescription},
     sensitive=true,
     morecomment=[l]{//},
     morecomment=[s]{/*}{*/},
@@ -30,20 +31,30 @@
     keywordstyle=\color{primary}\bfseries,
     commentstyle=\color{commentcolor}\itshape,
     stringstyle=\color{stringcolor},
-    basicstyle=\ttfamily\small
+    basicstyle=\ttfamily\tiny
 }
 
 \lstset{
-    basicstyle=\ttfamily\scriptsize,
-    backgroundcolor=\color{gray!10},
+    basicstyle=\ttfamily\tiny,
+    backgroundcolor=\color{gray!5},
     frame=single,
-    keywordstyle=\color{blue}
+    rulecolor=\color{gray!30},
+    keywordstyle=\color{primary}\bfseries,
+    commentstyle=\color{commentcolor},
+    stringstyle=\color{stringcolor},
+    showstringspaces=false,
+    breaklines=true
 }
+
+\setbeamercolor{title}{fg=white, bg=primary}
+\setbeamercolor{frametitle}{fg=white, bg=primary}
+\setbeamercolor{structure}{fg=primary}
 
 \title[Lezione 6]{Programmazione e Tecnologie Web}
 \subtitle{Real-time Communication \& Multimedia}
 \author{Giuseppe Capasso}
-\date{2025/2026}
+\institute{ITS - Programmazione Web}
+\date{A.A. 2025/2026}
 
 \begin{document}
 
@@ -51,25 +62,76 @@
     \titlepage
 \end{frame}
 
-\section{Real-time Web}
+\begin{frame}{Sommario}
+    \tableofcontents
+\end{frame}
+
+\section{Evoluzione Real-time}
+
+\begin{frame}{Il Limite di HTTP: Request-Response}
+    \begin{columns}
+        \begin{column}{0.5\textwidth}
+            \begin{itemize}
+                \item Unidirezionale (Client $\rightarrow$ Server).
+                \item Stateless (di base).
+                \item Alto overhead (Header per ogni richiesta).
+            \end{itemize}
+        \end{column}
+        \begin{column}{0.5\textwidth}
+            \centering
+            \begin{tikzpicture}[scale=0.7, every node/.style={scale=0.7}]
+                \node[draw, thick, fill=blue!10, minimum width=1.5cm] (C) {Client};
+                \node[draw, thick, fill=gray!10, minimum width=1.5cm, right=2cm of C] (S) {Server};
+                \draw[->, thick, primary] ([yshift=5mm]C.east) -- node[above, font=\tiny]{Request} ([yshift=5mm]S.west);
+                \draw[<-, thick, gray] ([yshift=-5mm]C.east) -- node[below, font=\tiny]{Response} ([yshift=-5mm]S.west);
+            \end{tikzpicture}
+        \end{column}
+    \end{columns}
+\end{frame}
+
 \begin{frame}{Polling vs Long Polling}
     \centering
     \begin{tikzpicture}[
         node distance=0.5cm,
         line/.style={draw, thick, -latex},
-        label/.style={font=\tiny}
+        label/.style={font=\tiny, align=center}
     ]
+        % Polling
         \node (c1) {Client};
-        \node (s1) [right=2cm of c1] {Server};
-        \draw [thick] (c1.south) -- +(0,-2.5cm);
-        \draw [thick] (s1.south) -- +(0,-2.5cm);
-        \node [above=0.1cm of c1, font=\tiny\bfseries] {Polling};
-        \draw [line] (c1.center |- 0,-0.5) -- node[label, above] {GET} (s1.center |- 0,-0.5);
-        \draw [line, gray, dashed] (s1.center |- 0,-1.0) -- node[label, below] {200 OK} (c1.center |- 0,-1.0);
+        \node (s1) [right=2.5cm of c1] {Server};
+        \draw [thick] (c1.south) -- +(0,-3cm);
+        \draw [thick] (s1.south) -- +(0,-3cm);
+        \node [above=0.1cm of c1, font=\tiny\bfseries] {Short Polling};
+        
+        \draw [line] (c1.center |- 0,-0.5) -- node[label, above] {C'è posta?} (s1.center |- 0,-0.5);
+        \draw [line, gray, dashed] (s1.center |- 0,-1.0) -- node[label, below] {No.} (c1.center |- 0,-1.0);
+        
+        \draw [line] (c1.center |- 0,-1.7) -- node[label, above] {C'è posta?} (s1.center |- 0,-1.7);
+        \draw [line, secondary] (s1.center |- 0,-2.2) -- node[label, below] {Sì, ecco i dati!} (c1.center |- 0,-2.2);
+
+        % Long Polling
+        \begin{scope}[xshift=5.5cm]
+            \node (c2) {Client};
+            \node (s2) [right=2.5cm of c2] {Server};
+            \draw [thick] (c2.south) -- +(0,-3cm);
+            \draw [thick] (s2.south) -- +(0,-3cm);
+            \node [above=0.1cm of c2, font=\tiny\bfseries] {Long Polling};
+            
+            \draw [line] (c2.center |- 0,-0.5) -- node[label, above] {Fammi sapere quando\\ci sono novità} (s2.center |- 0,-0.5);
+            \node [right=0.1cm of s2, yshift=-1.2cm, font=\tiny, primary] {Attesa...};
+            \draw [line, secondary] (s2.center |- 0,-2.5) -- node[label, below] {Ecco le novità!} (c2.center |- 0,-2.5);
+        \end{scope}
     \end{tikzpicture}
 \end{frame}
 
-\begin{frame}{WebSocket Handshake \& Communication}
+\section{WebSocket}
+
+\begin{frame}{WebSocket: La Svolta Bidirezionale}
+    \begin{itemize}
+        \item \textbf{Protocollo TCP}: Indipendente da HTTP (ma inizia via HTTP).
+        \item \textbf{Full-Duplex}: Client e Server parlano contemporaneamente.
+        \item \textbf{Low Overhead}: Solo 2-10 byte di frame dopo l'handshake.
+    \end{itemize}
     \centering
     \begin{tikzpicture}[
         node distance=0.5cm,
@@ -77,87 +139,160 @@
         label/.style={font=\tiny}
     ]
         \node (c) {Client};
-        \node (s) [right=2.5cm of c] {Server};
+        \node (s) [right=4cm of c] {Server};
         \draw [thick] (c.south) -- +(0,-2.5cm);
         \draw [thick] (s.south) -- +(0,-2.5cm);
         
-        \draw [arrow, primary] (c.center |- 0,-0.5) -- node[label, above] {1. GET Upgrade} (s.center |- 0,-0.5);
-        \draw [arrow, gray, dashed] (s.center |- 0,-1.0) -- node[label, below] {2. 101 Switching} (c.center |- 0,-1.0);
-        \draw [latex-latex, ultra thick, primary] (c.center |- 0,-1.8) -- node[label, above] {Full-Duplex Data Stream} (s.center |- 0,-1.8);
+        \draw [arrow, primary] (c.center |- 0,-0.5) -- node[label, above] {HTTP Upgrade Request} (s.center |- 0,-0.5);
+        \draw [arrow, gray, dashed] (s.center |- 0,-1.0) -- node[label, below] {101 Switching Protocols} (c.center |- 0,-1.0);
+        
+        \node[draw, primary, fill=blue!5, fit={(c.center |- 0,-1.5) (s.center |- 0,-2.2)}, inner sep=0pt, opacity=0.3] {};
+        \draw [latex-latex, ultra thick, primary] (c.center |- 0,-1.8) -- node[label, above, black] {Canale WebSocket Persistente} (s.center |- 0,-1.8);
     \end{tikzpicture}
 \end{frame}
 
-\section{WebSockets}
-\begin{frame}{Protocollo WebSocket}
-    \begin{itemize}
-        \item \textbf{Bidirezionale}: Canale Full-Duplex.
-        \item \textbf{Persistente}: Una volta stabilita (Handshake HTTP), non servono più header.
-        \item \textbf{Librerie}: 
-        \begin{itemize}
-            \item \texttt{ws}: Standard-compliant, basica.
-            \item \texttt{Socket.io}: Produzione-ready (auto-reconnect, rooms).
-        \end{itemize}
-    \end{itemize}
-\end{frame}
+\begin{frame}[fragile]{Esempio: Client \& Server (ws)}
+    \begin{columns}
+        \begin{column}{0.5\textwidth}
+            \centering \textbf{Client (JS)}
+            \begin{lstlisting}[language=javascript]
+const ws = new WebSocket('ws://host');
 
-\begin{frame}[fragile]{Server WebSocket (ws)}
-    \begin{lstlisting}[language=javascript]
+ws.onopen = () => {
+  ws.send('Ciao Server!');
+};
+
+ws.onmessage = (e) => {
+  console.log('Ricevuto:', e.data);
+};
+            \end{lstlisting}
+        \end{column}
+        \begin{column}{0.5\textwidth}
+            \centering \textbf{Server (Node.js)}
+            \begin{lstlisting}[language=javascript]
 const WebSocket = require('ws');
-const wss = new WebSocket.Server({ port: 8080 });
+const wss = new WebSocket.Server({port:80});
 
 wss.on('connection', (ws) => {
-    ws.on('message', (msg) => {
-        console.log('Ricevuto:', msg);
-        ws.send('Messaggio ricevuto dal server');
+  ws.on('message', (msg) => {
+    // Broadcast a tutti
+    wss.clients.forEach(c => {
+      c.send(msg);
     });
+  });
 });
-    \end{lstlisting}
+            \end{lstlisting}
+        \end{column}
+    \end{columns}
+\end{frame}
+
+\begin{frame}{Socket.io: Più di un WebSocket}
+    \begin{itemize}
+        \item \textbf{Fallback}: Se WS non è disponibile, usa Polling.
+        \item \textbf{Rooms}: Organizzazione logica dei client.
+        \item \textbf{Auto-reconnect}: Gestione trasparente delle disconnessioni.
+    \end{itemize}
+    \centering
+    \begin{tikzpicture}
+        \node[draw, rounded corners, primary, thick, fill=blue!5, minimum width=3cm] (SIO) {Socket.io};
+        \node[draw, dashed, gray, below=0.5cm of SIO, xshift=-1cm] (WS) {WebSocket};
+        \node[draw, dashed, gray, below=0.5cm of SIO, xshift=1cm] (LP) {Long Polling};
+        \draw[->, thick, gray] (SIO) -- (WS);
+        \draw[->, thick, gray] (SIO) -- (LP);
+        \node[right=0.5cm of SIO, font=\tiny, align=left] {Astrae il trasporto\\per garantire la\\connessione};
+    \end{tikzpicture}
 \end{frame}
 
 \section{WebRTC}
-\begin{frame}{Architettura P2P}
+
+\begin{frame}{WebRTC: Peer-to-Peer (P2P)}
     \begin{itemize}
-        \item \textbf{P2P}: Dati audio/video diretti tra browser (bassa latenza).
-        \item \textbf{Sfida NAT}: Dispositivi dietro firewall.
-        \item \textbf{Signaling}: Necessario per scambiare SDP (metadati) via WebSocket.
-        \item \textbf{Server Ice}:
-        \begin{itemize}
-            \item STUN: Rivelazione IP pubblico.
-            \item TURN: Relè (se P2P fallisce).
-        \end{itemize}
+        \item \textbf{Audio/Video/Data}: Senza passare dal server (bassa latenza).
+        \item \textbf{Browser-native}: Nessun plugin richiesto.
+        \item \textbf{Sicuro}: Crittografia obbligatoria (DTLS/SRTP).
+    \end{itemize}
+    \centering
+    \begin{tikzpicture}[scale=0.8]
+        \node[draw, circle, primary, inner sep=2pt] (A) {Peer A};
+        \node[draw, circle, primary, inner sep=2pt, right=3cm of A] (B) {Peer B};
+        \node[draw, dashed, gray, above=1.5cm of {$(A)!0.5!(B)$}] (S) {Signaling (WS)};
+        
+        \draw[<->, dashed, gray] (A) -- (S);
+        \draw[<->, dashed, gray] (B) -- (S);
+        \draw[<->, ultra thick, secondary] (A) -- node[below, font=\tiny]{Direct P2P Stream} (B);
+    \end{tikzpicture}
+\end{frame}
+
+\begin{frame}{Sfida: L'attraversamento del NAT}
+    \begin{itemize}
+        \item \textbf{STUN}: "Ehi Server, qual è il mio IP pubblico?"
+        \item \textbf{TURN}: Se il P2P fallisce, il server fa da relè (Relay).
+        \item \textbf{Symmetric NAT}: La porta esterna cambia per ogni destinazione.
+    \end{itemize}
+    \centering
+    \begin{tikzpicture}[scale=0.6, every node/.style={scale=0.6}]
+        \node[draw, thick, fill=blue!5] (L) {Local Client};
+        \node[draw, chamfered rectangle, fill=red!10, right=of L] (N) {NAT};
+        \node[draw, thick, fill=gray!5, ellipse, right=1cm of N] (I) {Internet};
+        \node[draw, thick, fill=yellow!10, above right=0.5cm of I] (STUN) {STUN Server};
+        
+        \draw[->] (L) -- (N);
+        \draw[->, primary] (N) -- (I);
+        \draw[->, dashed] (I) -- (STUN);
+    \end{tikzpicture}
+\end{frame}
+
+\begin{frame}{ICE Connection States}
+    \centering
+    \begin{tikzpicture}[
+        node distance=1.5cm,
+        state/.style={draw, thick, rounded corners, fill=primary!10, minimum width=2.2cm, font=\tiny\bfseries},
+        arrow/.style={-latex, thick, gray}
+    ]
+        \node (new) [state] {NEW};
+        \node (checking) [state, right=of new] {CHECKING};
+        \node (connected) [state, right=of checking] {CONNECTED};
+        \node (completed) [state, right=of connected] {COMPLETED};
+        \node (failed) [state, below=of checking, fill=red!10] {FAILED};
+
+        \draw [arrow] (new) -- (checking);
+        \draw [arrow] (checking) -- (connected);
+        \draw [arrow] (connected) -- (completed);
+        \draw [arrow] (checking) -- (failed);
+    \end{tikzpicture}
+    \vspace{0.3cm}
+    \begin{itemize}
+        \item \textbf{Checking}: Verificando i candidati (Cerca il percorso).
+        \item \textbf{Connected}: Percorso trovato, dati in transito.
+        \item \textbf{Failed}: NAT troppo restrittivi $\rightarrow$ Serve TURN.
     \end{itemize}
 \end{frame}
 
-\begin{frame}[fragile]{Setup RTCPeerConnection}
-    \begin{lstlisting}[language=javascript]
-const config = { 
-    iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] 
-};
-const pc = new RTCPeerConnection(config);
+\section{Esercitazione}
 
-// Aggiunta traccia video/audio
-localStream.getTracks().forEach(track => {
-    pc.addTrack(track, localStream);
-});
-
-// Ricezione traccia remota
-pc.ontrack = (event) => {
-    remoteVideo.srcObject = event.streams[0];
-};
-    \end{lstlisting}
+\begin{frame}{Architettura del Laboratorio}
+    \centering
+    \begin{tikzpicture}[node distance=1.5cm]
+        \node[draw, thick, fill=blue!5] (UI) {Frontend (Tailwind)};
+        \node[draw, thick, fill=gray!10, below=1cm of UI] (SRV) {Server (ws/Node.js)};
+        \node[draw, thick, fill=green!5, left=1.5cm of SRV] (RTC1) {WebRTC Peer 1};
+        \node[draw, thick, fill=green!5, right=1.5cm of SRV] (RTC2) {WebRTC Peer 2};
+        
+        \draw[<->, primary, thick] (UI) -- (SRV);
+        \draw[<->, dashed, secondary, thick] (RTC1) to[bend left] (RTC2);
+        
+        \node[below=0.1cm of SRV, font=\tiny] {Simulazione locale e broadcast};
+    \end{tikzpicture}
 \end{frame}
 
-\section{Multimedia}
-\begin{frame}[fragile]{Media Capture API}
-    \begin{lstlisting}[language=javascript]
-const stream = await navigator.mediaDevices.getUserMedia({
-    video: true,
-    audio: true
-});
-// Collegamento a elemento <video>
-videoElement.srcObject = stream;
-    \end{lstlisting}
-    \textbf{Vincolo}: Necessita di contesto sicuro (HTTPS o localhost).
+\begin{frame}{Conclusioni}
+    \begin{alertblock}{Takeaway}
+        Il Web moderno non è più una sequenza di pagine statiche, ma un ecosistema di flussi di dati vivi.
+    \end{alertblock}
+    \begin{itemize}
+        \item \textbf{WebSocket}: Per app centralizzate (Chat, Game server).
+        \item \textbf{WebRTC}: Per app decentralizzate (Video call, P2P file sharing).
+    \end{itemize}
 \end{frame}
 
 \end{document}

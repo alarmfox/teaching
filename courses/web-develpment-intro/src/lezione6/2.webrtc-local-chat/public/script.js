@@ -103,23 +103,45 @@ async function startConnection() {
 
 // Configurazione degli eventi del DataChannel
 function setupDataChannel(channel, peerName, displayArea, inputElement, sendButton) {
-    channel.onopen = () => {
+    console.log(`Configurazione DataChannel per ${peerName}...`);
+
+    const activateUI = () => {
+        console.log(`✓ DataChannel aperto per ${peerName}`);
         displayArea.innerHTML = `<p class="text-green-600 font-bold">✓ Connesso P2P con successo</p>`;
         inputElement.disabled = false;
         sendButton.disabled = false;
+        inputElement.focus();
+    };
+
+    // Se il canale è già aperto (può succedere in simulazioni locali veloci)
+    if (channel.readyState === 'open') {
+        activateUI();
+    }
+
+    channel.onopen = activateUI;
+
+    channel.onclose = () => {
+        console.log(`× DataChannel chiuso per ${peerName}`);
+        displayArea.innerHTML += `<p class="text-red-600 font-bold">⚠ Connessione chiusa</p>`;
+        inputElement.disabled = true;
+        sendButton.disabled = true;
+    };
+
+    channel.onerror = (err) => {
+        console.error(`Errore DataChannel (${peerName}):`, err);
     };
 
     channel.onmessage = (e) => {
         const msg = JSON.parse(e.data);
-        
+
         // Visualizza messaggio ricevuto (Allineato a sinistra)
         const wrapper = document.createElement('div');
         wrapper.className = "flex w-full justify-start";
-        
+
         const div = document.createElement('div');
         div.className = "bg-white border border-gray-200 text-gray-800 p-2 rounded-lg shadow-sm text-xs max-w-[80%] rounded-tl-none";
         div.innerHTML = `<span class="font-bold text-blue-800">${msg.sender}:</span><br>${msg.text}`;
-        
+
         wrapper.appendChild(div);
         displayArea.appendChild(wrapper);
         displayArea.scrollTop = displayArea.scrollHeight;
@@ -128,27 +150,35 @@ function setupDataChannel(channel, peerName, displayArea, inputElement, sendButt
     const sendMessage = () => {
         const text = inputElement.value.trim();
         if (text) {
-            const payload = { sender: peerName, text: text };
-            channel.send(JSON.stringify(payload));
-            
-            // Visualizza localmente (Allineato a destra)
-            const wrapper = document.createElement('div');
-            wrapper.className = "flex w-full justify-end";
-            
-            const div = document.createElement('div');
-            div.className = "bg-[rgb(38,66,139)] text-white p-2 rounded-lg shadow-sm text-xs max-w-[80%] rounded-tr-none";
-            div.innerHTML = `<span class="font-bold opacity-75">Tu:</span><br>${text}`;
-            
-            wrapper.appendChild(div);
-            displayArea.appendChild(wrapper);
-            displayArea.scrollTop = displayArea.scrollHeight;
-            
-            inputElement.value = "";
+            try {
+                const payload = { sender: peerName, text: text };
+                channel.send(JSON.stringify(payload));
+
+                // Visualizza localmente (Allineato a destra)
+                const wrapper = document.createElement('div');
+                wrapper.className = "flex w-full justify-end";
+
+                const div = document.createElement('div');
+                div.className = "bg-[rgb(38,66,139)] text-white p-2 rounded-lg shadow-sm text-xs max-w-[80%] rounded-tr-none";
+                div.innerHTML = `<span class="font-bold opacity-75">Tu:</span><br>${text}`;
+
+                wrapper.appendChild(div);
+                displayArea.appendChild(wrapper);
+                displayArea.scrollTop = displayArea.scrollHeight;
+
+                inputElement.value = "";
+            } catch (err) {
+                console.error("Errore invio messaggio:", err);
+            }
         }
     };
 
     sendButton.onclick = sendMessage;
-    inputElement.onkeypress = (e) => e.key === 'Enter' && sendMessage();
+    inputElement.onkeypress = (e) => {
+        if (e.key === 'Enter') {
+            sendMessage();
+        }
+    };
 }
 
 startBtn.onclick = startConnection;

@@ -34,7 +34,7 @@
 \fancyfoot[C]{\thepage}
 \renewcommand{\headrulewidth}{0.4pt}
 \usepackage{tikz}
-\usetikzlibrary{arrows.meta, positioning, shapes.geometric, decorations.pathreplacing, calc, shadows, fit}
+\usetikzlibrary{arrows.meta, positioning, shapes.geometric, shapes.misc, decorations.pathreplacing, calc, shadows, fit}
 
 % --- Configurazione Colori e Link ---
 \definecolor{primary}{RGB}{38, 66, 139}
@@ -270,47 +270,76 @@ La maggior parte degli utenti internet non dispone di un indirizzo IP pubblico g
     \item I router/firewall bloccano solitamente il traffico UDP in entrata non sollecitato.
 \end{enumerate}
 
-\subsection{ICE, STUN e TURN}
-Per risolvere questi problemi, WebRTC utilizza il framework **ICE (Interactive Connectivity Establishment)**, che si appoggia a due tipi di server:
+\subsection{Tipologie di NAT e Complessità di Connessione}
+Non tutti i NAT si comportano allo stesso modo. La probabilità di successo di una connessione P2P diretta dipende fortemente dalla politica di filtraggio del router:
+
 \begin{itemize}
-    \item \textbf{STUN (Session Traversal Utilities for NAT)}: Il peer interroga un server STUN pubblico per scoprire il proprio IP pubblico e la porta assegnata dal NAT.
-    \item \textbf{TURN (Traversal Using Relays around NAT)}: Se la connessione diretta fallisce (es. NAT simmetrici), il traffico viene instradato attraverso un server di relè. Sebbene garantisca la connessione, introduce latenza e costi operativi significativi.
+    \item \textbf{Full Cone NAT}: Una volta mappata una porta interna su una esterna, chiunque dall'esterno può inviare pacchetti a quella porta. \`E il caso più semplice per il P2P.
+    \item \textbf{Restricted Cone NAT}: Solo l'host esterno a cui il client ha inviato un pacchetto può rispondere.
+    \item \textbf{Port Restricted Cone NAT}: Simile al precedente, ma restringe anche la porta sorgente dell'host esterno.
+    \item \textbf{Symmetric NAT}: Ogni richiesta da una stessa porta interna verso una destinazione esterna diversa riceve una mappatura esterna diversa. Questo rende impossibile la previsione della porta e richiede obbligatoriamente un server **TURN**.
 \end{itemize}
 
 \begin{figure}[ht]
 \centering
 \begin{tikzpicture}[
-    node distance=1.5cm,
-    peer/.style={draw, thick, fill=blue!5, minimum width=1.5cm, minimum height=1cm, align=center},
-    server/.style={draw, thick, fill=gray!10, minimum width=2cm, minimum height=0.8cm, align=center},
-    nat/.style={draw, thick, fill=red!10, chamfered rectangle, minimum width=1cm, align=center, font=\tiny},
+    node distance=1.2cm,
+    host/.style={draw, thick, fill=blue!5, minimum width=1.2cm, minimum height=0.8cm, font=\tiny, align=center},
+    nat/.style={draw, thick, fill=red!10, chamfered rectangle, minimum width=1cm, font=\tiny, align=center},
+    internet/.style={draw, thick, fill=gray!5, ellipse, minimum width=2.5cm, minimum height=1.5cm, font=\tiny},
     arrow/.style={-latex, thick}
 ]
-    % Peers
-    \node (p1) [peer] {Peer A\\(Locale)};
-    \node (n1) [nat, right=of p1] {NAT A};
-    \node (n2) [nat, right=4cm of n1] {NAT B};
-    \node (p2) [peer, right=of n2] {Peer B\\(Locale)};
+    % Symmetric NAT Diagram
+    \node (p1) [host] {Client Local\\192.168.1.10:5000};
+    \node (n1) [nat, right=of p1] {NAT\\Symmetric};
+    \node (net) [internet, right=1.5cm of n1] {Internet};
+    \node (s1) [host, above right=0.5cm and 1cm of net] {Server A};
+    \node (s2) [host, below right=0.5cm and 1cm of net] {Server B};
 
-    % Infrastructure
-    \node (sig) [server, above=2.5cm of $(n1)!0.5!(n2)$] {Signaling Server\\(WebSocket)};
-    \node (stun) [server, above=1cm of sig, fill=yellow!10] {STUN / TURN};
-
-    % 1. STUN Discovery
-    \draw [arrow, dashed] (p1.north) -- ++(0,1.5cm) -| node[near end, left, font=\tiny] {1. Scoperta IP} (stun.west);
+    \draw [arrow] (p1) -- (n1);
+    \draw [arrow, primary] (n1.east) -- node[above, sloped, font=\tiny] {Port: 10001} (s1.west);
+    \draw [arrow, primary] (n1.east) -- node[below, sloped, font=\tiny] {Port: 10002} (s2.west);
     
-    % 2. Signaling
-    \draw [arrow, primary] (p1.north) -- ++(0,0.5cm) -| node[near start, above, font=\tiny] {2. Scambio SDP / ICE Candidates} (sig.west);
-    \draw [arrow, primary] (sig.east) |- ++(0.5cm,-2cm) -- (p2.north);
-
-    % 3. P2P Connection
-    \draw [latex-latex, ultra thick, green!50!black] (n1.east) -- node[above, font=\bfseries\small] {Connessione P2P} (n2.west);
-    \draw [arrow] (p1.east) -- (n1.west);
-    \draw [arrow] (p2.west) -- (n2.east);
-
+    \node [below=0.5cm of n1, font=\itshape\tiny, color=red] {Mappature diverse per destinazioni diverse};
 \end{tikzpicture}
-\caption{Architettura WebRTC: interazione tra Signaling, STUN e connessione P2P.}
-\label{fig:webrtc_infra}
+\caption{Visualizzazione del Symmetric NAT: la principale sfida per le connessioni P2P.}
+\label{fig:nat_symmetric}
+\end{figure}
+
+\subsection{Il Framework ICE e gli Stati della Connessione}
+ICE non è un protocollo a sé stante, ma un framework che combina STUN e TURN per trovare il miglior percorso di comunicazione ("Candidate").
+
+Il ciclo di vita di una connessione WebRTC attraversa diversi stati critici monitorabili tramite \texttt{iceConnectionState}:
+
+\begin{enumerate}
+    \item \textbf{new}: L'istanza è stata creata, ma la raccolta dei candidati non è iniziata.
+    \item \textbf{checking}: I peer stanno scambiando candidati e verificando la connettività.
+    \item \textbf{connected}: \`E stato trovato un percorso valido per tutti i componenti.
+    \item \textbf{completed}: La verifica di tutti i candidati è terminata e la connessione è stabile.
+    \item \textbf{failed}: Nessun candidato ha superato i test di connettività (richiede spesso il passaggio a TURN).
+    \item \textbf{disconnected/closed}: Interruzione temporanea o chiusura definitiva.
+\end{enumerate}
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[
+    node distance=1.5cm,
+    state/.style={draw, thick, rounded corners, fill=primary!10, minimum width=2.2cm, font=\tiny\bfseries},
+    arrow/.style={-latex, thick, gray}
+]
+    \node (new) [state] {NEW};
+    \node (checking) [state, right=of new] {CHECKING};
+    \node (connected) [state, right=of checking] {CONNECTED};
+    \node (completed) [state, right=of connected] {COMPLETED};
+    \node (failed) [state, below=of checking, fill=red!10] {FAILED};
+
+    \draw [arrow] (new) -- (checking);
+    \draw [arrow] (checking) -- (connected);
+    \draw [arrow] (connected) -- (completed);
+    \draw [arrow] (checking) -- (failed);
+    \draw [arrow] (connected) -- ++(0,-1) -| (failed);
+\end{tikzpicture}
+\caption{Diagramma degli stati di una ICE Connection.}
 \end{figure}
 
 \section{Configurazione di una RTCPeerConnection}

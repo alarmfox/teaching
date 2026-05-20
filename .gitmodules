@@ -1,0 +1,3 @@
+[submodule "courses/web-develpment-intro/src/lezione2/2.ssg-hugo/test/themes/hugo-coder"]
+	path = courses/web-develpment-intro/src/lezione2/2.ssg-hugo/test/themes/hugo-coder
+	url = https://github.com/luizdepra/hugo-coder.git

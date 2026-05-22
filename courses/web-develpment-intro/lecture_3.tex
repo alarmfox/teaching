@@ -178,7 +178,8 @@ I microservizi scompongono l'applicazione in piccoli servizi indipendenti, ciasc
     module/.style={rectangle, draw, fill=gray!5, minimum width=2.2cm, minimum height=0.8cm, font=\scriptsize, align=center},
     service/.style={rectangle, draw, rounded corners, fill=primary!10, minimum width=2.5cm, minimum height=1cm, font=\small, align=center},
     mono_container/.style={rectangle, draw, thick, dashed, inner sep=0.4cm, fill=gray!2, label=above:\textbf{Monolith}},
-    gateway/.style={trapezium, draw, trapezium left angle=120, trapezium right angle=120, fill=primary!20, minimum width=4cm, font=\small\bfseries, align=center}
+    gateway/.style={trapezium, draw, trapezium left angle=120, trapezium right angle=120, fill=primary!20, minimum width=4cm, font=\small\bfseries, align=center},
+    arrow/.style={-latex, line width=1pt, primary}
 ]
     % Monolith side
     \node (m1) [module] {Auth Module};
@@ -391,6 +392,47 @@ async function postData() {
 }
 \end{lstlisting}
 
+\section{Comunicazione Real-time: Webhooks}
+Mentre le API tradizionali seguono un modello \textbf{Pull} (il client richiede dati quando ne ha bisogno), i \textbf{Webhooks} implementano un modello \textbf{Push}. Un Webhook è essenzialmente una "Reverse API": è il server che invia una notifica al client quando accade un evento specifico.
+
+\subsection{Perch\'e sono necessari?}
+Senza i Webhooks, un client dovrebbe interrogare continuamente il server per verificare se ci sono nuovi dati (\textit{Polling}). Questo approccio è inefficiente per due motivi:
+\begin{enumerate}
+    \item \textbf{Spreco di Risorse}: La maggior parte delle richieste restituirà "nessun nuovo dato", consumando CPU e banda inutilmente.
+    \item \textbf{Latenza}: Se il client interroga il server ogni 10 minuti, riceverà il dato con un ritardo medio di 5 minuti. I Webhooks permettono una reazione quasi istantanea.
+\end{enumerate}
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[
+    node distance=1cm,
+    box/.style={rectangle, draw, rounded corners, minimum width=2.5cm, minimum height=1cm, align=center, font=\small},
+    arrow/.style={-latex, line width=1pt}
+]
+    % Polling
+    \node (c1) [box, fill=gray!5] {Client};
+    \node (s1) [box, fill=primary!10, right=4cm of c1] {Server};
+    \draw [arrow] ([yshift=0.3cm]c1.east) -- node[above, scale=0.6] {1. C'è qualcosa?} ([yshift=0.3cm]s1.west);
+    \draw [arrow] ([yshift=0.1cm]s1.west) -- node[below, scale=0.6] {2. No} ([yshift=0.1cm]c1.east);
+    \draw [arrow] ([yshift=-0.2cm]c1.east) -- node[above, scale=0.6] {3. C'è qualcosa?} ([yshift=-0.2cm]s1.west);
+    \draw [arrow] ([yshift=-0.4cm]s1.west) -- node[below, scale=0.6] {4. Sì (+Dati)} ([yshift=-0.4cm]c1.east);
+    \node at ($(c1.south)!0.5!(s1.south)+(0,-0.5cm)$) [font=\bfseries\small] {Polling (Inaccurate)};
+
+    % Webhook
+    \begin{scope}[yshift=-3cm]
+        \node (c2) [box, fill=gray!5] {Client\\(Listener)};
+        \node (s2) [box, fill=primary!10, right=4cm of c2] {Server\\(Emitter)};
+        \draw [arrow] (s2.west) -- node[above, scale=0.7] {Evento Accaduto (HTTP POST)} (c2.east);
+        \node at ($(c2.south)!0.5!(s2.south)+(0,-0.5cm)$) [font=\bfseries\small] {Webhook (Real-time)};
+    \end{scope}
+\end{tikzpicture}
+\caption{Confronto tra Polling (Pull) e Webhook (Push).}
+\label{fig:polling_vs_webhook}
+\end{figure}
+
+\subsection{Funzionamento Tecnico}
+Per utilizzare un Webhook, il client deve esporre un \textbf{Endpoint pubblico} (una URL) e "registrarlo" presso il servizio del server. Quando l'evento si verifica (es. ricezione di un pagamento, nuovo messaggio in chat), il server effettua una richiesta HTTP (solitamente \texttt{POST}) verso quell'indirizzo, inviando il payload JSON dell'evento.
+
 
 % ==========================================
 % CAPITOLO 3
@@ -532,7 +574,7 @@ Le API evolvono. Per evitare di rompere l'integrazione con i client esistenti (\
 Per evitare di sovraccaricare il network e il client, le API devono permettere di restringere i risultati.
 \begin{itemize}[leftmargin=3em]
     \item \textbf{Filtering}: Uso di parametri di query per filtrare i dati (es. \texttt{GET /users?status=active\&role=admin}).
-    \item \textbf{Sorting}: Definizione dell'ordine dei risultati (es. \texttt{GET /orders?sort=created_at:desc}).
+    \item \textbf{Sorting}: Definizione dell'ordine dei risultati (es. \texttt{GET /orders?sort=created\_at:desc}).
 \end{itemize}
 
 \subsection{Paginazione: Offset vs Cursor}

@@ -127,7 +127,8 @@
         module/.style={rectangle, draw, fill=gray!5, minimum width=2.2cm, minimum height=0.8cm, font=\scriptsize, align=center},
         service/.style={rectangle, draw, rounded corners, fill=primary!10, minimum width=2.5cm, minimum height=1cm, font=\small, align=center},
         mono_container/.style={rectangle, draw, thick, dashed, inner sep=0.4cm, fill=gray!2, label=above:\textbf{Monolith}},
-        gateway/.style={trapezium, draw, trapezium left angle=120, trapezium right angle=120, fill=primary!20, minimum width=4cm, font=\small\bfseries, align=center}
+        gateway/.style={trapezium, draw, trapezium left angle=120, trapezium right angle=120, fill=primary!20, minimum width=4cm, font=\small\bfseries, align=center},
+        arrow/.style={-latex, line width=1pt, primary}
     ]
         % Monolith
         \node (m1) [module] {Auth Module};
@@ -143,10 +144,10 @@
         \node (s3) [service, below=0.5cm of s2] {Order Service};
         \node (s4) [service, below=0.5cm of s3] {Notify Service};
 
-        \draw [latex-latex, primary] (gw.east) -- (s1.west);
-        \draw [latex-latex, primary] (gw.east) -- (s2.west);
-        \draw [latex-latex, primary] (gw.east) -- (s3.west);
-        \draw [latex-latex, primary] (gw.east) -- (s4.west);
+        \draw [arrow] (gw.east) -- (s1.west);
+        \draw [arrow] (gw.east) -- (s2.west);
+        \draw [arrow] (gw.east) -- (s3.west);
+        \draw [arrow] (gw.east) -- (s4.west);
     \end{tikzpicture}
     }
     \vspace{0.3cm}
@@ -248,6 +249,36 @@
     \end{itemize}
 \end{frame}
 
+\begin{frame}{Comunicazione Real-time: Webhooks}
+    \begin{itemize}
+        \item \textbf{Polling (Pull)}: Il client chiede continuamente "Ci sono novità?".
+        \item \textbf{Webhook (Push)}: Il server chiama il client quando succede qualcosa.
+    \end{itemize}
+    \centering
+    \resizebox{0.7\textwidth}{!}{
+    \begin{tikzpicture}[
+        node distance=1cm,
+        box/.style={rectangle, draw, rounded corners, minimum width=2.5cm, minimum height=1cm, align=center, font=\small},
+        arrow/.style={-latex, line width=1pt}
+    ]
+        % Polling
+        \node (c1) [box, fill=gray!5] {Client};
+        \node (s1) [box, fill=primary!10, right=4cm of c1] {Server};
+        \draw [arrow] ([yshift=0.2cm]c1.east) -- (s1.west);
+        \draw [arrow] (s1.west) -- (c1.east);
+        \node at ($(c1.south)!0.5!(s1.south)+(0,-0.3cm)$) [font=\scriptsize] {Polling (Pull) - Inefficiente};
+
+        % Webhook
+        \begin{scope}[yshift=-2cm]
+            \node (c2) [box, fill=gray!5] {Client (URL)};
+            \node (s2) [box, fill=primary!10, right=4cm of c2] {Server};
+            \draw [arrow, primary] (s2.west) -- node[above, black, scale=0.7] {HTTP POST} (c2.east);
+            \node at ($(c2.south)!0.5!(s2.south)+(0,-0.3cm)$) [font=\scriptsize] {Webhook (Push) - Real-time};
+        \end{scope}
+    \end{tikzpicture}
+    }
+\end{frame}
+
 % ==========================================
 % CAPITOLO 3: SICUREZZA
 % ==========================================
@@ -266,6 +297,20 @@
         \item \textbf{Something you have}: Token hardware, Smartphone (OTP).
         \item \textbf{Something you are}: Biometria (Impronta, Viso).
     \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Autenticazione Bearer Token}
+    \begin{itemize}
+        \item REST deve essere \textbf{stateless}.
+        \item Si evitano i Cookie/Sessioni.
+        \item Si invia un token nell'header HTTP \texttt{Authorization}.
+    \end{itemize}
+    \vspace{0.5cm}
+    \begin{block}{Header HTTP}
+    \begin{lstlisting}[language=bash]
+Authorization: Bearer <vostro_token_qui>
+    \end{lstlisting}
+    \end{block}
 \end{frame}
 
 \begin{frame}{JWT: JSON Web Tokens}
@@ -358,6 +403,24 @@
     \end{itemize}
 \end{frame}
 
+\begin{frame}{Versioning, Filtering e Sorting}
+    \begin{itemize}
+        \item \textbf{Versioning}: Evitare \textit{breaking changes}.
+        \begin{itemize}
+            \item URI: \texttt{/api/v1/resource} (standard).
+            \item Header: \texttt{X-API-Version: 2}.
+        \end{itemize}
+        \item \textbf{Filtering}: Restringere i risultati tramite Query Params.
+        \begin{itemize}
+            \item Esempio: \texttt{/users?role=admin\&status=active}.
+        \end{itemize}
+        \item \textbf{Sorting}: Definire l'ordine dei dati.
+        \begin{itemize}
+            \item Esempio: \texttt{/orders?sort=date:desc}.
+        \end{itemize}
+    \end{itemize}
+\end{frame}
+
 % ==========================================
 % CAPITOLO 5: LABORATORIO
 % ==========================================
@@ -398,7 +461,7 @@ async function getPost() {
 getPost();
     \end{lstlisting}
     \textbf{Esecuzione}: \texttt{node api\_test.js}
-\end{frame}
+    \end{frame}
 
 \begin{frame}{Conclusioni}
     \begin{itemize}

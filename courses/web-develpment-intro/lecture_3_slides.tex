@@ -279,6 +279,34 @@
     }
 \end{frame}
 
+\begin{frame}{Testare i Webhooks: ngrok}
+    \begin{itemize}
+        \item \textbf{Problema}: Il vostro PC (\textit{localhost}) non è raggiungibile dall'esterno.
+        \item \textbf{Soluzione}: Un tunnel sicuro verso il mondo esterno.
+    \end{itemize}
+    \centering
+    \resizebox{0.8\textwidth}{!}{
+    \begin{tikzpicture}[
+        box/.style={rectangle, draw, rounded corners, minimum width=2.5cm, minimum height=0.8cm, align=center, font=\scriptsize},
+        cloud/.style={draw, ellipse, fill=gray!10, minimum width=2.5cm, minimum height=0.8cm, align=center, font=\scriptsize},
+        arrow/.style={-latex, line width=1pt}
+    ]
+        \node (webex) [box, fill=primary!20] {Webex Server};
+        \node (ngrok) [cloud, right=2cm of webex] {ngrok Cloud};
+        \node (local) [box, fill=gray!5, right=2cm of ngrok] {ngrok Agent};
+        \node (flask) [box, fill=primary!10, below=0.8cm of local] {Flask (Port 5000)};
+
+        \draw [arrow] (webex) -- (ngrok);
+        \draw [arrow, dashed] (ngrok) -- (local);
+        \draw [arrow] (local) -- (flask);
+    \end{tikzpicture}
+    }
+    \vspace{0.3cm}
+    \begin{block}{Comando ngrok}
+        \texttt{ngrok http 5000} $\rightarrow$ Fornisce un URL \textbf{https} pubblico.
+    \end{block}
+\end{frame}
+
 % ==========================================
 % CAPITOLO 3: SICUREZZA
 % ==========================================

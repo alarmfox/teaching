@@ -433,6 +433,35 @@ Senza i Webhooks, un client dovrebbe interrogare continuamente il server per ver
 \subsection{Funzionamento Tecnico}
 Per utilizzare un Webhook, il client deve esporre un \textbf{Endpoint pubblico} (una URL) e "registrarlo" presso il servizio del server. Quando l'evento si verifica (es. ricezione di un pagamento, nuovo messaggio in chat), il server effettua una richiesta HTTP (solitamente \texttt{POST}) verso quell'indirizzo, inviando il payload JSON dell'evento.
 
+\subsection{Sviluppo Locale e Tunnelling: ngrok}
+Durante lo sviluppo, il vostro server (es. un'applicazione Flask o Express) viene eseguito su \texttt{localhost}. Tuttavia, i server esterni (come GitHub, Stripe o Webex) non possono raggiungere il vostro computer locale poich\'e protetto da firewall e sprovvisto di un indirizzo IP pubblico raggiungibile.
+
+Per risolvere questo problema si utilizza il \textbf{Tunnelling} tramite strumenti come \textbf{ngrok}.
+\begin{itemize}
+    \item \textbf{Cosa fa}: Crea un tunnel sicuro tra un URL pubblico (es. \texttt{https://xyz.ngrok-free.app}) e la vostra porta locale (es. \texttt{5000}).
+    \item \textbf{Utilità}: Permette ai server esterni di inviare richieste POST direttamente al vostro ambiente di sviluppo locale, rendendo possibile il test dei Webhooks in tempo reale.
+\end{itemize}
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[
+    box/.style={rectangle, draw, rounded corners, minimum width=2.5cm, minimum height=1cm, align=center, font=\small},
+    cloud/.style={draw, ellipse, fill=gray!10, minimum width=2.5cm, minimum height=1cm, align=center, font=\small},
+    arrow/.style={-latex, line width=1pt}
+]
+    \node (webex) [box, fill=primary!20] {Webex Server\\(Emitter)};
+    \node (ngrok_c) [cloud, right=2.5cm of webex] {ngrok Cloud\\(Tunnel)};
+    \node (ngrok_l) [box, fill=gray!5, right=2.5cm of ngrok_c] {ngrok Agent\\(Local)};
+    \node (flask) [box, fill=primary!10, below=1cm of ngrok_l] {Flask App\\(Localhost:5000)};
+
+    \draw [arrow] (webex) -- node[above, scale=0.7] {Public POST URL} (ngrok_c);
+    \draw [arrow, dashed] (ngrok_c) -- node[above, scale=0.7] {Secure Tunnel} (ngrok_l);
+    \draw [arrow] (ngrok_l) -- node[right, scale=0.7] {Local Forward} (flask);
+\end{tikzpicture}
+\caption{Funzionamento di ngrok per il test locale di Webhooks.}
+\label{fig:ngrok_tunnel}
+\end{figure}
+
 
 % ==========================================
 % CAPITOLO 3

@@ -118,4 +118,26 @@ invia_messaggio("Hello from Python!")
     \item \textbf{GET Request}: Creare una funzione \texttt{leggi\_messaggi()} che interroghi l'endpoint \texttt{GET /v1/messages} per stampare gli ultimi messaggi della chat.
 \end{enumerate}
 
+\section{Laboratorio Avanzato: Bot Interattivo e Gruppi}
+
+In questa sezione esploreremo la gestione delle risorse Webex e l'estensione delle funzionalità del bot.
+
+\subsection{Task 1: Creazione di una Stanza (Room)}
+Le API permettono di gestire non solo i messaggi, ma anche gli spazi di lavoro.
+\begin{enumerate}
+    \item Utilizzare un REST Client (Postman/Thunder Client) per creare una nuova stanza.
+    \item Endpoint: \texttt{POST https://webexapis.com/v1/rooms}.
+    \item Payload JSON: \texttt{\{ "title": "Laboratorio ITS - Gruppo [Vostro Nome]" \}}.
+    \item Verificare la risposta e salvare l'\texttt{id} della stanza creata.
+\end{enumerate}
+
+\subsection{Task 2: Aggiunta di un Comando al Bot}
+Prendete come riferimento il file \texttt{src/lezione3/bot.py}. Questo script utilizza \textbf{Flask} per ricevere Webhooks e \textbf{ngrok} per rendere il server locale accessibile dall'esterno.
+
+\textbf{Esercizio}: Aggiungere un comando \texttt{/info} alla funzione \texttt{execute\_cmd} che risponda con il nome della stanza e il numero di partecipanti.
+\begin{itemize}
+    \item Dovrete consultare la documentazione Webex per trovare l'endpoint per elencare i membri di una stanza (\texttt{GET /v1/memberships?roomId=\{id\}}).
+    \item Utilizzate la funzione \texttt{get\_room\_details(id)} già presente nello script per ottenere il nome della stanza.
+\end{itemize}
+
 \end{document}

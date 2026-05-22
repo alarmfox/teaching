@@ -195,7 +195,7 @@
         \draw [arrow] ([yshift=0.2cm]mem.east) -- node[above, scale=0.7] {Serializzazione} ([yshift=0.2cm]wire.west);
         \draw [arrow] ([yshift=-0.2cm]wire.west) -- node[below, scale=0.7] {Deserializzazione} ([yshift=-0.2cm]mem.east);
     \end{tikzpicture}
-    
+
     \vspace{0.3cm}
     \begin{lstlisting}[language=json]
 {
@@ -489,7 +489,24 @@ async function getPost() {
 getPost();
     \end{lstlisting}
     \textbf{Esecuzione}: \texttt{node api\_test.js}
-    \end{frame}
+\end{frame}
+
+\begin{frame}{Laboratorio Avanzato: Bot e Gruppi}
+    \begin{block}{Task 1: Gestione Stanze}
+        \begin{itemize}
+            \item Crea una stanza: \texttt{POST /v1/rooms}.
+            \item Salva l'ID restituito.
+        \end{itemize}
+    \end{block}
+    \begin{block}{Task 2: Estendi il Bot}
+        Partendo da \texttt{bot.py} (Flask + ngrok):
+        \begin{itemize}
+            \item Aggiungi il comando \texttt{/info}.
+            \item Rispondi con il nome della stanza e numero membri.
+            \item Endpoint membri: \texttt{GET /v1/memberships}.
+        \end{itemize}
+    \end{block}
+\end{frame}
 
 \begin{frame}{Conclusioni}
     \begin{itemize}

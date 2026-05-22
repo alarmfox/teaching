@@ -3,7 +3,25 @@
 In questa esercitazione impareremo a interagire con una Web API reale utilizzando l'autenticazione tramite **Bearer Token**.
 
 ## Obiettivo
-Creare uno script Python che utilizzi la libreria `requests` per inviare un messaggio automatico in una chat Webex.
+Interagire con Web API reali (JSONPlaceholder e Webex) utilizzando Python e Node.js.
+
+## Esempio 1: Consumo API Libera (JSONPlaceholder)
+Prima di passare a Webex, testiamo la comunicazione con un'API pubblica che non richiede autenticazione.
+
+### Python
+Utilizziamo il file `client.py`.
+```bash
+python client.py
+```
+
+### Node.js
+Utilizziamo il file `api_test.js` (richiede Node.js 18+).
+```bash
+node api_test.js
+```
+
+## Esempio 2: Creazione di un Bot Webex
+In questa parte utilizzeremo l'autenticazione tramite **Bearer Token**.
 
 ## Prerequisiti
 1. **Python 3.x** installato.

@@ -394,6 +394,25 @@ const data = await response.text();
     \end{verbatim}
 \end{frame}
 
+\begin{frame}{Esercizio: Network Device API}
+    \textbf{Obiettivo}: Gestione inventario Router aziendali.
+    \begin{itemize}
+        \item \textbf{Modello Router}: \texttt{id}, \texttt{hostname}, \texttt{interfaces[]}.
+        \item \textbf{CRUD}: Implementare \texttt{GET}, \texttt{POST}, \texttt{PUT}, \texttt{DELETE}.
+    \end{itemize}
+    \vspace{0.2cm}
+    \textbf{Task Avanzato: Generazione Configurazione}
+    \begin{itemize}
+        \item Endpoint: \texttt{GET /routers/:id/config}
+        \item Ritorna \texttt{text/plain} con sintassi Cisco-like.
+    \end{itemize}
+    \begin{exampleblock}{Esempio Output}
+        \texttt{interface GigabitEthernet0\\
+        \  description LAN\\
+        \  ip address 192.168.1.1 255.255.255.0}
+    \end{exampleblock}
+\end{frame}
+
 \begin{frame}{Conclusioni ed Esercizi}
     \textbf{Obiettivi Raggiunti}:
     \begin{itemize}
@@ -404,6 +423,5 @@ const data = await response.text();
     \vspace{0.3cm}
     \textbf{Esercizio}: Implementare la cancellazione di un task (\texttt{DELETE /tasks/<id>}) aggiornando il file JSON.
 \end{frame}
-
 
 \end{document}

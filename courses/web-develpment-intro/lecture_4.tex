@@ -545,4 +545,13 @@ fetch('http://localhost:3000/secure', {
 \section{Conclusioni}
 La progettazione di sistemi web moderni richiede una comprensione profonda del disaccoppiamento tra presentazione (Frontend) e logica di business (Backend). La robustezza di un'applicazione risiede nella capacità del backend di garantire l'integrità dei dati e nella capacità del frontend di gestire correttamente il flusso asincrono e la comunicazione degli stati. L'adozione di standard come REST e protocolli di sicurezza consolidati è fondamentale per la scalabilità e la manutenibilità del software.
 
+\section*{Oltre il Backend Tradizionale: Un'anteprima di Next.js}
+Nelle prossime lezioni vedremo come l'evoluzione dei framework moderni stia portando verso una convergenza tra frontend e backend. Strumenti come \textbf{Next.js} permettono di costruire applicazioni "full-stack" dove la logica di presentazione e le API risiedono nello stesso progetto, eliminando complessità come la configurazione manuale del CORS e semplificando il deployment.
+
+L'installazione è immediata tramite il comando:
+\begin{lstlisting}[language=bash]
+npx create-next-app@latest
+\end{lstlisting}
+Questo comando genera un'impalcatura pronta all'uso, includendo già strumenti come Tailwind CSS e il sistema di routing basato su file system, che approfondiremo nel dettaglio nella Lezione 5.
+
 \end{document}

@@ -65,12 +65,12 @@ L'obiettivo di questa esercitazione è trasformare una Todo App statica in un si
 \section{Esercizio 0: Analisi e Setup}
 Esplorate il codice fornito nella cartella \texttt{1.basic-todo}. Noterete che il backend (\texttt{app.js} o \texttt{app.py}) carica i dati dal file \texttt{tasks.json} solo all'avvio.
 
-\textbf{Guida per lo studente}: 
+\textbf{Guida per lo studente}:
 \begin{enumerate}
     \item Aprite il terminale nella cartella \texttt{server/}.
     \item Avviate il server:
     \begin{itemize}
-        \item Node.js: \texttt{npm install && npx nodemon app.js}
+        \item Node.js: \texttt{npm install \&\& npx nodemon app.js}
         \item Python: \texttt{python app.py}
     \end{itemize}
     \item Aprite l'app nel browser (es. tramite Live Server o via server backend su \texttt{http://localhost:3000}).
@@ -154,10 +154,48 @@ async function render() {
     // ... resto della logica di rendering
 }
 \end{lstlisting}
-\begin{enumerate}
-    \item \textbf{Gestione Errori}: Modificate la \texttt{fetchAPI} per mostrare un messaggio di errore all'utente se il server restituisce uno stato \texttt{500} o \texttt{401}.
-    \item \textbf{Audit Log}: Ogni volta che un task viene eliminato, stampate nel terminale del server il timestamp e il testo del task rimosso.
-    \item \textbf{Task Live (Avanzato)}: Implementate una rotta \texttt{GET /stats} che restituisca il numero totale di task e la lunghezza media del testo dei task. Visualizzate questi dati in un piccolo box nell'interfaccia.
-\end{enumerate}
+\section{Esercizio 5: Gestione Dispositivi di Rete (REST API)}
+L'obiettivo di questo esercizio è progettare e implementare un'API REST per la gestione di un inventario di dispositivi di rete (Router).
+
+\subsection{Modellazione della Risorsa}
+Ogni dispositivo (Router) deve essere rappresentato da un oggetto JSON con la seguente struttura:
+\begin{itemize}
+    \item \texttt{id}: Identificativo univoco (intero).
+    \item \texttt{hostname}: Nome del dispositivo (stringa).
+    \item \texttt{interfaces}: Un array di oggetti interfaccia, ognuno contenente:
+    \begin{itemize}
+        \item \texttt{name}: Nome dell'interfaccia (es. "GigabitEthernet0").
+        \item \texttt{ip}: Indirizzo IPv4.
+        \item \texttt{netmask}: Maschera di rete.
+        \item \texttt{description}: Descrizione testuale dello scopo dell'interfaccia.
+    \end{itemize}
+\end{itemize}
+
+\subsection{Task 1: Implementazione CRUD}
+Implementate un server (in Express o Flask) che esponga i seguenti endpoint per la risorsa \texttt{/routers}:
+\begin{itemize}
+    \item \textbf{Lettura Totale} (\texttt{GET /routers}): Restituisce la lista di tutti i router.
+    \item \textbf{Creazione} (\texttt{POST /routers}): Aggiunge un nuovo router all'inventario.
+    \item \textbf{Aggiornamento} (\texttt{PUT /routers/:id}): Modifica i dati di un router esistente.
+    \item \textbf{Cancellazione} (\texttt{DELETE /routers/:id}): Rimuove un router dall'inventario.
+\end{itemize}
+
+\subsection{Task 2: Generazione Configurazione}
+Aggiungete un endpoint speciale \textbf{\texttt{GET /routers/:id/config}} che, invece di restituire JSON, restituisca un payload in formato \textbf{testo semplice} (\texttt{text/plain}).
+
+L'endpoint deve generare una stringa che simuli una configurazione CLI (stile Cisco) basata sui dati salvati. Ad esempio:
+\begin{lstlisting}[language=bash, caption=Esempio di output atteso per /config]
+hostname Core-Router-01
+!
+interface GigabitEthernet0
+ description Link to LAN
+ ip address 192.168.1.1 255.255.255.0
+!
+interface GigabitEthernet1
+ description Link to WAN
+ ip address 10.0.0.1 255.255.255.252
+\end{lstlisting}
+
+\textbf{Suggerimento}: Ciclate sull'array \texttt{interfaces} del router trovato e concatenate le stringhe per costruire il corpo della risposta.
 
 \end{document}

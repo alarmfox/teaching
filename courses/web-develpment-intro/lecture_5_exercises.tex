@@ -105,4 +105,15 @@ Utilizzate l'hook \texttt{useEffect} per scaricare i task dal server backend del
 \section{Task Bonus (Avanzato)}
 Implementate una **API Route** in \texttt{app/api/stats/route.js} che restituisca un JSON con il numero di task completati e quelli ancora da fare. Consumate questa API nel frontend.
 
+\section{Esercizio 5: Network Inventory Dashboard (Avanzato)}
+L'obiettivo di questo esercizio è consumare un'API più complessa che restituisce dati annidati (oggetti contenenti array). Utilizzeremo le \textbf{Network API} della Lezione 4 (porta 3005).
+
+\textbf{Task}:
+\begin{enumerate}
+    \item Avviare il backend in \texttt{src/lezione4/network-api/server}.
+    \item Recuperare la lista dei router tramite l'hook \texttt{useEffect}.
+    \item Rappresentare ogni router con una "Card" che mostri l'hostname e una lista delle sue interfacce di rete (nome e IP).
+    \item Utilizzare Tailwind CSS per differenziare visivamente gli apparati (es. bordi arrotondati, ombre, badge colorati).
+\end{enumerate}
+
 \end{document}

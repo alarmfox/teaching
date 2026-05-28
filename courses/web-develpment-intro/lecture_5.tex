@@ -174,7 +174,46 @@ In un'applicazione CSR, il server non invia HTML pronto per la visualizzazione. 
 \newpage
 
 % ==========================================
-% CAPITOLO 2 (NUOVO)
+% CAPITOLO 2
+% ==========================================
+\chapter{Setup e Fondamenti di Next.js}
+
+\section{Installazione e Primo Progetto}
+Next.js fornisce uno strumento da riga di comando, \texttt{create-next-app}, che automatizza la creazione di un progetto pre-configurato con tutte le dipendenze necessarie, il supporto a TypeScript (opzionale), ESLint e Tailwind CSS.
+
+Per generare un nuovo progetto, aprite il terminale e digitate:
+\begin{lstlisting}[language=bash]
+npx create-next-app@latest my-todo-app
+\end{lstlisting}
+
+Durante la procedura guidata, si consiglia di rispondere \textbf{Yes} alle seguenti opzioni:
+\begin{itemize}
+    \item \textit{Use App Router?} (Fondamentale per la struttura moderna).
+    \item \textit{Use Tailwind CSS?} (Per la gestione rapida degli stili).
+    \item \textit{Use src/ directory?} (Per tenere il codice pulito).
+\end{itemize}
+
+\section{Anatomia di un Progetto Next.js}
+Una volta generato il progetto, la struttura delle cartelle seguirà una gerarchia precisa:
+
+\begin{itemize}
+    \item \textbf{\texttt{app/}}: Contiene le rotte dell'applicazione. Ogni cartella qui dentro definisce un percorso URL.
+    \item \textbf{\texttt{app/page.js}}: Il componente principale che viene visualizzato alla rotta radice (\texttt{/}).
+    \item \textbf{\texttt{app/layout.js}}: Il guscio dell'applicazione. Contiene gli elementi comuni a tutte le pagine (es. HTML, Body, Navbar).
+    \item \textbf{\texttt{app/globals.css}}: Gli stili globali dove viene importato Tailwind.
+    \item \textbf{\texttt{public/}}: Risorse statiche come immagini e font.
+    \item \textbf{\texttt{package.json}}: Gestione delle dipendenze e script (\texttt{npm run dev} per avviare il server).
+\end{itemize}
+
+\section{Sviluppo Locale}
+Per avviare il server di sviluppo con hot-reloading:
+\begin{lstlisting}[language=bash]
+npm run dev
+\end{lstlisting}
+L'applicazione sarà accessibile su \texttt{http://localhost:3000}.
+
+% ==========================================
+% CAPITOLO 3
 % ==========================================
 \chapter{Sicurezza e Comunicazione: CORS e Cookie}
 

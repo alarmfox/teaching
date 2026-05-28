@@ -1,11 +1,22 @@
-# Step 2: Todo App Monolitica
+# Esercizio 2: Todo App Monolitica
 
-In questo esempio, tutta l'applicazione vive all'interno di `app/page.js`.
+In questo esercizio portiamo la Todo App della lezione precedente in React, mantenendo tutta la logica in un unico grande componente.
 
-## Cosa imparerai
-- **useState**: Per gestire l'array dei task e la stringa di ricerca.
-- **useEffect**: Per caricare i dati dal backend della Lezione 4 all'avvio.
-- **Stato Derivato**: Come filtrare la lista dei task "al volo" senza creare variabili di stato ridondanti.
+## Obiettivi Didattici
+- Gestione dello stato con l'hook `useState`.
+- Effetti collaterali (chiamate API) con `useEffect`.
+- Comunicazione con un backend esterno (CORS e Basic Auth).
+- Styling completo con **Tailwind CSS**.
 
-## Limiti
-Nota come il file diventa lungo e difficile da leggere man mano che aggiungiamo stili (Tailwind) e logica. Per questo motivo, nel prossimo step passeremo alla scomposizione in componenti.
+## Requisiti
+È necessario che il backend sia attivo:
+```bash
+cd ../backend
+npm install
+node app.js
+```
+
+## Come avviarlo (Frontend)
+1. `cd frontend`
+2. `npm install`
+3. `npm run dev`

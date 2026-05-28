@@ -1,12 +1,16 @@
-# Step 3: Rifattorizzazione Professionale
+# Esercizio 3: Todo App con Componenti
 
-In questo esempio applichiamo i principi di **Clean Code** e **Singola Responsabilità** (Single Responsibility Principle).
+Rifattorizzazione dell'esercizio precedente per migliorare la manutenibilità e le performance.
 
-## Cosa imparerai
-1. **Component Abstraction**: Abbiamo spostato la visualizzazione dei singoli task in `components/TaskItem.js` e della lista in `components/TodoList.js`.
-2. **Props**: Come passare dati dal componente genitore (`page.js`) ai componenti figli.
-3. **useCallback**: Per memorizzare la funzione di cancellazione ed evitare rendering non necessari.
-4. **Tailwind Avanzato**: Uso di stati `hover` e transizioni per rendere la UI più fluida.
+## Obiettivi Didattici
+- Scomposizione della UI in componenti riutilizzabili.
+- Passaggio di dati e funzioni tramite `Props`.
+- Ottimizzazione delle performance con `useCallback` per evitare render non necessari.
+- Layout avanzato con **Tailwind CSS**.
 
-## Perché farlo?
-Scomponendo l'app, il componente principale `page.js` diventa molto più pulito e si occupa solo di gestire lo **stato** e la **comunicazione con le API**, delegando la visualizzazione ai sotto-componenti.
+## Requisiti
+Utilizza lo stesso backend dell'Esercizio 2 (porta 3001).
+
+## Come avviarlo
+1. `npm install`
+2. `npm run dev`

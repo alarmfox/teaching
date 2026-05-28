@@ -1,0 +1,10 @@
+{
+  "name": "backend-lezione5",
+  "version": "1.0.0",
+  "main": "app.js",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^5.2.1",
+    "express-basic-auth": "^1.2.1"
+  }
+}

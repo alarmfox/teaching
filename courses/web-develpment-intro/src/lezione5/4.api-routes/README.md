@@ -1,10 +1,13 @@
-# Step 4: API Routes (Unified Full-Stack)
+# Esercizio 4: Full-Stack con API Routes
 
-Next.js permette di integrare la logica backend direttamente nel progetto.
+Spostiamo la logica backend all'interno di Next.js, eliminando la necessità di un server esterno e risolvendo i problemi di CORS.
 
-## Cosa osservare
--   La cartella `app/api/`: Ogni file `route.js` all'interno di una sottocartella definisce un endpoint HTTP (es. `/api/hello`).
--   In questo esempio mostriamo come restituire un JSON statico o generato dinamicamente.
+## Obiettivi Didattici
+- Creazione di endpoint HTTP in `app/api/`.
+- Gestione della persistenza lato server in Next.js.
+- Integrazione seamless tra frontend e backend nello stesso progetto.
+- Design coerente con **Tailwind CSS**.
 
-## Vantaggio
-Usando le API Routes, il tuo frontend React e il tuo backend vivono nello stesso dominio e porta. Questo elimina completamente la necessità di configurare il **CORS**.
+## Come avviarlo
+1. `npm install`
+2. `npm run dev`

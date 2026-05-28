@@ -1,11 +1,13 @@
-# Step 1: Hello World in Next.js
+# Esercizio 1: Hello World con Next.js
 
-In questo esempio esploriamo la struttura base di un progetto Next.js (App Router).
+Il primo passo nel mondo React e Next.js. L'obiettivo è familiarizzare con la struttura delle cartelle e la sintassi JSX.
 
-## Cosa osservare
--   `app/page.js`: Il componente principale che rappresenta la home page.
--   `app/layout.js`: Il wrapper dell'applicazione che definisce il font e la struttura HTML base.
--   **JSX**: Nota come integriamo variabili JavaScript all'interno del "falso HTML".
+## Obiettivi Didattici
+- Comprendere la struttura di un progetto Next.js (App Router).
+- Sperimentare con JSX (HTML dentro JavaScript).
+- Utilizzare le prime classi di utilità di **Tailwind CSS**.
 
-## Esercizio rapido
-Prova a modificare il testo in `page.js` e salva il file. Vedrai che il browser si aggiorna istantaneamente senza dover ricaricare la pagina (**Fast Refresh**).
+## Come avviarlo
+1. `npm install`
+2. `npm run dev`
+3. Apri [http://localhost:3000](http://localhost:3000)

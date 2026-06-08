@@ -20,7 +20,6 @@ The repository uses a centralized build system to convert Markdown source files 
 ### Components
 - `build.sh`: The main build script. It handles recursive conversion of `.md` to `.tex` and triggers the PDF compilation.
 - `template.tex`: A global Pandoc LaTeX template that defines the visual style and structure of the generated documents.
-- `.latexmkrc`: Global configuration for `latexmk`, ensuring all build artifacts are placed in a local `build/` directory.
 
 ### Usage
 To build all materials in the repository:

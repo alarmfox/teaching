@@ -1,299 +1,343 @@
 \documentclass[11pt,a4paper]{article}
 
-% --- Packages ---
-\usepackage[margin=.75in]{geometry}
+% -----------------------------------------------------------------------------
+% Corso Linux -- Syllabus
+% Documento LaTeX scritto e mantenuto a mano (nessuna generazione con Pandoc).
+% -----------------------------------------------------------------------------
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
-\usepackage{lmodern} % Fix for font not found error
-\usepackage{titlesec}
+\usepackage[italian]{babel}
+\usepackage{lmodern}
+\usepackage{microtype}
+\usepackage[a4paper,margin=2.1cm,headheight=15pt]{geometry}
 \usepackage{enumitem}
-\usepackage{hyperref}
-\usepackage{xcolor}
-\usepackage{fancyhdr}
-\usepackage{comment}
-\usepackage{cleveref}
-\usepackage[bottom]{footmisc}
-\usepackage{graphicx}
-\usepackage{longtable}
 \usepackage{booktabs}
+\usepackage{tabularx}
 \usepackage{array}
-\usepackage{calc}
-\usepackage{etoolbox}
+\usepackage{xcolor}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,calc,positioning,shapes.geometric}
+\usepackage[most]{tcolorbox}
+\usepackage{titlesec}
+\usepackage{fancyhdr}
+\usepackage{hyperref}
 
-% Standard Pandoc setup
-\providecommand{\tightlist}{%
-  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
-
-\crefformat{section}{\S#2#1#3}
-\crefformat{subsection}{\S#2#1#3}
-\crefformat{subsubsection}{\S#2#1#3}
-\crefformat{figure}{#2Figure~#1#3}
-\crefformat{footnote}{#2\footnotemark[#1]#3}
-
-\linespread{0.9} % Riduce lo spazio tra le linee
-
-% --- Colors ---
-\definecolor{primary}{RGB}{0, 0, 0}
-\definecolor{links}{HTML}{0000EE}
-\definecolor{blue}{HTML}{26428B}
+% --- Identita visiva ----------------------------------------------------------
+\definecolor{LinuxBlue}{HTML}{173F5F}
+\definecolor{LinuxTeal}{HTML}{168C8C}
+\definecolor{LinuxGold}{HTML}{F2B134}
+\definecolor{LinuxRed}{HTML}{C94C4C}
+\definecolor{LinuxInk}{HTML}{263238}
+\definecolor{LinuxPaper}{HTML}{F4F7F8}
+\definecolor{LinuxMuted}{HTML}{607D8B}
 
 \hypersetup{
-    colorlinks=true,
-    linkcolor=links,
-    urlcolor=links,
-    citecolor=links,
+  colorlinks=true,
+  linkcolor=LinuxBlue,
+  urlcolor=LinuxTeal,
+  pdftitle={Corso Linux -- Livello ITS},
+  pdfauthor={Giuseppe Capasso},
+  pdfsubject={Syllabus del corso Introduzione a Linux}
 }
 
-% --- Section Formatting ---
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.55em}
+\setlist[itemize]{leftmargin=1.35em,itemsep=0.22em,topsep=0.25em}
+\setlist[enumerate]{leftmargin=1.55em,itemsep=0.22em,topsep=0.25em}
+\renewcommand{\arraystretch}{1.2}
+
 \titleformat{\section}
-  {\normalfont\Large\bfseries\color{blue}}{\thesection}{1em}{}
+  {\Large\bfseries\color{LinuxBlue}}
+  {\thesection}{0.65em}{}
 \titleformat{\subsection}
-{\normalfont\large\bfseries\color{blue}}{\thesubsection}{1em}{}
-\titleformat{\subsubsection}
-{\normalfont\bfseries\color{blue}}{\thesubsubsection}{1em}{}
+  {\large\bfseries\color{LinuxTeal}}
+  {\thesubsection}{0.55em}{}
+\titlespacing*{\section}{0pt}{1.5em}{0.55em}
+\titlespacing*{\subsection}{0pt}{1.1em}{0.35em}
 
-% --- Header and Footer ---
 \pagestyle{fancy}
-\fancyhead[L]{\small Giuseppe Capasso}
-\fancyhead[R]{\small intro-to-linux}
-\fancyfoot[C]{\thepage}
+\fancyhf{}
+\fancyhead[L]{\small\color{LinuxMuted}Introduzione a Linux}
+\fancyhead[R]{\small\color{LinuxMuted}Syllabus}
+\fancyfoot[L]{\small\color{LinuxMuted}Giuseppe Capasso}
+\fancyfoot[R]{\small\color{LinuxMuted}\thepage}
 \renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\footrulewidth}{0pt}
 
-% --- Custom Title Command ---
-\newcommand{\proposaltitle}[1]{
-    \begin{center}
-        \vspace*{0.1cm}
-        {\LARGE \bfseries \color{blue} #1} \\[1.5ex]
-        {\large \textbf{Giuseppe Capasso}} \\[1ex]
-                \small{
-            \vspace{0.1cm}
-            \textbf{Materia:} intro-to-linux\\
-        }
-            \end{center}
-    \vspace{0.3cm}
-    \hrule height 0.5pt
-    \vspace{0.5cm}
+% --- Componenti riutilizzabili -----------------------------------------------
+\newtcolorbox{infobox}[1][]{
+  enhanced,
+  colback=LinuxPaper,
+  colframe=LinuxTeal,
+  boxrule=0.7pt,
+  arc=2mm,
+  left=3mm,right=3mm,top=2.2mm,bottom=2.2mm,
+  #1
 }
+
+\newtcolorbox{lessonbox}[2]{
+  enhanced,
+  breakable,
+  colback=white,
+  colframe=LinuxBlue,
+  colbacktitle=LinuxBlue,
+  coltitle=white,
+  fonttitle=\bfseries,
+  title={#1\hfill\normalfont\small #2},
+  boxrule=0.8pt,
+  arc=2mm,
+  left=3mm,right=3mm,top=2.5mm,bottom=2.5mm,
+  before skip=0.8em,
+  after skip=0.8em
+}
+
+\newcommand{\term}[1]{\texttt{#1}}
+\newcommand{\meta}[2]{\textcolor{LinuxMuted}{\small\textbf{#1}}\\[-0.1em]#2}
 
 \begin{document}
 
-\proposaltitle{OnlineMarkdown.com}
-
-OnlineMarkdown.com
-
-1 of 12
-
-https:��onlinemarkdown.com/
-
-Corso Linux -- Livello ITS Durata: 30 ore Struttura: 6 lezioni da 5 ore
-Target: studenti ITS -- area ICT Prerequisiti: basi di sistemi operativi
-e networking
-
-Obiettivi formativi Al termine del corso lo studente sarà in grado di: •
-utilizzare Linux in modo autonomo • amministrare un sistema di base •
-gestire utenti, permessi e processi • installare applicazioni •
-conﬁgurare storage e backup • conﬁgurare rete e accessi remoti •
-installare e gestire servizi • applicare misure di sicurezza di base
-
-Metodologia • didattica laboratoriale
-
-1/22/26, 10:20 AM
-
-OnlineMarkdown.com
-
-2 of 12
-
-https:��onlinemarkdown.com/
-
-• esercitazioni guidate • lavori di gruppo • problem solving
-
-Struttura del corso Lezione 1 -- Installazione e ambienti di lavoro
-Contenuti • cos'è Linux • distribuzioni • ambiti di utilizzo •
-virtualizzazione • installazione Ubuntu su VM
-
-Terminale • ls , pwd , cd • mkdir , touch • cp , mv , rm • altri comandi
-base
-
-Permessi base
-
-1/22/26, 10:20 AM
-
-OnlineMarkdown.com
-
-3 of 12
-
-https:��onlinemarkdown.com/
-
-• ls -l • chmod
-
-Laboratorio • installazione VM • creazione struttura cartelle personali
-
-Lezione 2 -- Amministrazione di base + APT File system • struttura FHS •
-directory principali • tipi di ﬁle
-
-Utenti e gruppi • /etc/passwd • /etc/shadow • adduser • deluser • groups
-• sudo
-
-Permessi
-
-1/22/26, 10:20 AM
-
-OnlineMarkdown.com
-
-4 of 12
-
-https:��onlinemarkdown.com/
-
-• chmod • chown • chgrp
-
-Gestione pacchetti (APT) • cos'è un package manager • repository •
-comandi principali: ◦ apt update ◦ apt upgrade ◦ apt install ◦ apt
-remove ◦ apt search
-
-Attività ludica guidata • installazione: ◦ editor ◦ programmi •
-aggiornamento del sistema • esplorazione applicazioni Linux
-
-Laboratorio • creazione utenti • test permessi
-
-1/22/26, 10:20 AM
-
-OnlineMarkdown.com
-
-5 of 12
-
-https:��onlinemarkdown.com/
-
-• installazione software a scelta • rimozione pacchetti
-
-Lezione 3 -- Storage e backup Dispositivi • HDD • SSD • /dev/sdX
-
-Partizioni • MBR • GPT • strumenti: ◦ lsblk ◦ fdisk ◦ cfdisk
-
-File system • ext4 • formattazione: ◦ mkfs
-
-1/22/26, 10:20 AM
-
-OnlineMarkdown.com
-
-6 of 12
-
-https:��onlinemarkdown.com/
-
-Mount • temporaneo • permanente: ◦ /etc/fstab
-
-Backup • concetti: ◦ full ◦ incremental • strumenti: ◦ rsync ◦ tar
-
-Laboratorio • aggiunta disco VM • partizionamento • mount permanente •
-backup directory • restore ﬁle
-
-Lezione 4 -- Networking Linux Conﬁgurazione rete
-
-1/22/26, 10:20 AM
-
-OnlineMarkdown.com
-
-7 of 12
-
-https:��onlinemarkdown.com/
-
-• DHCP • IP statico
-
-Comandi • ip a • ip r • ping • traceroute • ss
-
-DNS • /etc/hosts • resolv.conf • nslookup
-
-Accesso remoto • SSH • scp
-
-Laboratorio • rete tra VM • test ping • accesso remoto
-
-1/22/26, 10:20 AM
-
-OnlineMarkdown.com
-
-8 of 12
-
-https:��onlinemarkdown.com/
-
-• copia ﬁle
-
-Lezione 5 -- Servizi e sicurezza base Servizi • cos'è un demone •
-systemctl ◦ start ◦ stop ◦ enable ◦ status
-
-Web server • installazione Apache • struttura: ◦ /var/www/html • modiﬁca
-index.html • test browser
-
-Firewall • concetti base • ufw ◦ allow
-
-1/22/26, 10:20 AM
-
-OnlineMarkdown.com
-
-9 of 12
-
-https:��onlinemarkdown.com/
-
-◦ deny ◦ status
-
-Laboratorio • installazione Apache • pubblicazione sito • apertura porta
-80 • test da altra VM
-
-Lezione 6 -- Consolidamento e lavoro di gruppo Lezione dedicata al
-ripasso pratico Gli studenti lavorano in gruppo (2--3 persone) Test
-ﬁnale
-
-Esercizi riepilogativi Esercizio 1 -- Setup sistema • creare una nuova
-VM • conﬁgurare rete • creare 2 utenti • veriﬁcare permessi
-
-1/22/26, 10:20 AM
-
-OnlineMarkdown.com
-
-10 of 12
-
-https:��onlinemarkdown.com/
-
-Esercizio 2 -- Software \& APT • aggiornare sistema • installare: ◦ un
-browser alternativo ◦ un gioco • rimuovere un pacchetto
-
-Esercizio 3 -- Storage • aggiungere disco virtuale • partizionare •
-montare in: ◦ /mnt/dati • rendere permanente
-
-Esercizio 4 -- Networking • veriﬁcare IP • ping tra VM • modiﬁca ﬁle: ◦
-/etc/hosts • test risoluzione nomi
-
-Esercizio 5 -- Web server
-
-1/22/26, 10:20 AM
-
-OnlineMarkdown.com
-
-11 of 12
-
-https:��onlinemarkdown.com/
-
-• installare Apache • creare pagina HTML: ◦ nome gruppo ◦ descrizione
-progetto • test da browser
-
-Esercizio 6 -- Sicurezza • attivare ﬁrewall ( ufw ) • consentire: ◦ SSH
-◦ HTTP • installare fail2ban • veriﬁcare stato
-
-Competenze ﬁnali Lo studente: • utilizza Linux in autonomia • installa
-software • conﬁgura servizi • applica sicurezza base • lavora in team
-tecnico
-
-1/22/26, 10:20 AM
-
-OnlineMarkdown.com
-
-12 of 12
-
-https:��onlinemarkdown.com/
-
-Output professionale Proﬁlo: Tecnico IT junior / Helpdesk / Sysadmin
-junior
-
-1/22/26, 10:20 AM
-
-
+% --- Copertina ----------------------------------------------------------------
+\hypersetup{pageanchor=false}
+\begin{titlepage}
+  \thispagestyle{empty}
+  \begin{tikzpicture}[remember picture,overlay]
+    \fill[LinuxBlue]
+      (current page.north west) rectangle
+      ([yshift=-8.2cm]current page.north east);
+    \fill[LinuxTeal]
+      ([yshift=-8.2cm]current page.north west) rectangle
+      ([yshift=-8.55cm]current page.north east);
+  \end{tikzpicture}
+
+  \vspace*{1.25cm}
+  {\color{white}\large SISTEMI OPERATIVI E AMMINISTRAZIONE}\par
+  \vspace{0.55cm}
+  {\color{white}\fontsize{34}{39}\selectfont\bfseries
+    Introduzione a Linux\par}
+  \vspace{0.35cm}
+  {\color{white}\LARGE Corso di livello ITS}\par
+
+  \vspace{4.5cm}
+  {\Large\bfseries Syllabus del corso}\par
+  \vspace{0.45cm}
+  {\color{LinuxMuted}\large
+    Dalla shell all'amministrazione di un piccolo server Linux}\par
+
+  \vfill
+  \begin{infobox}
+    \begin{tabularx}{\textwidth}{>{\bfseries\color{LinuxBlue}}l X
+                                  >{\bfseries\color{LinuxBlue}}l X}
+      Durata & 30 ore & Struttura & 6 lezioni da 5 ore \\
+      Destinatari & Studenti ITS, area ICT & Docente & Giuseppe Capasso \\
+      Modalita & Teoria essenziale e laboratorio & Livello & Introduttivo \\
+    \end{tabularx}
+  \end{infobox}
+
+  \vspace{0.8cm}
+  {\small\color{LinuxMuted}
+    Prerequisiti: conoscenze di base sui sistemi operativi e sui concetti di rete.}
+\end{titlepage}
+
+\hypersetup{pageanchor=true}
+\pagenumbering{roman}
+\tableofcontents
+\clearpage
+\pagenumbering{arabic}
+
+% --- Presentazione ------------------------------------------------------------
+\section{Presentazione del corso}
+
+Il corso introduce Linux attraverso un percorso progressivo e orientato alla
+pratica. Ogni lezione collega un nucleo teorico a un laboratorio svolto su
+macchine virtuali Ubuntu. Al termine, lo studente sapra utilizzare la shell,
+gestire un sistema di base e pubblicare un semplice servizio in rete adottando
+misure di sicurezza essenziali.
+
+\subsection{Obiettivi formativi}
+
+Al termine del percorso lo studente sara in grado di:
+\begin{itemize}
+  \item usare Linux in autonomia e orientarsi nel filesystem;
+  \item amministrare utenti, gruppi, file, permessi e processi;
+  \item installare, aggiornare e rimuovere software con APT;
+  \item configurare storage, mount persistenti e semplici procedure di backup;
+  \item diagnosticare la connettivita e configurare accessi remoti;
+  \item installare e gestire servizi di sistema;
+  \item applicare misure di sicurezza di base e documentare il proprio lavoro.
+\end{itemize}
+
+\subsection{Metodo e organizzazione}
+
+La didattica alterna spiegazioni brevi, dimostrazioni del docente, esercitazioni
+guidate e problemi da risolvere individualmente o in gruppi di 2--3 persone.
+Gli esercizi privilegiano l'interpretazione dell'output e la verifica del
+risultato: non e sufficiente copiare un comando, occorre comprenderne effetto e
+contesto.
+
+% --- Roadmap TikZ -------------------------------------------------------------
+\section{Roadmap del percorso}
+
+La sequenza segue le dipendenze naturali dell'amministrazione Linux: prima si
+impara a muoversi nel sistema, poi a gestirlo, collegarlo alla rete e infine a
+esporre servizi in modo controllato.
+
+\begin{center}
+\begin{tikzpicture}[
+  node distance=7mm and 8mm,
+  every node/.style={font=\small},
+  roadmap/.style={
+    rectangle,rounded corners=2mm,minimum width=4.5cm,minimum height=1.55cm,
+    text width=3.85cm,align=left,draw=LinuxBlue,line width=0.8pt,fill=white
+  },
+  num/.style={circle,fill=LinuxGold,draw=none,text=LinuxInk,font=\bfseries,
+              minimum size=7mm,inner sep=0pt},
+  flow/.style={-{Stealth[length=2.5mm]},line width=1pt,draw=LinuxTeal}
+]
+  \node[roadmap] (l1) {\textbf{Ambiente e shell}\\VM, distribuzioni, file e directory};
+  \node[num,anchor=north east] at ([xshift=-2mm,yshift=-2mm]l1.north east) {1};
+  \node[roadmap,right=of l1] (l2) {\textbf{Amministrazione}\\FHS, utenti, permessi e APT};
+  \node[num,anchor=north east] at ([xshift=-2mm,yshift=-2mm]l2.north east) {2};
+  \node[roadmap,below=of l2] (l3) {\textbf{Storage e backup}\\Partizioni, filesystem, mount, copie};
+  \node[num,anchor=north east] at ([xshift=-2mm,yshift=-2mm]l3.north east) {3};
+  \node[roadmap,left=of l3] (l4) {\textbf{Networking}\\IP, routing, DNS, SSH e trasferimenti};
+  \node[num,anchor=north east] at ([xshift=-2mm,yshift=-2mm]l4.north east) {4};
+  \node[roadmap,below=of l4] (l5) {\textbf{Servizi e sicurezza}\\systemd, Apache, firewall};
+  \node[num,anchor=north east] at ([xshift=-2mm,yshift=-2mm]l5.north east) {5};
+  \node[roadmap,right=of l5] (l6) {\textbf{Consolidamento}\\Progetto di gruppo e prova finale};
+  \node[num,anchor=north east] at ([xshift=-2mm,yshift=-2mm]l6.north east) {6};
+
+  \draw[flow] (l1) -- (l2);
+  \draw[flow] (l2) -- (l3);
+  \draw[flow] (l3) -- (l4);
+  \draw[flow] (l4) -- (l5);
+  \draw[flow] (l5) -- (l6);
+\end{tikzpicture}
+\end{center}
+
+\begin{infobox}
+  \textbf{Distribuzione indicativa delle 30 ore:}
+  circa 12 ore di spiegazione e dimostrazione, 15 ore di laboratorio e 3 ore
+  dedicate a verifica, restituzione e consolidamento. Il docente puo adattare
+  il ritmo in base all'esperienza della classe.
+\end{infobox}
+
+% --- Programma ---------------------------------------------------------------
+\section{Programma delle lezioni}
+
+\begin{lessonbox}{Lezione 1 --- Installazione e ambiente di lavoro}{5 ore}
+  \textbf{Risultato atteso.} Lo studente prepara una VM Ubuntu, riconosce gli
+  elementi di una distribuzione e svolge operazioni essenziali nella shell.
+
+  \begin{tabularx}{\textwidth}{>{\bfseries\color{LinuxTeal}}p{3cm} X}
+    Concetti & Linux e GNU/Linux; distribuzioni; ambiti di utilizzo;
+               virtualizzazione; terminale e shell. \\
+    Comandi & \term{ls}, \term{pwd}, \term{cd}, \term{mkdir}, \term{touch},
+              \term{cp}, \term{mv}, \term{rm}, \term{ls -l}, \term{chmod}. \\
+    Laboratorio & Installazione o verifica della VM; navigazione del filesystem;
+                  creazione di una struttura personale di file e directory;
+                  prime modifiche ai permessi. \\
+  \end{tabularx}
+\end{lessonbox}
+
+\begin{lessonbox}{Lezione 2 --- Amministrazione di base e APT}{5 ore}
+  \textbf{Risultato atteso.} Lo studente gestisce account locali, applica
+  permessi coerenti e amministra software dai repository.
+
+  \begin{tabularx}{\textwidth}{>{\bfseries\color{LinuxTeal}}p{3cm} X}
+    Concetti & Struttura FHS; directory principali; tipi di file; utenti,
+               gruppi e privilegi; package manager e repository. \\
+    Comandi & \term{adduser}, \term{deluser}, \term{groups}, \term{sudo},
+              \term{chmod}, \term{chown}, \term{chgrp}; \term{apt update},
+              \term{apt upgrade}, \term{apt install}, \term{apt remove},
+              \term{apt search}. \\
+    Laboratorio & Creazione di utenti e gruppi; verifica dei permessi;
+                  ricerca, installazione e rimozione controllata di pacchetti. \\
+  \end{tabularx}
+\end{lessonbox}
+
+\begin{lessonbox}{Lezione 3 --- Storage e backup}{5 ore}
+  \textbf{Risultato atteso.} Lo studente prepara un disco aggiuntivo, lo monta
+  in modo persistente ed esegue backup e ripristino di una directory.
+
+  \begin{tabularx}{\textwidth}{>{\bfseries\color{LinuxTeal}}p{3cm} X}
+    Concetti & HDD e SSD; device in \term{/dev}; MBR e GPT; filesystem ext4;
+               mount temporaneo e persistente; backup completo e incrementale. \\
+    Strumenti & \term{lsblk}, \term{fdisk}/\term{cfdisk}, \term{mkfs},
+                \term{/etc/fstab}, \term{rsync}, \term{tar}. \\
+    Laboratorio & Aggiunta di un disco virtuale; partizionamento e formattazione;
+                  mount permanente; backup e ripristino di file selezionati. \\
+  \end{tabularx}
+
+\end{lessonbox}
+
+\begin{lessonbox}{Lezione 4 --- Networking Linux}{5 ore}
+  \textbf{Risultato atteso.} Lo studente interpreta la configurazione di rete,
+  individua problemi di connettivita e trasferisce file tramite SSH.
+
+  \begin{tabularx}{\textwidth}{>{\bfseries\color{LinuxTeal}}p{3cm} X}
+    Concetti & DHCP e configurazione statica; indirizzo, rete e gateway; routing;
+               risoluzione dei nomi; accesso remoto sicuro. \\
+    Strumenti & \term{ip a}, \term{ip r}, \term{ping}, \term{traceroute},
+                \term{ss};\newline \term{/etc/hosts}, \term{resolv.conf},
+                \term{nslookup}, \term{ssh}, \term{scp}. \\
+    Laboratorio & Collegamento tra VM; diagnosi con ping e route; associazione di
+                  nomi locali; accesso remoto e copia di un file. \\
+  \end{tabularx}
+\end{lessonbox}
+
+\begin{lessonbox}{Lezione 5 --- Servizi e sicurezza di base}{5 ore}
+  \textbf{Risultato atteso.} Lo studente pubblica una pagina web, gestisce il
+  relativo servizio e limita l'accesso alle sole porte necessarie.
+
+  \begin{tabularx}{\textwidth}{>{\bfseries\color{LinuxTeal}}p{3cm} X}
+    Concetti & Processi in background e demoni; avvio dei servizi; web server;
+               porte, superficie esposta e regole firewall. \\
+    Strumenti & \term{systemctl start|stop|enable|status}; Apache;
+                \term{/var/www/html}; \term{ufw allow|deny|status}. \\
+    Laboratorio & Installazione di Apache; modifica di \term{index.html};
+                  apertura controllata della porta 80; test da una seconda VM. \\
+  \end{tabularx}
+\end{lessonbox}
+
+\begin{lessonbox}{Lezione 6 --- Consolidamento e lavoro di gruppo}{5 ore}
+  \textbf{Risultato atteso.} Il gruppo integra le competenze del corso in un
+  piccolo sistema funzionante e ne dimostra configurazione e sicurezza.
+
+  \begin{tabularx}{\textwidth}{>{\bfseries\color{LinuxTeal}}p{3cm} X}
+    Organizzazione & Gruppi di 2--3 studenti, ruoli espliciti, checklist tecnica
+                    e breve restituzione finale. \\
+    Progetto & Preparare una VM; configurare rete, utenti e permessi; installare
+               software; aggiungere storage; pubblicare un sito; consentire solo
+               SSH e HTTP; verificare servizio e firewall. \\
+    Consegna & Evidenze dei controlli eseguiti, elenco dei comandi significativi
+               e spiegazione delle decisioni adottate. \\
+  \end{tabularx}
+\end{lessonbox}
+
+% --- Competenze ---------------------------------------------------------------
+\section{Riepilogo delle competenze}
+
+Al termine delle sei lezioni lo studente dispone delle seguenti competenze
+operative di base.
+
+\begin{tabularx}{\textwidth}{>{\bfseries\color{LinuxBlue}}p{3.5cm} X}
+  Shell e filesystem & Navigare tra directory; creare, copiare, spostare e
+                       rimuovere file; leggere percorsi e permessi. \\
+  Utenti e permessi & Gestire account e gruppi; assegnare proprietari e permessi;
+                      usare \term{sudo} in modo consapevole. \\
+  Gestione software & Cercare, installare, aggiornare e rimuovere pacchetti dai
+                      repository con APT. \\
+  Storage e backup & Riconoscere dischi e partizioni; creare un filesystem;
+                     configurare un mount persistente; eseguire backup e restore. \\
+  Rete & Leggere indirizzi e route; verificare connettivita e DNS; usare SSH e
+         trasferire file tra due sistemi. \\
+  Servizi e sicurezza & Gestire un servizio con \term{systemctl}; pubblicare una
+                        pagina con Apache; configurare regole essenziali con UFW. \\
+\end{tabularx}
+
+\begin{infobox}[title={Profilo in uscita}]
+  Le competenze acquisite costituiscono una base per attivita junior di
+  \textbf{help desk}, \textbf{supporto IT} e \textbf{amministrazione di sistema}.
+\end{infobox}
 
 \end{document}
